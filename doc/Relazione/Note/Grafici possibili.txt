@@ -1,0 +1,9 @@
+- estimated cumulative distribution functions of the system times for three different
+  categories of successfully transplanted patients
+- model-based and empirically estimated results for the blood-type-specific models
+- LP patients who ultimately get transplanted in the LP queue wait much longer 
+  (measured in months) than individuals who are transplanted as HP patients 
+  (measured in days)
+- compare the empirical waiting times of HP patients with the results of our model 
+  for patients who arrived directly to the HP queue and for LP arrivals that 
+  subsequently self-promoted to the HP queue
