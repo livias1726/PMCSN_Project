@@ -1,0 +1,10 @@
+ L'obiettivo principale dello studio è quello di ridurre i tempi di attesa complessivi nel sistema del trapianto d'organi.​
+
+Le politiche di assegnamento considerate sono le seguenti:​
+- ABO-identical: i gruppi sanguigni di organo e paziente devono essere identici.​
+- ABO-compatible: i gruppi sanguigni di organo e paziente devono essere compatibili.​
+
+Per raggiungere l'obiettivo, si vuole individuare la politica di assegnamento organo-paziente migliore in modo da rispettare i seguenti QoS:​
+1) Il numero di trapianti con successo siano almeno l'80% di quelli totali.​
+2) La percentuale di pazienti che ripetono il trapianto sia minore del 10%.​
+3) La percentuale di organi scaduti sia minore del 2%.
