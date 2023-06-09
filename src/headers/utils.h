@@ -9,6 +9,7 @@
 #include "../../lib/rvms.h"
 
 #define NUM_ITER 100
+#define SEED 123456789
 
 // ------------------- MACROS ------------------------
 #define GET_MEAN(a, b, i) ((a-b)/i)

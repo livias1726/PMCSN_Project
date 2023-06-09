@@ -35,7 +35,7 @@ int main(){
     conf_mean = (STATS*) malloc(sizeof(STATS));
     malloc_handler(4, (void*[]){mean, variance, out_stats, conf_mean});
 
-    PlantSeeds(123456789);
+    PlantSeeds(SEED);
 
     // Iterations
     for (int i = 1; i <= NUM_ITER; ++i){
