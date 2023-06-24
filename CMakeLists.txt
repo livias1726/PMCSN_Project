@@ -12,4 +12,4 @@ if (IMPROVEMENT)
     add_definitions(-DIMPROVEMENT=1)
 endif()
 
-add_executable(run src/main.c src/simulation_fh.c src/utils.c ${SRC_INCLUDE})
+add_executable(run src/main.c src/utils.c ${SRC_INCLUDE})
