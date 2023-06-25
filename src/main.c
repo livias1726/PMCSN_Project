@@ -19,7 +19,7 @@ int main(){
 
     // ---------------------------------------------------- Simulation -----------------------------------------------
 #ifdef FINITE_HORIZON
-    STATS *mean, *variance, *out_stats, *conf_mean; // doubles should be zero-initialized by default
+    stats *out_stats = NULL; // doubles should be zero-initialized by default
     FILE *stats_file, *samples_file;
 
     // Setup
@@ -29,11 +29,8 @@ int main(){
         exit(-1);
     }
 
-    mean = (STATS*) malloc(sizeof(STATS));
-    variance = (STATS*) malloc(sizeof(STATS));
-    out_stats = (STATS*) malloc(sizeof(STATS));
-    conf_mean = (STATS*) malloc(sizeof(STATS));
-    malloc_handler(4, (void*[]){mean, variance, out_stats, conf_mean});
+    out_stats = (stats*) malloc(sizeof(stats));
+    malloc_handler(1, (void*[]){out_stats});
 
     PlantSeeds(SEED);
 
@@ -41,11 +38,10 @@ int main(){
     for (int i = 1; i <= NUM_ITER; ++i){
         // TODO: call the FH simulation for iteration i -> input: samples, output: out_stats
 
-        compute_output_stats(i, mean, variance, out_stats, conf_mean);
-        save_output_stats(i, mean, conf_mean, stats_file);
+        compute_stats();
     }
 
-    print_output_stats(mean, variance, out_stats);
+    //print_stats();
 
     fclose(stats_file);
     fclose(samples_file);
