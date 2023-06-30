@@ -1,4 +1,21 @@
 #include "headers/utils.h"
+#define START 0.0                      /* initial time                   */
+#define STOP 0.0                       /* terminal (close the door) time */
+#define INFINITY   (100.0 * STOP)      /* must be much larger than STOP  */
+
+double simulation_time = START;
+
+// Functions to initialize structs where to recover statistics for each center of the model
+patient_queue initialize_patient_queue() {
+
+}
+
+
+organ_queue initialize_organ_queue() {
+
+}
+
+
 
 int main(){
     // ---------------------------------------------- Intro --------------------------------------------------------
