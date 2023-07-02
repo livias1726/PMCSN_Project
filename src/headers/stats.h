@@ -1,3 +1,5 @@
+#ifndef PMCSN_PROJECT_STATS_H
+#define PMCSN_PROJECT_STATS_H
 #include <stdio.h>
 #include <stdlib.h>
 #include "model.h"
@@ -33,3 +35,5 @@ typedef struct statistics{
 // ------------------- PROTOTYPES ----------------
 void compute_stats();
 void print_stats();
+
+#endif //PMCSN_PROJECT_STATS_H
