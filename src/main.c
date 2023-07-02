@@ -10,12 +10,9 @@ patient_queue initialize_patient_queue() {
 
 }
 
-
 organ_queue initialize_organ_queue() {
 
 }
-
-
 
 int main(){
     // ---------------------------------------------- Intro --------------------------------------------------------

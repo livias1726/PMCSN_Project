@@ -12,6 +12,7 @@ typedef struct patient {
     BLOOD_TYPE blood_type;
     PRIORITY priority;
     bool is_active;         /* the patient is active (true or false) */
+    //TODO: struct patient *next; (???)
 } patient;
 
 

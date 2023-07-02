@@ -25,7 +25,11 @@ typedef enum policy {
 
 // ------------------------------- STATE ---------------------------
 // These states are important to determine the allocation policy
-
+/*TODO: since these are both boolean (available/empty = 0, unavailable/not_empty = 1) I would use a simple boolean value.
+ * (meaning there's no need for enum structs)
+ * - example: bool organ_available (yes/no)
+ *            bool patient_queue_empty (yes/no)
+*/
 typedef enum organ_status {
     AVAILABLE,
     UNAVAILABLE
