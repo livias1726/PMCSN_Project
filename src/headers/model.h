@@ -23,7 +23,7 @@ typedef struct patient_queue {
 } patient_queue;
 
 typedef struct patient_waiting_list {
-    patient_queue *queues[NUM_PATIENT_QUEUES];
+    patient_queue *queues[NUM_BLOOD_TYPES];
     double total_number;                        /* l_{p} */
 } patient_waiting_list;
 

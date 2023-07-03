@@ -9,11 +9,12 @@ void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank* bank);
 void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
 
 void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
+void addPatientToQueue(patient_queue **pQueue, BLOOD_TYPE type, PRIORITY priority);
 
 // Functions to initialize structs where to recover statistics for each center of the model
 patient_waiting_list initialize_waiting_list() {
     patient_waiting_list waitingList;
-    for (int i = 0; i < NUM_PATIENT_QUEUES; ++i) {
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         waitingList.queues[i] = NULL;
     }
     waitingList.total_number = 0.0;
@@ -69,6 +70,9 @@ int main(){
     handleOrganArrival(A, &bank);
     /* new patient arrival */
     handlePatientArrival(O, normal, &waiting_list);
+    handlePatientArrival(O, low, &waiting_list);
+    handlePatientArrival(O, normal, &waiting_list);
+    handlePatientArrival(O, critical, &waiting_list);
 
     /*FIXME clean_up(sizeof(organ_bank), (void **) &bank);
     clean_up(sizeof(patient_waiting_list), (void **) &waiting_list);
@@ -126,7 +130,7 @@ void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiti
     list->total_number = list->total_number + 1;
     switch (bloodType) {
         case O:
-            list->queues[0] = malloc(sizeof(patient));
+            addPatientToQueue(&list->queues[0], bloodType, priority);
             //FIXME malloc_handler(sizeof(patient), (void **) &list.queues[0]);
             printf("Arrived patient with blood type 0\n");
             break;
@@ -197,4 +201,57 @@ void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
         o_queue = o_queue->next;
     }
     o_queue->next = malloc(sizeof(organ));
+    o_queue->next->starting_age = rand();
+}
+
+void addPatientToQueue(patient_queue **pQueue, BLOOD_TYPE type, PRIORITY priority) {
+    if ((*pQueue) == NULL) {
+        (*pQueue) = malloc(sizeof(patient_queue));
+    }
+
+    if ((*pQueue)->queue == NULL) {
+        printf("pointer to queue is NULL: no patients in queue\n");
+        /* set list head */
+        (*pQueue)->queue = malloc(sizeof(patient));
+        (*pQueue)->queue[0].priority = none;
+
+        /* add new patient */
+        patient *new = malloc(sizeof(patient));
+        new->prev = (*pQueue)->queue;
+        (*pQueue)->queue->next = new;
+        (*pQueue)->queue->next->priority = priority;
+        (*pQueue)->queue->next->is_active = rand() % 2; //FIXME integrate with probability to be inactive and handle it
+        return;
+    }
+
+    printf("pointer to queue is NOT NULL: there are patients in queue\n");
+    patient *p_queue = (*pQueue)->queue;
+
+    /* Add patient to list - ordering by priority */
+    patient *new = malloc(sizeof(patient));
+    new->priority = priority;
+    new->is_active = rand() % 2; //FIXME integrate with probability to be inactive and handle it
+
+    printf("%d", new->priority);
+    printf("%d", p_queue->priority);
+
+    patient *current = p_queue;
+    patient *prev = NULL;
+
+    while (current->priority > new->priority) {
+        // Next in the list
+        if (current->next != NULL) {
+            current = current->next;
+            prev = current->prev;
+        } else {
+            current->next = new;
+            new->prev = current;
+            return;
+        }
+    }
+
+    prev->next = new;
+    current->prev = new;
+    new->prev = prev;
+    new->next = current;
 }
