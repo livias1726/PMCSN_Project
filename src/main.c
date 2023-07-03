@@ -8,7 +8,7 @@ double simulation_time = START;
 void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank* bank);
 void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
 
-void addOrganToQueue(organ_queue *pQueue, BLOOD_TYPE bloodType);
+void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
 
 // Functions to initialize structs where to recover statistics for each center of the model
 patient_waiting_list initialize_waiting_list() {
@@ -154,22 +154,22 @@ void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank *bank) {
     bank->total_number = bank->total_number + 1;
     switch (bloodType) {
         case O:
-            addOrganToQueue(bank->queues[0], O);
+            addOrganToQueue(&bank->queues[0], O);
             // FIXME malloc_handler(sizeof(organ), (void **) &bank.queues[0]);
             printf("Arrived organ with blood type 0\n");
             break;
         case A:
-            addOrganToQueue(bank->queues[1], A);
+            addOrganToQueue(&bank->queues[1], A);
             //FIXME malloc_handler(sizeof(organ), (void **) &bank.queues[1]);
             printf("Arrived organ with blood type A\n");
             break;
         case B:
-            addOrganToQueue(bank->queues[2], B);
+            addOrganToQueue(&bank->queues[2], B);
             //FIXME malloc_handler(sizeof(organ), (void **) &bank.queues[2]);
             printf("Arrived organ with blood type B\n");
             break;
         case AB:
-            addOrganToQueue(bank->queues[3], AB);
+            addOrganToQueue(&bank->queues[3], AB);
             //FIXME malloc_handler(sizeof(organ), (void **) &bank.queues[3]);
             printf("Arrived organ with blood type AB\n");
             break;
@@ -178,19 +178,20 @@ void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank *bank) {
     }
 }
 
-void addOrganToQueue(organ_queue *pQueue, BLOOD_TYPE bloodType) {
-    if (pQueue == NULL) {
-        pQueue = malloc(sizeof(organ_queue));
+void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
+
+    if ((*pQueue) == NULL) {
+        (*pQueue) = malloc(sizeof(organ_queue));
     }
-    if (pQueue->queue == NULL) {
+    if ((*pQueue)->queue == NULL) {
         printf("pointer to queue is NULL: no organs in queue\n");
-        pQueue->queue = malloc(sizeof(organ));
-        pQueue->queue[0].starting_age = rand(); //FIXME sobstitute with Random();
+        (*pQueue)->queue = malloc(sizeof(organ));
+        (*pQueue)->queue[0].starting_age = rand(); //FIXME sobstitute with Random();
         return;
     }
 
     printf("pointer to queue is NOT NULL: there are organs in queue\n");
-    organ *o_queue = pQueue->queue;
+    organ *o_queue = (*pQueue)->queue;
     /* Add organ to list */
     while (o_queue->next != NULL) {
         o_queue = o_queue->next;
