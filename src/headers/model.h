@@ -1,15 +1,12 @@
-#include "users.h"
-
 #ifndef PMCSN_PROJECT_MODEL_H
 #define PMCSN_PROJECT_MODEL_H
-
-
 #define NUM_PATIENT_QUEUES 12
 #define NUM_ORGAN_QUEUES 4
 #define NUM_BLOOD_TYPES 4
 #define NUM_PRIORITIES 3
-
+#include "users.h"
 // -------------------------------------- CENTERS STRUCTS ----------------------------------------------------
+//bool matching_servers[NUM_BLOOD_TYPES]; // the availability of an organ for a given blood type marks a free and ready server
 
 typedef struct patient_queue {
     BLOOD_TYPE bt;
@@ -20,6 +17,8 @@ typedef struct patient_queue {
     double interArrivalTime;    /* t_{a,p,BT} */
     double deathTime;           /* t_{d,p,BT} */
     double renegingTime;        /* t_{r,p,BT} */
+    double numberReneging;      /* extra: l_{r,p,BT} */
+    double numberDead;          /* extra: l_{d,p,BT} */
 } patient_queue;
 
 typedef struct patient_waiting_list {
@@ -40,8 +39,6 @@ typedef struct organ_bank {
     organ_queue *queues[NUM_ORGAN_QUEUES];      /* organ queues for blood type */
     double total_number;                              /* l_{o} */
 } organ_bank;
-
-bool matching_servers[NUM_BLOOD_TYPES]; // the availability of an organ for a given blood type marks a free and ready server
 
 typedef struct transplant_center {
     double total_number;        /* l_{trans} */

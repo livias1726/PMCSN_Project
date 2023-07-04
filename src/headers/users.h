@@ -1,6 +1,3 @@
-#include <stdbool.h>
-#include "enums.h"
-
 #ifndef PMCSN_PROJECT_USERS_H
 #define PMCSN_PROJECT_USERS_H
 

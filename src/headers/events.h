@@ -5,9 +5,7 @@
  * This file contains the definitions of the structs representing the events of the simulation (arrivals and terminations).
  * It also defines the stream for the RNGs and declares a function prototype, used to generate a new arrival in the system.
  */
-#include "utils.h"
-#include "../../lib/rngs.h"
-//#include "../../lib/rvgs.h"
+
 
 //TODO: don't know if an enum is of any use rather than macro definitions for each stream
 typedef enum streams {

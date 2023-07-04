@@ -1,5 +1,3 @@
-#include "headers/stats.h"
-#include "../lib/rvms.h"
 #include "headers/utils.h"
 
 void compute_output_stats(int i, stats* mean, stats* variance, stats* out_stats, stats* conf_mean){
@@ -45,7 +43,7 @@ void save_output_stats(int i, stats *mean, stats* conf_mean, FILE *stats_file){
 
 void print_output_stats(stats* mean, stats* variance, stats* out_stats){
 
-    double criticalValue = idfStudent(NUM_ITER-1,1-0.025); //alpha = 0.05
+  //  double criticalValue = idfStudent(NUM_ITER-1,1-0.025); //alpha = 0.05
 
     printf("OUTPUT:\n");
 

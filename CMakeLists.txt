@@ -2,7 +2,7 @@ project(PMCSN_Project)
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_C_STANDARD 11)
-set(SRC_INCLUDE src/main.c lib/rngs.c lib/rvms.c src/handle_events.c src/allocation_algorithms.c src/utils.c src/headers/users.h src/headers/enums.h src/headers/events.h src/headers/model.h src/headers/utils.h)
+set(SRC_INCLUDE src/utils.c src/allocation_algorithms.c src/handle_events.c)
 
 if (FINITE_HORIZON)
     add_definitions(-DFINITE_HORIZON=1)
@@ -12,5 +12,5 @@ if (IMPROVEMENT)
     add_definitions(-DIMPROVEMENT=1)
 endif()
 
-add_executable(PMCSN_Project ${SRC_INCLUDE})
+add_executable(PMCSN_Project src/main.c ${SRC_INCLUDE})
 target_link_libraries(PMCSN_Project m)
