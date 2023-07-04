@@ -10,10 +10,10 @@ typedef enum blood_type {
 } BLOOD_TYPE;
 
 typedef enum priority {
+    none,
     critical=1,
     normal=2,
-    low=3,
-    none
+    low=3
 } PRIORITY;
 
 typedef enum policy {

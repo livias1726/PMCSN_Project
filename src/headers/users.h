@@ -6,7 +6,6 @@ typedef struct patient {
     PRIORITY priority;      /* needed to order patients in list based on the priority */
     bool is_active;         /* the patient is active (true or false) */
     struct patient *next;   /* pointer to the next patient in queue */
-    struct patient *prev;   /* pointer to the previous patient in queue - (doubly linked list) */
 } patient;
 
 
