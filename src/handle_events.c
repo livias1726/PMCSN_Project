@@ -8,7 +8,8 @@
  * ORGAN ARRIVAL
  */
 
-void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q);
+void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
+                                 organ_bank *bank);
 
 void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType);
 
@@ -388,8 +389,30 @@ void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_ban
         }
     }
 
+    /* TODO: note: randomically choose the blood type order for matching */
     if (policy == ABO_Comp) {
         /* handle matching with policy ABO-compatible */
+        for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+            switch ((BLOOD_TYPE) i) {
+                case O:
+                    handleMatchingABOCompatible(patient_qs[0], organ_qs[0], pWaitingList, bank); // organ O - patient O
+                    handleMatchingABOCompatible(patient_qs[1], organ_qs[0], pWaitingList, bank); // organ O - patient A
+                    handleMatchingABOCompatible(patient_qs[2], organ_qs[0], pWaitingList, bank); // organ O - patient B
+                    handleMatchingABOCompatible(patient_qs[3], organ_qs[0], pWaitingList, bank); // organ O - patient AB
+                    break;
+                case A:
+                    handleMatchingABOCompatible(patient_qs[1], organ_qs[1], pWaitingList, bank); // organ: A - patient A
+                    handleMatchingABOCompatible(patient_qs[3], organ_qs[1], pWaitingList, bank); // organ: A - patient AB
+                    break;
+                case B:
+                    handleMatchingABOCompatible(patient_qs[2], organ_qs[2], pWaitingList, bank); // organ: B - patient B
+                    handleMatchingABOCompatible(patient_qs[3], organ_qs[2], pWaitingList, bank); // organ: B - patient B
+                    break;
+                case AB:
+                    handleMatchingABOCompatible(patient_qs[3], organ_qs[3], pWaitingList, bank); // organ: AB - patient AB
+                    break;
+            }
+        }
     } else {
         /* handle matching with policy ABO-identical */
         handleMatchingABOIdentical(patient_qs[0], organ_qs[0], pWaitingList, bank); // O
@@ -453,7 +476,30 @@ void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue
     }
 }
 
-void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q) {
+void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
+                                 organ_bank *bank) {
+    if (ABOCompatible(organ_q->bt, patient_q->bt)) {
+        while (organ_q->organ_available && patient_q->number > 0) {
+            // fino a che ci sono organi disponibili
+            while (patient_q->priority_queue[0]->number != 0 && organ_q->organ_available) {
+                // fino a che ci sono pazienti critici
+                removeOrgan(0, &organ_q, bank);
+                removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
+            }
+
+            while (patient_q->priority_queue[1]->number != 0 && organ_q->organ_available) {
+                // fino a che ci sono pazienti normali
+                removeOrgan(0, &organ_q, bank);
+                removePatient(0, &patient_q->priority_queue[1], patient_q, pList);
+            }
+
+            while (patient_q->priority_queue[2]->number != 0 && organ_q->organ_available) {
+                // fino a che ci sono pazienti low
+                removeOrgan(0, &organ_q, bank);
+                removePatient(0, &patient_q->priority_queue[2], patient_q, pList);
+            }
+        }
+    }
 
 }
 
@@ -524,7 +570,5 @@ void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood
     prev->next = next;
     decrementPatients((*pQueue), pQueueBT, pList);
 }
-
-double handle_matching() { return 0; }
 
 double handle_transplant() { return 0; };

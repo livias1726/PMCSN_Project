@@ -80,6 +80,17 @@ int main(){
     handleOrganRenege(AB, &bank);*/
 
     /* new patient arrival */
+    /*for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
+        for (int i = 0; i < 14; ++i) {
+            handlePatientArrival(b, critical, &waiting_list);
+        }
+        for (int i = 0; i < 20; ++i) {
+            handlePatientArrival(b, normal, &waiting_list);
+        }
+        for (int i = 0; i < 50; ++i) {
+            handlePatientArrival(b, low, &waiting_list);
+        }
+    }*/
     for (int i = 0; i < 14; ++i) {
         handlePatientArrival(O, critical, &waiting_list);
     }
@@ -91,7 +102,8 @@ int main(){
     }
 
     /* Matching - ABOIdentical */
-    handleMatching(ABO_Id, &waiting_list, &bank);
+    handleMatching(ABO_Comp, &waiting_list, &bank);
+    //handleMatching(ABO_Id, &waiting_list, &bank);
 
     /* patient death */
     //handlePatientDeath(O, low, &waiting_list);
