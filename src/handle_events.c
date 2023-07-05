@@ -8,6 +8,12 @@
  * ORGAN ARRIVAL
  */
 
+void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q);
+
+void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType);
+
+void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
+
 /***
  * Function to handle the arrival of a new organ in a blood type queue of the organ bank
  * @param bloodType
@@ -51,16 +57,25 @@ void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
         (*pQueue) = malloc(sizeof(organ_queue));
     }
 
+    organ_queue *organQueue = (*pQueue);
+
     /* Set queue attributes */
-    (*pQueue)->bt = bloodType;
-    (*pQueue)->number = (*pQueue)->number+1;
-    (*pQueue)->organ_available = true;
+    organQueue->bt = bloodType;
+    organQueue->number = (*pQueue)->number+1;
+    organQueue->organ_available = true;
 
     /* Check if queue is empty */
-    if ((*pQueue)->queue == NULL) {
+    if (organQueue->queue == NULL) {
         printf("pointer to queue is NULL: no organs in queue\n");
-        (*pQueue)->queue = malloc(sizeof(organ));
-        (*pQueue)->queue[0].starting_age = ((int) Random() % (24-0+1)) + 0; /* Starting age is between 0 and 24 h */
+
+        /* set list head */
+        organQueue->queue = malloc(sizeof(organ));
+        organQueue->queue[0].starting_age = 0; /* Starting age is between 0 and 24 h */ //FIXME substitute rand
+
+        /* add new organ */
+        organ *new = malloc(sizeof(organ));
+        organQueue->queue->next = new;
+        organQueue->queue->next->starting_age = ((int) rand() % (24-0+1)) + 0; ;
         return;
     }
 
@@ -71,7 +86,7 @@ void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
         o_queue = o_queue->next;
     }
     o_queue->next = malloc(sizeof(organ));
-    o_queue->next->starting_age = ((int) Random() % (24-0+1)) + 0;
+    o_queue->next->starting_age = ((int) rand() % (24-0+1)) + 0;
 }
 
 
@@ -133,18 +148,24 @@ void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority
             addPatientToPriorityQueue(&blood_queue->priority_queue[0], priority);
             malloc_handler(1, (void *[]) {blood_queue->priority_queue[0]});
             blood_queue->priority_queue[0]->priority = critical;
+            /*increment patient to blood queue */
+            blood_queue->number++;
             printf("Arrived patient with priority Critical\n");
             break;
         case normal:
             addPatientToPriorityQueue(&blood_queue->priority_queue[1], priority);
             malloc_handler(1, (void *[]) {blood_queue->priority_queue[1]});
             blood_queue->priority_queue[1]->priority = normal;
+            /*increment patient to blood queue */
+            blood_queue->number++;
             printf("Arrived patient with priority Normal\n");
             break;
         case low:
             addPatientToPriorityQueue(&blood_queue->priority_queue[2], priority);
             malloc_handler(1, (void *[]) {blood_queue->priority_queue[2]});
             blood_queue->priority_queue[2]->priority = low;
+            /*increment patient to blood queue */
+            blood_queue->number++;
             printf("Arrived patient with priority Low\n");
             break;
         default:
@@ -175,6 +196,9 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
         patient_queue->queue->next = new;
         patient_queue->queue->next->priority = priority;
         patient_queue->queue->next->is_active = (int) Random() % 2; //FIXME integrate with probability to be inactive and handle it
+
+        /* increment patients */
+        patient_queue->number++;
         return;
     }
 
@@ -194,7 +218,7 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
     current->next = new;
 
     /* Increment number of patients in queue */
-    patient_queue->number = patient_queue->number + 1;
+    patient_queue->number++;
 }
 
 
@@ -208,22 +232,27 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
  * @param bank
  */
 void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank) {
-    bank->total_number = bank->total_number - 1;
+    int num_deleted;
     switch (bloodType) {
         case O:
-            removeExpiredOrgans(bloodType, &bank->queues[0]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[0]);
             break;
         case A:
-            removeExpiredOrgans(bloodType, &bank->queues[1]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[1]);
             break;
         case B:
-            removeExpiredOrgans(bloodType, &bank->queues[2]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[2]);
             break;
         case AB:
-            removeExpiredOrgans(bloodType, &bank->queues[3]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[3]);
             break;
         default:
+            num_deleted = 0;
             break;
+    }
+
+    if (num_deleted != 0) {
+        bank->total_number = bank->total_number - num_deleted;
     }
 }
 
@@ -232,29 +261,22 @@ void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank) {
  * @param bloodType
  * @param pQueue
  */
-void removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue) {
+int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue) {
     organ *o_queue = (*pQueue)->queue;
-    organ *current, *prev, *tmp;
+    organ *current;
+    int index, number_deleted = 0;
 
     current = o_queue;
     while (current->next != NULL) {
-        prev = current;
         current = current->next;
         if (current->starting_age >= 24) {
             /* The organ has expired */
-            //FIXME add free
-            prev->next = current->next;
+            removeOrgan(index, pQueue, NULL);
             printf("An organ has expired in the queue with blood type %d\n", bloodType);
-            /* Decrement organ number in queue */
-            (*pQueue)->number = (*pQueue)->number - 1;
+            number_deleted++;
         }
     }
-
-    /* check if no organs are left in queue */
-    if ((*pQueue)->number == 0) {
-        printf("No organs left in queue with blood type %d\n", bloodType);
-        (*pQueue)->organ_available = false;
-    }
+    return number_deleted;
 }
 
 /***
@@ -327,17 +349,13 @@ void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient
 
 void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority **pQueuePriority) {
     patient *priority_queue = (*pQueuePriority)->queue;
-    patient *next;
-    patient *current = priority_queue;
     int max_number, index;
-    int i=0;
 
     if (reason == death) {
         /* Handle patient death from priority queue */
         // TODO choose a random job or select a specific patient with id or remove oldest one
         // FIXME now I remove the oldest one
-        next = current->next->next;
-        current->next = next;
+        removePatient(0, pQueuePriority, NULL, NULL);
         printf("A patient is dead in queue with priority %d\n", priority_queue->priority);
     } else {
         /* Handle patient renege from priority queue */
@@ -345,13 +363,7 @@ void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority 
         // FIXME now I choose a random job
         max_number = (int) (*pQueuePriority)->number-1;
         index = ((int) rand() % (max_number-0+1)) + 0; // FIXME alternative to rand()
-        while (i <= index && current->next != NULL) {
-            current = current->next;
-            i++;
-        }
-
-        next = current->next->next;
-        current->next = next;
+        removePatient(index, pQueuePriority, NULL, NULL);
         printf("A patient left the queue with priority %d\n", priority_queue->priority);
     }
 
@@ -359,5 +371,160 @@ void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority 
     (*pQueuePriority)->number = (*pQueuePriority)->number - 1;
 }
 
-double handle_transplant() { return 0; };
+/***
+ * MATCHING
+ */
+void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_bank *bank) {
+    int patient_queues;
+    patient_queue_blood_type *patient_qs[] = {pWaitingList->blood_type_queues[0], pWaitingList->blood_type_queues[1],
+                                        pWaitingList->blood_type_queues[2], pWaitingList->blood_type_queues[3]};
+    organ_queue *organ_qs[] = {bank->queues[0], bank->queues[1], bank->queues[2], bank->queues[3]};
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        if (!check_init(patient_qs[i])) {
+            initializePatientQueue(&patient_qs[i], (BLOOD_TYPE)i);
+        }
+        if (!check_init(organ_qs[i])) {
+            initializeOrganQueue(&organ_qs[i], (BLOOD_TYPE)i);
+        }
+    }
+
+    if (policy == ABO_Comp) {
+        /* handle matching with policy ABO-compatible */
+    } else {
+        /* handle matching with policy ABO-identical */
+        handleMatchingABOIdentical(patient_qs[0], organ_qs[0], pWaitingList, bank); // O
+        handleMatchingABOIdentical(patient_qs[1], organ_qs[1], pWaitingList, bank); // A
+        handleMatchingABOIdentical(patient_qs[2], organ_qs[2], pWaitingList, bank); // B
+        handleMatchingABOIdentical(patient_qs[3], organ_qs[3], pWaitingList, bank); // AB
+    }
+}
+
+void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
+    if ((*pQueue) == NULL) {
+        (*pQueue) = malloc(sizeof(organ_queue));
+        (*pQueue)->bt = bloodType;
+    }
+
+    if ((*pQueue)->queue == NULL) {
+        (*pQueue)->queue = malloc(sizeof(organ));
+    }
+}
+
+void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType) {
+    if ((*pQueue) == NULL) {
+        (*pQueue) = malloc(sizeof(patient_queue_blood_type));
+        (*pQueue)->bt = bloodType;
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        if ((*pQueue)->priority_queue[i] == NULL) {
+            (*pQueue)->priority_queue[i] = malloc(sizeof(patient_queue_priority));
+        }
+        if ((*pQueue)->priority_queue[i]->queue == NULL) {
+            (*pQueue)->priority_queue[i]->queue = malloc(sizeof(patient));
+        }
+        (*pQueue)->priority_queue[i]->priority = (PRIORITY)i+1; // skip default priority
+    }
+}
+
+void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
+                                organ_bank *bank) {
+    if (ABOIdentical(organ_q->bt, patient_q->bt)) {
+        while (organ_q->organ_available && patient_q->number > 0) {
+            // fino a che ci sono organi disponibili
+            while (patient_q->priority_queue[0]->number != 0 && organ_q->organ_available) {
+                // fino a che ci sono pazienti critici
+                removeOrgan(0, &organ_q, bank);
+                removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
+            }
+
+            while (patient_q->priority_queue[1]->number != 0 && organ_q->organ_available) {
+                // fino a che ci sono pazienti normali
+                removeOrgan(0, &organ_q, bank);
+                removePatient(0, &patient_q->priority_queue[1], patient_q, pList);
+            }
+
+            while (patient_q->priority_queue[2]->number != 0 && organ_q->organ_available) {
+                // fino a che ci sono pazienti low
+                removeOrgan(0, &organ_q, bank);
+                removePatient(0, &patient_q->priority_queue[2], patient_q, pList);
+            }
+        }
+    }
+}
+
+void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q) {
+
+}
+
+
+/***
+ * UTILS
+ */
+
+void decrementOrgans(organ_queue *organQueue, organ_bank *bank) {
+    if (organQueue->number > 0) {
+        organQueue->number--;
+    }
+    if (bank->total_number > 0) {
+        bank->total_number--;
+    }
+    if (organQueue->number == 0) {
+        organQueue->organ_available = false;
+        printf("No organs left in queue with blood type %d\n", organQueue->bt);
+    }
+}
+
+void decrementPatients(patient_queue_priority *patientQueuePriority, patient_queue_blood_type *patientQueueBT,
+                       patient_waiting_list *list) {
+    if (patientQueuePriority->number > 0) {
+        patientQueuePriority->number--;
+    }
+    if (patientQueueBT->number > 0) {
+        patientQueueBT->number--;
+    }
+    if (list->total_number > 0) {
+        list->total_number--;
+    }
+}
+
+void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
+    int i = 0;
+    organ *organs = (*pQueue)->queue;
+    organ *current = organs;
+    organ *prev = current;
+    organ *next = current->next;
+
+    while (i < idx) {
+        prev = current;
+        current = current->next;
+        next = current->next;
+        i++;
+    }
+
+    prev->next = next;
+    decrementOrgans((*pQueue), bank);
+}
+
+void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
+                   patient_waiting_list *pList) {
+    int i = 0;
+    patient *patients = (*pQueue)->queue;
+    patient *current = patients;
+    patient *prev = current;
+    patient *next = current->next;
+
+    while (i < idx) {
+        prev = current;
+        current = current->next;
+        next = current->next;
+        i++;
+    }
+
+    prev->next = next;
+    decrementPatients((*pQueue), pQueueBT, pList);
+}
+
 double handle_matching() { return 0; }
+
+double handle_transplant() { return 0; };

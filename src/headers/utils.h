@@ -15,5 +15,5 @@
 #define SEED 123456789
 void malloc_handler(int, void**);
 void clean_up(int, void**);
-
+bool check_init(void*);
 #endif //PMCSN_PROJECT_UTILS_H

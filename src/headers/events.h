@@ -65,7 +65,7 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
  * ORGAN RENEGE
  */
 void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *pBank);
-void removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue);
+int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue);
 
 /***
  * PATIENT DEATH
@@ -78,5 +78,22 @@ void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting
 void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
 void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient_queue_blood_type **pQueue);
 void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority **pQueuePriority);
+
+/***
+ * MATCHING
+ */
+void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_bank *bank);
+void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
+                                organ_bank *bank);
+
+/***
+ * UTILS
+ */
+void decrementOrgans(organ_queue *organQueue, organ_bank *bank);
+void
+decrementPatients(patient_queue_priority *pQueue, patient_queue_blood_type *patientQueueBT, patient_waiting_list *list);
+void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
+void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
+                   patient_waiting_list *pList);
 
 #endif

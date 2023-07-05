@@ -70,6 +70,15 @@ int main(){
         handleOrganArrival(B, &bank);
     }
 
+    /*organ_queue *queue = bank.queues[0];
+    removeOrgan(2, &queue);*/
+
+    /* organ renege */
+    /*handleOrganRenege(O, &bank);
+    handleOrganRenege(A, &bank);
+    handleOrganRenege(B, &bank);
+    handleOrganRenege(AB, &bank);*/
+
     /* new patient arrival */
     for (int i = 0; i < 14; ++i) {
         handlePatientArrival(O, critical, &waiting_list);
@@ -81,16 +90,19 @@ int main(){
         handlePatientArrival(O, low, &waiting_list);
     }
 
-    /* patient death */
-    handlePatientDeath(O, low, &waiting_list);
-    /* patient renege */
-    handlePatientRenege(O, low, &waiting_list);
-    handlePatientRenege(O, low, &waiting_list);
-    handlePatientRenege(O, low, &waiting_list);
-    /* organ renege */
-    handleOrganRenege(O, &bank);
+    /* Matching - ABOIdentical */
+    handleMatching(ABO_Id, &waiting_list, &bank);
 
-    bool res;
+    /* patient death */
+    //handlePatientDeath(O, low, &waiting_list);
+    /* patient renege */
+    //handlePatientRenege(O, low, &waiting_list);
+    //handlePatientRenege(O, low, &waiting_list);
+    //handlePatientRenege(O, low, &waiting_list);
+    /* organ renege */
+    //handleOrganRenege(O, &bank);
+
+    /*bool res;
     res = ABOIdentical(O, O)==true;
     printf("%b\n", res);
     res = ABOIdentical(O, A)==false;
@@ -122,10 +134,10 @@ int main(){
     res = ABOIdentical(AB, B)==false;
     printf("%b\n", res);
     res = ABOIdentical(AB, AB)==true;
-    printf("%b\n", res);
+    printf("%b\n", res);*/
 
     /* ABO compatible */
-    res = ABOCompatible(O, O)==true;
+   /* res = ABOCompatible(O, O)==true;
     printf("%b\n", res);
     res = ABOCompatible(O, A)==true;
     printf("%b\n", res);
@@ -156,7 +168,7 @@ int main(){
     res = ABOCompatible(AB, B)==false;
     printf("%b\n", res);
     res = ABOCompatible(AB, AB)==true;
-    printf("%b\n", res);
+    printf("%b\n", res);*/
 
 /*  clean_up(sizeof(organ_bank), (void **) &bank);
     clean_up(sizeof(patient_waiting_list), (void **) &waiting_list);
