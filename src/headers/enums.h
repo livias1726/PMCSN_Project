@@ -21,4 +21,9 @@ typedef enum policy {
     ABO_Comp
 } POLICY;
 
+typedef enum loss_reason {
+    death,
+    renege
+} LOSS_REASON;
+
 #endif //PMCSN_PROJECT_ENUMS_H

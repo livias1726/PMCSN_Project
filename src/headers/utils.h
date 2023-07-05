@@ -10,7 +10,7 @@
 #include "allocation.h"
 #include "events.h"
 #include "../../lib/rngs.h"
-//#include "../../lib/rvgs.h"
+#include "../../lib/rvms.h"
 #define NUM_ITER 100
 #define SEED 123456789
 void malloc_handler(int, void**);

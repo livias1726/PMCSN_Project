@@ -3,6 +3,6 @@
 //
 #ifndef PMCSN_PROJECT_ALLOCATION_H
 #define PMCSN_PROJECT_ALLOCATION_H
-double handle_ABO_compatible();
-double handle_ABO_identical();
+bool ABOCompatible(BLOOD_TYPE organ_type, BLOOD_TYPE patient_type);
+bool ABOIdentical(BLOOD_TYPE organ_type, BLOOD_TYPE patient_type);
 #endif //PMCSN_PROJECT_ALLOCATION_H

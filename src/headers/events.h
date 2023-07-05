@@ -44,4 +44,39 @@ typedef struct __event_list
 arrival *getArrival(double simulationTime);
 */
 
+/***
+ * --------------------------------------------- EVENT HANDLERS PROTOTYPES ---------------------------------------------
+ */
+
+/***
+ * ORGAN ARRIVAL
+ */
+void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank* bank);
+void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
+
+/***
+ * PATIENT ARRIVAL
+ */
+void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
+void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority);
+void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY priority);
+
+/***
+ * ORGAN RENEGE
+ */
+void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *pBank);
+void removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue);
+
+/***
+ * PATIENT DEATH
+ */
+void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
+
+/***
+ * PATIENT RENEGE
+ */
+void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
+void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient_queue_blood_type **pQueue);
+void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority **pQueuePriority);
+
 #endif
