@@ -15,6 +15,8 @@ void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodT
 
 void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
 
+void incrementOrgans(organ_queue *pQueue, organ_bank *pBank);
+
 /***
  * Function to handle the arrival of a new organ in a blood type queue of the organ bank
  * @param bloodType
@@ -24,22 +26,22 @@ void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank *bank) {
     bank->total_number = bank->total_number + 1;
     switch (bloodType) {
         case O:
-            addOrganToQueue(&bank->queues[0], O);
+            addOrganToQueue(&bank->queues[0], O, bank);
             malloc_handler(1, (void *[]) {bank->queues[0]});
             printf("Arrived organ with blood type 0\n");
             break;
         case A:
-            addOrganToQueue(&bank->queues[1], A);
+            addOrganToQueue(&bank->queues[1], A, bank);
             malloc_handler(1, (void *[]) {bank->queues[1]});
             printf("Arrived organ with blood type A\n");
             break;
         case B:
-            addOrganToQueue(&bank->queues[2], B);
+            addOrganToQueue(&bank->queues[2], B, bank);
             malloc_handler(1, (void *[]) {bank->queues[2]});
             printf("Arrived organ with blood type B\n");
             break;
         case AB:
-            addOrganToQueue(&bank->queues[3], AB);
+            addOrganToQueue(&bank->queues[3], AB, bank);
             malloc_handler(1, (void *[]) {bank->queues[3]});
             printf("Arrived organ with blood type AB\n");
             break;
@@ -53,7 +55,7 @@ void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank *bank) {
  * @param pQueue
  * @param bloodType
  */
-void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
+void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType, organ_bank *bank) {
     if ((*pQueue) == NULL) {
         (*pQueue) = malloc(sizeof(organ_queue));
     }
@@ -62,8 +64,8 @@ void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
 
     /* Set queue attributes */
     organQueue->bt = bloodType;
-    organQueue->number = (*pQueue)->number+1;
-    organQueue->organ_available = true;
+    incrementOrgans((*pQueue), bank);
+
 
     /* Check if queue is empty */
     if (organQueue->queue == NULL) {
@@ -507,6 +509,14 @@ void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queu
 /***
  * UTILS
  */
+
+void incrementOrgans(organ_queue *pQueue, organ_bank *pBank) {
+    pQueue->number++;
+    if (!pQueue->organ_available) {
+        pQueue->organ_available = true;
+    }
+    pBank->total_number++;
+}
 
 void decrementOrgans(organ_queue *organQueue, organ_bank *bank) {
     if (organQueue->number > 0) {

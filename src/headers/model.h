@@ -16,7 +16,7 @@ typedef struct patient_queue_priority {
 typedef struct patient_queue_blood_type {
     BLOOD_TYPE bt;
     patient_queue_priority *priority_queue[NUM_PRIORITIES];             /* head of the patient priority queues */
-    bool patient_available;                                             /* true = available/not empty, false = unavailable/empty */
+    bool patient_available;                                             /* true = available/not empty, false = unavailable/empty - x_{p,BT} */
     double number;                                                      /* l_{p,BT} */
     double interArrivalTime;                                            /* t_{a,p,BT} */
     double deathTime;                                                   /* t_{d,p,BT} */
@@ -33,7 +33,7 @@ typedef struct patient_waiting_list {
 typedef struct organ_queue {
     BLOOD_TYPE bt;
     organ* queue;               /* head of the organ queue */
-    bool organ_available;       /* true = available, false = unavailable */
+    bool organ_available;       /* true = available, false = unavailable - x_{o,BT}*/
     double number;              /* l_{o,BT} */
     double interArrivalTime;    /* t_{a,o,BT} */
     double renegingTime;        /* t_{r,o,BT} */

@@ -52,7 +52,7 @@ arrival *getArrival(double simulationTime);
  * ORGAN ARRIVAL
  */
 void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank* bank);
-void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
+void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType, organ_bank *bank);
 
 /***
  * PATIENT ARRIVAL
@@ -90,8 +90,8 @@ void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue
  * UTILS
  */
 void decrementOrgans(organ_queue *organQueue, organ_bank *bank);
-void
-decrementPatients(patient_queue_priority *pQueue, patient_queue_blood_type *patientQueueBT, patient_waiting_list *list);
+void incrementOrgans(organ_queue *pQueue, organ_bank *pBank);
+void decrementPatients(patient_queue_priority *pQueue, patient_queue_blood_type *patientQueueBT, patient_waiting_list *list);
 void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
 void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
                    patient_waiting_list *pList);
