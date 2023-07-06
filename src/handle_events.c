@@ -15,7 +15,6 @@ void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodT
 
 void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
 
-void incrementOrgans(organ_queue *pQueue, organ_bank *pBank);
 
 /***
  * Function to handle the arrival of a new organ in a blood type queue of the organ bank
@@ -27,22 +26,18 @@ void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank *bank) {
     switch (bloodType) {
         case O:
             addOrganToQueue(&bank->queues[0], O, bank);
-            malloc_handler(1, (void *[]) {bank->queues[0]});
             printf("Arrived organ with blood type 0\n");
             break;
         case A:
             addOrganToQueue(&bank->queues[1], A, bank);
-            malloc_handler(1, (void *[]) {bank->queues[1]});
             printf("Arrived organ with blood type A\n");
             break;
         case B:
             addOrganToQueue(&bank->queues[2], B, bank);
-            malloc_handler(1, (void *[]) {bank->queues[2]});
             printf("Arrived organ with blood type B\n");
             break;
         case AB:
             addOrganToQueue(&bank->queues[3], AB, bank);
-            malloc_handler(1, (void *[]) {bank->queues[3]});
             printf("Arrived organ with blood type AB\n");
             break;
         default:
@@ -57,7 +52,8 @@ void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank *bank) {
  */
 void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType, organ_bank *bank) {
     if ((*pQueue) == NULL) {
-        (*pQueue) = malloc(sizeof(organ_queue));
+        (*pQueue) = (organ_queue*) malloc(sizeof(organ_queue));
+        malloc_handler(1, (void *[]) {pQueue});
     }
 
     organ_queue *organQueue = (*pQueue);
@@ -72,11 +68,13 @@ void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType, organ_bank *ban
         printf("pointer to queue is NULL: no organs in queue\n");
 
         /* set list head */
-        organQueue->queue = malloc(sizeof(organ));
+        organQueue->queue = (organ*) malloc(sizeof(organ));
+        malloc_handler(1, (void *[]) {organQueue->queue});
         organQueue->queue[0].starting_age = 0; /* Starting age is between 0 and 24 h */ //FIXME substitute rand
 
         /* add new organ */
-        organ *new = malloc(sizeof(organ));
+        organ *new = (organ*) malloc(sizeof(organ));
+        malloc_handler(1, (void *[]) {new});
         organQueue->queue->next = new;
         organQueue->queue->next->starting_age = ((int) rand() % (24-0+1)) + 0; ;
         return;
@@ -88,7 +86,8 @@ void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType, organ_bank *ban
     while (o_queue->next != NULL) {
         o_queue = o_queue->next;
     }
-    o_queue->next = malloc(sizeof(organ));
+    o_queue->next = (organ*) malloc(sizeof(organ));
+    malloc_handler(1, (void *[]) {o_queue->next});
     o_queue->next->starting_age = ((int) rand() % (24-0+1)) + 0;
 }
 
@@ -108,25 +107,21 @@ void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiti
     switch (bloodType) {
         case O:
             addPatientToBloodQueue(&list->blood_type_queues[0], priority);
-            malloc_handler(1, (void *[]) {list->blood_type_queues[0]});
             list->blood_type_queues[0]->bt = bloodType;
             printf("Arrived patient with blood type 0\n");
             break;
         case A:
             addPatientToBloodQueue(&list->blood_type_queues[1], priority);
-            malloc_handler(1, (void *[]) {list->blood_type_queues[1]});
             list->blood_type_queues[1]->bt = bloodType;
             printf("Arrived patient with blood type A\n");
             break;
         case B:
             addPatientToBloodQueue(&list->blood_type_queues[2], priority);
-            malloc_handler(1, (void *[]) {list->blood_type_queues[2]});
             list->blood_type_queues[2]->bt = bloodType;
             printf("Arrived patient with blood type B\n");
             break;
         case AB:
             addPatientToBloodQueue(&list->blood_type_queues[3], priority);
-            malloc_handler(1, (void *[]) {list->blood_type_queues[3]});
             list->blood_type_queues[3]->bt = bloodType;
             printf("Arrived organ with blood type AB\n");
             break;
@@ -143,13 +138,13 @@ void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiti
  */
 void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority) {
     if ((*pQueue) == NULL) {
-        (*pQueue) = malloc(sizeof(patient_queue_blood_type));
+        (*pQueue) = (patient_queue_blood_type*) malloc(sizeof(patient_queue_blood_type));
+        malloc_handler(1, (void *[]) {*pQueue});
     }
     patient_queue_blood_type *blood_queue = (*pQueue);
     switch (priority) {
         case critical:
             addPatientToPriorityQueue(&blood_queue->priority_queue[0], priority);
-            malloc_handler(1, (void *[]) {blood_queue->priority_queue[0]});
             blood_queue->priority_queue[0]->priority = critical;
             /*increment patient to blood queue */
             blood_queue->number++;
@@ -157,7 +152,6 @@ void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority
             break;
         case normal:
             addPatientToPriorityQueue(&blood_queue->priority_queue[1], priority);
-            malloc_handler(1, (void *[]) {blood_queue->priority_queue[1]});
             blood_queue->priority_queue[1]->priority = normal;
             /*increment patient to blood queue */
             blood_queue->number++;
@@ -165,7 +159,6 @@ void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority
             break;
         case low:
             addPatientToPriorityQueue(&blood_queue->priority_queue[2], priority);
-            malloc_handler(1, (void *[]) {blood_queue->priority_queue[2]});
             blood_queue->priority_queue[2]->priority = low;
             /*increment patient to blood queue */
             blood_queue->number++;
@@ -183,7 +176,8 @@ void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority
  */
 void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY priority) {
     if ((*pQueuePriority) == NULL) {
-        (*pQueuePriority) = malloc(sizeof(patient_queue_priority));
+        (*pQueuePriority) = (patient_queue_priority*) malloc(sizeof(patient_queue_priority));
+        malloc_handler(1, (void *[]) {*pQueuePriority});
     }
 
     patient_queue_priority *patient_queue = (*pQueuePriority);
@@ -191,11 +185,13 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
     if (patient_queue->queue == NULL) {
         printf("pointer to queue is NULL: no patients in queue\n");
         /* set list head */
-        patient_queue->queue = malloc(sizeof(patient));
+        patient_queue->queue = (patient*) malloc(sizeof(patient));
+        malloc_handler(1, (void *[]) {patient_queue->queue});
         patient_queue->queue[0].priority = none;
 
         /* add new patient */
-        patient *new = malloc(sizeof(patient));
+        patient *new = (patient*) malloc(sizeof(patient));
+        malloc_handler(1, (void *[]) {new});
         patient_queue->queue->next = new;
         patient_queue->queue->next->priority = priority;
         patient_queue->queue->next->is_active = (int) Random() % 2; //FIXME integrate with probability to be inactive and handle it
@@ -209,7 +205,9 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
     patient *p_queue = patient_queue->queue;
 
     /* Add patient to list - ordering by priority */
-    patient *new = malloc(sizeof(patient));
+    patient *new = (patient*) malloc(sizeof(patient));
+    malloc_handler(1, (void *[]) {new});
+    patient_queue->queue->next = new;
     new->priority = priority;
     new->is_active = (int) Random() % 2; //FIXME integrate with probability to be inactive and handle it
 
@@ -426,27 +424,32 @@ void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_ban
 
 void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
     if ((*pQueue) == NULL) {
-        (*pQueue) = malloc(sizeof(organ_queue));
+        (*pQueue) = (organ_queue *) malloc(sizeof(organ_queue));
+        malloc_handler(1, (void *[]) {pQueue});
         (*pQueue)->bt = bloodType;
     }
 
     if ((*pQueue)->queue == NULL) {
-        (*pQueue)->queue = malloc(sizeof(organ));
+        (*pQueue)->queue = (organ*) malloc(sizeof(organ));
+        malloc_handler(1, (void *[]) {(*pQueue)->queue});
     }
 }
 
 void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType) {
     if ((*pQueue) == NULL) {
-        (*pQueue) = malloc(sizeof(patient_queue_blood_type));
+        (*pQueue) = (patient_queue_blood_type*) malloc(sizeof(patient_queue_blood_type));
+        malloc_handler(1, (void *[]) {pQueue});
         (*pQueue)->bt = bloodType;
     }
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < NUM_PRIORITIES; ++i) {
         if ((*pQueue)->priority_queue[i] == NULL) {
-            (*pQueue)->priority_queue[i] = malloc(sizeof(patient_queue_priority));
+            (*pQueue)->priority_queue[i] = (patient_queue_priority*) malloc(sizeof(patient_queue_priority));
+            malloc_handler(1, (void *[]) {(*pQueue)->priority_queue[i]});
         }
         if ((*pQueue)->priority_queue[i]->queue == NULL) {
-            (*pQueue)->priority_queue[i]->queue = malloc(sizeof(patient));
+            (*pQueue)->priority_queue[i]->queue = (patient*) malloc(sizeof(patient));
+            malloc_handler(1, (void *[]) {(*pQueue)->priority_queue[i]->queue});
         }
         (*pQueue)->priority_queue[i]->priority = (PRIORITY)i+1; // skip default priority
     }
