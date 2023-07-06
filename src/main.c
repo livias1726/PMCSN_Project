@@ -182,11 +182,9 @@ int main(){
     res = ABOCompatible(AB, AB)==true;
     printf("%b\n", res);*/
 
-/*  clean_up(sizeof(organ_bank), (void **) &bank);
-    clean_up(sizeof(patient_waiting_list), (void **) &waiting_list);
-    clean_up(sizeof(activation), (void **) &activation_c);
-    clean_up(sizeof(transplant), (void **) &transplant_c);
-*/
+   /*TODO: fixed cleanup call
+    * clean_up(4, (void *[]) {&bank, &waiting_list, &activation_c, &transplant_c});
+    */
 
     printf("%f\n", bank.total_number);
     printf("%f\n", waiting_list.total_number);
