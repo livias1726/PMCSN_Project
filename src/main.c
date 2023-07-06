@@ -68,8 +68,8 @@ int main(){
     }
 
     /* Matching - ABOIdentical */
-    handleMatching(ABO_Comp, &waiting_list, &bank);
-    //handleMatching(ABO_Id, &waiting_list, &bank);
+    //handleMatching(ABO_Comp, &waiting_list, &bank);
+    handleMatching(ABO_Id, &waiting_list, &bank);
 
     /* patient death */
     //handlePatientDeath(O, low, &waiting_list);

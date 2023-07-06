@@ -45,6 +45,7 @@ typedef struct organ_bank {
 } organ_bank;
 
 typedef struct transplant_center {
+    matched *matched_list;      /* list of the organs matched with patients */
     double total_number;        /* l_{trans} */
     double serviceTime;         /* t_{c,trans} */
 } transplant;

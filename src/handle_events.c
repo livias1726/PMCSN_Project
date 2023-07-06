@@ -11,10 +11,6 @@
 void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
                                  organ_bank *bank);
 
-void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType);
-
-void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
-
 
 /***
  * Function to handle the arrival of a new organ in a blood type queue of the organ bank
@@ -228,16 +224,16 @@ void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank) {
     int num_deleted;
     switch (bloodType) {
         case O:
-            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[0]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[0], bank);
             break;
         case A:
-            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[1]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[1], bank);
             break;
         case B:
-            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[2]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[2], bank);
             break;
         case AB:
-            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[3]);
+            num_deleted = removeExpiredOrgans(bloodType, &bank->queues[3], bank);
             break;
         default:
             num_deleted = 0;
@@ -254,7 +250,7 @@ void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank) {
  * @param bloodType
  * @param pQueue
  */
-int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue) {
+int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *bank) {
     organ *o_queue = (*pQueue)->queue;
     organ *current;
     int index, number_deleted = 0;
@@ -264,7 +260,7 @@ int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue) {
         current = current->next;
         if (current->starting_age >= 24) {
             /* The organ has expired */
-            removeOrgan(index, pQueue, NULL);
+            removeOrgan(index, pQueue, bank);
             printf("An organ has expired in the queue with blood type %d\n", bloodType);
             number_deleted++;
         }
@@ -280,16 +276,16 @@ void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting
     LOSS_REASON reason = death;
     switch (bloodType) {
         case O:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[0]);
+            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[0], NULL);
             break;
         case A:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[1]);
+            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[1], NULL);
             break;
         case B:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[2]);
+            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[2], NULL);
             break;
         case AB:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[3]);
+            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[3], NULL);
             break;
         default:
             break;
@@ -299,21 +295,21 @@ void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting
 /***
  * PATIENT RENEGE
  */
-void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list) {
-    list->total_number = list->total_number - 1;
+void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* waitingList) {
+    waitingList->total_number = waitingList->total_number - 1;
     LOSS_REASON reason = renege;
     switch (bloodType) {
         case O:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[0]);
+            removePatientsFromBloodQueue(reason, priority, &waitingList->blood_type_queues[0], waitingList);
             break;
         case A:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[1]);
+            removePatientsFromBloodQueue(reason, priority, &waitingList->blood_type_queues[1], waitingList);
             break;
         case B:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[2]);
+            removePatientsFromBloodQueue(reason, priority, &waitingList->blood_type_queues[2], waitingList);
             break;
         case AB:
-            removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[3]);
+            removePatientsFromBloodQueue(reason, priority, &waitingList->blood_type_queues[3], waitingList);
             break;
         default:
             break;
@@ -321,26 +317,27 @@ void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waitin
 }
 
 
-void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient_queue_blood_type **pQueue) {
+void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient_queue_blood_type **pQueue,
+                                  patient_waiting_list *patientWaitingList) {
     patient_queue_blood_type *blood_queue = (*pQueue);
-    blood_queue->number = blood_queue->number - 1;
 
     switch (priority) {
         case critical:
-            removePatientsFromPriorityQueue(reason, &blood_queue->priority_queue[0]);
+            removePatientsFromPriorityQueue(reason, &blood_queue->priority_queue[0], blood_queue, patientWaitingList);
             break;
         case normal:
-            removePatientsFromPriorityQueue(reason, &blood_queue->priority_queue[1]);
+            removePatientsFromPriorityQueue(reason, &blood_queue->priority_queue[1], blood_queue, patientWaitingList);
             break;
         case low:
-            removePatientsFromPriorityQueue(reason, &blood_queue->priority_queue[2]);
+            removePatientsFromPriorityQueue(reason, &blood_queue->priority_queue[2], blood_queue, patientWaitingList);
             break;
         default:
             break;
     }
 }
 
-void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority **pQueuePriority) {
+void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
+                                     patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList) {
     patient *priority_queue = (*pQueuePriority)->queue;
     int max_number, index;
 
@@ -348,7 +345,7 @@ void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority 
         /* Handle patient death from priority queue */
         // TODO choose a random job or select a specific patient with id or remove oldest one
         // FIXME now I remove the oldest one
-        removePatient(0, pQueuePriority, NULL, NULL);
+        removePatient(0, pQueuePriority, queueBloodType, waitingList);
         printf("A patient is dead in queue with priority %d\n", priority_queue->priority);
     } else {
         /* Handle patient renege from priority queue */
@@ -356,12 +353,9 @@ void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority 
         // FIXME now I choose a random job
         max_number = (int) (*pQueuePriority)->number-1;
         index = ((int) rand() % (max_number-0+1)) + 0; // FIXME alternative to rand()
-        removePatient(index, pQueuePriority, NULL, NULL);
+        removePatient(index, pQueuePriority, queueBloodType, waitingList);
         printf("A patient left the queue with priority %d\n", priority_queue->priority);
     }
-
-    /* Decrement number of patients in priority queue */
-    (*pQueuePriority)->number = (*pQueuePriority)->number - 1;
 }
 
 /***
@@ -421,7 +415,7 @@ void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue
             // fino a che ci sono organi disponibili
             while (patient_q->priority_queue[0]->number != 0 && organ_q->organ_available) {
                 // fino a che ci sono pazienti critici
-                removeOrgan(0, &organ_q, bank);
+                organ o = removeOrgan(0, &organ_q, bank);
                 removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
             }
 
@@ -516,14 +510,14 @@ void decrementPatients(patient_queue_priority *patientQueuePriority, patient_que
     }
 }
 
-void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
+organ removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
     int i = 0;
     organ *organs = (*pQueue)->queue;
     organ *current = organs;
     organ *prev = current;
     organ *next = current->next;
 
-    while (i < idx) {
+    while (i < idx+1) {
         prev = current;
         current = current->next;
         next = current->next;
@@ -532,9 +526,12 @@ void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
 
     prev->next = next;
     decrementOrgans((*pQueue), bank);
+    /* detach removed organ from the other organs in queue */
+    current->next = NULL;
+    return *current;
 }
 
-void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
+patient removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
                    patient_waiting_list *pList) {
     int i = 0;
     patient *patients = (*pQueue)->queue;
@@ -542,7 +539,7 @@ void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood
     patient *prev = current;
     patient *next = current->next;
 
-    while (i < idx) {
+    while (i < idx+1) {
         prev = current;
         current = current->next;
         next = current->next;
@@ -551,6 +548,7 @@ void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood
 
     prev->next = next;
     decrementPatients((*pQueue), pQueueBT, pList);
+    return *current;
 }
 
 double handle_transplant() { return 0; };

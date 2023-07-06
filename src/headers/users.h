@@ -14,4 +14,9 @@ typedef struct organ {
     struct organ *next;
 } organ;
 
+typedef struct matched {    /* this is a struct that represents the organs that were matched with a patient */
+    organ organ;
+    patient patient;
+} matched;
+
 #endif //PMCSN_PROJECT_USERS_H
