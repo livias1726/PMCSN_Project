@@ -148,19 +148,24 @@ int main(){
     res = ABOCompatible(AB, AB)==true;
     printf("%b\n", res);*/
 
-   /*TODO: fixed cleanup call
-    * clean_up(4, (void *[]) {&bank, &waiting_list, &activation_c, &transplant_c});
-    */
-
     printf("%f\n", bank.total_number);
     printf("%f\n", waiting_list.total_number);
 
+    /* TODO: changed cleanup in a macro that handles those as well
     for (int i = 0; i < NUM_ORGAN_QUEUES; ++i) {
         free(bank.queues[i]);
     }
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         free(waiting_list.blood_type_queues[i]);
     }
+     */
+
+    //TODO: NON SO SE FUNZIONERA'
+    CLEANUP(NUM_ORGAN_QUEUES, bank.queues)
+    CLEANUP(NUM_BLOOD_TYPES, waiting_list.blood_type_queues)
+
+    void ** tmp = {&bank, &waiting_list, &activation_c, &transplant_c};
+    CLEANUP(4, tmp)
 
 
     // ---------------------------------------------------- Simulation -----------------------------------------------
@@ -175,8 +180,8 @@ int main(){
         exit(-1);
     }
 
-    out_stats = (stats*) malloc(sizeof(stats));
-    malloc_handler(1, (void*[]){out_stats});
+    out_stats = malloc(sizeof(stats));
+    MALLOC_HANDLER(out_stats)
 
     PlantSeeds(SEED);
 

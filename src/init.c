@@ -3,39 +3,39 @@
 bool check_init(void *p) {
     if (p != NULL) {
         return true;
-    } else {
-        return false;
     }
+
+    return false;
 }
 
 void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
     if ((*pQueue) == NULL) {
-        (*pQueue) = (organ_queue *) malloc(sizeof(organ_queue));
-        malloc_handler(1, (void *[]) {pQueue});
+        (*pQueue) = malloc(sizeof(organ_queue));
+        MALLOC_HANDLER(*pQueue)
         (*pQueue)->bt = bloodType;
     }
 
     if ((*pQueue)->queue == NULL) {
-        (*pQueue)->queue = (organ*) malloc(sizeof(organ));
-        malloc_handler(1, (void *[]) {(*pQueue)->queue});
+        (*pQueue)->queue = malloc(sizeof(organ));
+        MALLOC_HANDLER((*pQueue)->queue)
     }
 }
 
 void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType) {
     if ((*pQueue) == NULL) {
-        (*pQueue) = (patient_queue_blood_type*) malloc(sizeof(patient_queue_blood_type));
-        malloc_handler(1, (void *[]) {pQueue});
+        (*pQueue) = malloc(sizeof(patient_queue_blood_type));
+        MALLOC_HANDLER(pQueue)
         (*pQueue)->bt = bloodType;
     }
 
     for (int i = 0; i < NUM_PRIORITIES; ++i) {
         if ((*pQueue)->priority_queue[i] == NULL) {
-            (*pQueue)->priority_queue[i] = (patient_queue_priority*) malloc(sizeof(patient_queue_priority));
-            malloc_handler(1, (void *[]) {(*pQueue)->priority_queue[i]});
+            (*pQueue)->priority_queue[i] = malloc(sizeof(patient_queue_priority));
+            MALLOC_HANDLER((*pQueue)->priority_queue[i])
         }
         if ((*pQueue)->priority_queue[i]->queue == NULL) {
-            (*pQueue)->priority_queue[i]->queue = (patient*) malloc(sizeof(patient));
-            malloc_handler(1, (void *[]) {(*pQueue)->priority_queue[i]->queue});
+            (*pQueue)->priority_queue[i]->queue = malloc(sizeof(patient));
+            MALLOC_HANDLER((*pQueue)->priority_queue[i]->queue);
         }
         (*pQueue)->priority_queue[i]->priority = (PRIORITY)i+1; // skip default priority
     }
