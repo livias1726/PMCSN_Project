@@ -57,18 +57,3 @@ void print_output_stats(stats* mean, stats* variance, stats* out_stats){
 
   //  printf("\t<Param> <Node>: %lf +_ %lf \n", mean->param_node, GET_CONF(variance->param_node, NUM_ITER, criticalValue));
 }
-
-void malloc_handler(int size, void **p) {
-    for(int i=0; i<size; i++){
-        if(p[i] == NULL){
-            fprintf(stderr, "Malloc failed.\n");
-            exit(-1);
-        }
-    }
-}
-
-void clean_up(int size, void **p){
-    for(int i=0; i<size; i++){
-        free(p[i]);
-    }
-}

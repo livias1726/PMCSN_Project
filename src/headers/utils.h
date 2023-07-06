@@ -14,6 +14,18 @@
 #include "../../lib/rvms.h"
 #define NUM_ITER 100
 #define SEED 123456789
-void malloc_handler(int, void**);
-void clean_up(int, void**);
+
+#define MALLOC_HANDLER(p) \
+    if(p == NULL){ \
+        fprintf(stderr, "Malloc failed.\n"); \
+        exit(-1); \
+    }
+
+#define CLEANUP(size, list) \
+    do{                     \
+        for(int i=0; i<size; ++i){\
+            free(list[i]);\
+        }               \
+    }while(0);
+
 #endif //PMCSN_PROJECT_UTILS_H
