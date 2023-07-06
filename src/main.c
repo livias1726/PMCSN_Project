@@ -7,40 +7,6 @@
 double simulation_time = START;
 
 
-
-// Functions to initialize structs where to recover statistics for each center of the model
-patient_waiting_list initialize_waiting_list() {
-    patient_waiting_list waitingList;
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        waitingList.blood_type_queues[i] = NULL;
-    }
-    waitingList.total_number = 0.0;
-    return waitingList;
-}
-
-organ_bank initialize_organ_bank() {
-    organ_bank organBank;
-    for (int i = 0; i < NUM_ORGAN_QUEUES; ++i) {
-        organBank.queues[i] = NULL;
-    }
-    organBank.total_number = 0.0;
-    return organBank;
-}
-
-transplant initialize_transplant_center() {
-    transplant transplantCenter;
-    transplantCenter.total_number = 0.0;
-    transplantCenter.serviceTime = 0.0;
-    return transplantCenter;
-}
-
-activation initialize_activation_center() {
-    activation activationCenter;
-    activationCenter.total_number = 0.0;
-    activationCenter.serviceTime = 0.0;
-    return activationCenter;
-}
-
 int main(){
     // ---------------------------------------------- Intro --------------------------------------------------------
     printf("NICE HEADER IF WE WANT\n");

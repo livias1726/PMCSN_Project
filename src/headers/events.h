@@ -57,9 +57,10 @@ void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType, organ_bank *ban
 /***
  * PATIENT ARRIVAL
  */
-void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
-void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority);
-void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY priority);
+void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list *list);
+void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority, patient_waiting_list *list);
+void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY priority, patient_waiting_list *list,
+                               patient_queue_blood_type *queueBloodType);
 
 /***
  * ORGAN RENEGE
@@ -91,6 +92,7 @@ void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue
  */
 void decrementOrgans(organ_queue *organQueue, organ_bank *bank);
 void incrementOrgans(organ_queue *pQueue, organ_bank *pBank);
+void incrementPatients(patient_queue_priority *pPriority, patient_queue_blood_type *pType, patient_waiting_list *pList);
 void decrementPatients(patient_queue_priority *pQueue, patient_queue_blood_type *patientQueueBT, patient_waiting_list *list);
 void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
 void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,

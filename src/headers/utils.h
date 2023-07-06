@@ -9,11 +9,11 @@
 #include "stats.h"
 #include "allocation.h"
 #include "events.h"
+#include "init.h"
 #include "../../lib/rngs.h"
 #include "../../lib/rvms.h"
 #define NUM_ITER 100
 #define SEED 123456789
 void malloc_handler(int, void**);
 void clean_up(int, void**);
-bool check_init(void*);
 #endif //PMCSN_PROJECT_UTILS_H

@@ -72,11 +72,3 @@ void clean_up(int size, void **p){
         free(p[i]);
     }
 }
-
-bool check_init(void *p) {
-    if (p != NULL) {
-        return true;
-    } else {
-        return false;
-    }
-}
