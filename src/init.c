@@ -1,12 +1,5 @@
 #include "headers/utils.h"
 
-bool check_init(void *p) {
-    if (p != NULL) {
-        return true;
-    }
-
-    return false;
-}
 
 void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
     if ((*pQueue) == NULL) {
@@ -35,7 +28,7 @@ void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodT
         }
         if ((*pQueue)->priority_queue[i]->queue == NULL) {
             (*pQueue)->priority_queue[i]->queue = malloc(sizeof(patient));
-            MALLOC_HANDLER((*pQueue)->priority_queue[i]->queue);
+            MALLOC_HANDLER((*pQueue)->priority_queue[i]->queue)
         }
         (*pQueue)->priority_queue[i]->priority = (PRIORITY)i+1; // skip default priority
     }

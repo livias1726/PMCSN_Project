@@ -1,7 +1,6 @@
 #ifndef PMCSN_PROJECT_INIT_H
 #define PMCSN_PROJECT_INIT_H
 
-bool check_init(void*);
 void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType);
 void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType);
 
