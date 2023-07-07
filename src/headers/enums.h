@@ -9,12 +9,25 @@ typedef enum blood_type {
     AB
 } BLOOD_TYPE;
 
+static const char * const bt_to_str[] = {
+    [O] = "0",
+    [A] = "A",
+    [B] = "B",
+    [AB] = "AB"
+};
+
 typedef enum priority {
     none,
-    critical=1,
-    normal=2,
-    low=3
+    critical=0,
+    normal=1,
+    low=2
 } PRIORITY;
+
+static const char * const prio_to_str[] = {
+    [critical] = "critical",
+    [normal] = "normal",
+    [low] = "low",
+};
 
 typedef enum policy {
     ABO_Id,

@@ -45,7 +45,26 @@ void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodT
 patient_waiting_list initialize_waiting_list() {
     patient_waiting_list waitingList;
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        waitingList.blood_type_queues[i] = NULL;
+        waitingList.blood_type_queues[i] = malloc(sizeof(patient_queue_blood_type));
+        MALLOC_HANDLER(waitingList.blood_type_queues[i])
+
+        waitingList.blood_type_queues[i]->bt = i;
+        waitingList.blood_type_queues[i]->number = 0.0;
+
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            waitingList.blood_type_queues[i]->priority_queue[j] = malloc(sizeof(patient_queue_priority));
+            MALLOC_HANDLER(waitingList.blood_type_queues[i]->priority_queue[j])
+
+            waitingList.blood_type_queues[i]->priority_queue[j]->number = 0.0;
+            waitingList.blood_type_queues[i]->priority_queue[j]->priority = j;
+
+            waitingList.blood_type_queues[i]->priority_queue[j]->queue = malloc(sizeof(patient));
+            MALLOC_HANDLER(waitingList.blood_type_queues[i]->priority_queue[j]->queue)
+
+            waitingList.blood_type_queues[i]->priority_queue[j]->queue->priority = none;
+            waitingList.blood_type_queues[i]->priority_queue[j]->queue->is_active = none;
+            waitingList.blood_type_queues[i]->priority_queue[j]->queue->next = NULL;
+        }
     }
     waitingList.total_number = 0.0;
     return waitingList;
@@ -53,9 +72,18 @@ patient_waiting_list initialize_waiting_list() {
 
 organ_bank initialize_organ_bank() {
     organ_bank organBank;
+
     for (int i = 0; i < NUM_ORGAN_QUEUES; ++i) {
-        organBank.queues[i] = NULL;
+        organBank.queues[i] = malloc(sizeof(organ_queue));
+        MALLOC_HANDLER(organBank.queues[i])
+        organBank.queues[i]->bt = i;
+        organBank.queues[i]->number = 0.0;
+
+        organBank.queues[i]->queue = malloc(sizeof(organ));
+        MALLOC_HANDLER(organBank.queues[i]->queue)
+        organBank.queues[i]->queue->next = NULL;
     }
+
     organBank.total_number = 0.0;
     return organBank;
 }

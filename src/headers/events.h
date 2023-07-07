@@ -52,7 +52,7 @@ arrival *getArrival(double simulationTime);
  * ORGAN ARRIVAL
  */
 void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank* bank);
-void addOrganToQueue(organ_queue **pQueue, BLOOD_TYPE bloodType, organ_bank *bank);
+void addOrganToQueue(organ_queue **pQueue, organ_bank *bank);
 
 /***
  * PATIENT ARRIVAL

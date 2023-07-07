@@ -28,4 +28,8 @@
         }               \
     }while(0);
 
+#define GET_LAST_NODE(head, prev) \
+    prev = head;                              \
+    while(prev->next != NULL) prev = prev->next;
+
 #endif //PMCSN_PROJECT_UTILS_H

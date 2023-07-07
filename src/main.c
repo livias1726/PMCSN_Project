@@ -23,10 +23,13 @@ int main(){
     model = "Base";
 #endif
     printf("Simulation %s %s model\n\n", simulation, model);
+
+    // Initialize system
     patient_waiting_list waiting_list = initialize_waiting_list();
     organ_bank bank = initialize_organ_bank();
     activation activation_c = initialize_activation_center();
     transplant transplant_c = initialize_transplant_center();
+
 
     /* new organ arrival */
     for (int i = 0; i < 6; ++i) {
@@ -151,20 +154,11 @@ int main(){
     printf("%f\n", bank.total_number);
     printf("%f\n", waiting_list.total_number);
 
-    /* TODO: changed cleanup in a macro that handles those as well
-    for (int i = 0; i < NUM_ORGAN_QUEUES; ++i) {
-        free(bank.queues[i]);
-    }
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        free(waiting_list.blood_type_queues[i]);
-    }
-     */
-
-    //TODO: NON SO SE FUNZIONERA'
+    // TODO: changed cleanup in a macro
     CLEANUP(NUM_ORGAN_QUEUES, bank.queues)
     CLEANUP(NUM_BLOOD_TYPES, waiting_list.blood_type_queues)
 
-    void ** tmp = {&bank, &waiting_list, &activation_c, &transplant_c};
+    void* tmp[] = {&bank, &waiting_list, &activation_c, &transplant_c};
     CLEANUP(4, tmp)
 
 
