@@ -366,42 +366,29 @@ void decrementPatients(patient_queue_priority *patientQueuePriority, patient_que
 }
 
 organ removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
-    int i = 0;
     organ *organs = (*pQueue)->queue;
     organ *current = organs;
     organ *prev = current;
     organ *next = current->next;
 
-    while (i < idx+1) {
-        prev = current;
-        current = current->next;
-        next = current->next;
-        i++;
-    }
+    REMOVE_MID_NODE(idx, organs, current, prev, next)
 
-    prev->next = next;
     decrementOrgans((*pQueue), bank);
-    /* detach removed organ from the other organs in queue */
+    // detach removed organ from the other organs in queue
     current->next = NULL;
     return *current;
 }
 
 patient removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
                    patient_waiting_list *pList) {
-    int i = 0;
+
     patient *patients = (*pQueue)->queue;
     patient *current = patients;
     patient *prev = current;
     patient *next = current->next;
 
-    while (i < idx+1) {
-        prev = current;
-        current = current->next;
-        next = current->next;
-        i++;
-    }
+    REMOVE_MID_NODE(idx, patients, current, prev, next)
 
-    prev->next = next;
     decrementPatients((*pQueue), pQueueBT, pList);
     return *current;
 }
