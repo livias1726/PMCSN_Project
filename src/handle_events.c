@@ -216,11 +216,13 @@ void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority 
 /***
  * MATCHING
  */
+//TODO: this function and the other three can be merged in a single function if the allocation
+// policy is used as a compilation flag
 void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_bank *bank) {
-    int patient_queues;
-    patient_queue_blood_type *patient_qs[] = {pWaitingList->blood_type_queues[0], pWaitingList->blood_type_queues[1],
-                                        pWaitingList->blood_type_queues[2], pWaitingList->blood_type_queues[3]};
-    organ_queue *organ_qs[] = {bank->queues[0], bank->queues[1], bank->queues[2], bank->queues[3]};
+    patient_queue_blood_type **patient_qs = pWaitingList->blood_type_queues;
+    organ_queue **organ_qs = bank->queues;
+
+    //TODO: I don't think this will ever happen when queues are allocated at initialization time
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         if (patient_qs[i] == NULL) {
             initializePatientQueue(&patient_qs[i], (BLOOD_TYPE)i);
@@ -263,59 +265,44 @@ void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_ban
     }
 }
 
+void handleMatchingInternal(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
+                            organ_bank *bank){
+    while (organ_q->organ_available && patient_q->number > 0) {
+        // fino a che ci sono organi disponibili
+        while (patient_q->priority_queue[critical]->number != 0 && organ_q->organ_available) {
+            // fino a che ci sono pazienti critici
+            removeOrgan(0, &organ_q, bank);
+            removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
+        }
+
+        while (patient_q->priority_queue[normal]->number != 0 && organ_q->organ_available) {
+            // fino a che ci sono pazienti normali
+            removeOrgan(0, &organ_q, bank);
+            removePatient(0, &patient_q->priority_queue[1], patient_q, pList);
+        }
+
+        while (patient_q->priority_queue[low]->number != 0 && organ_q->organ_available) {
+            // fino a che ci sono pazienti low
+            removeOrgan(0, &organ_q, bank);
+            removePatient(0, &patient_q->priority_queue[2], patient_q, pList);
+        }
+    }
+}
+
+//TODO: is it necessary to check for compatibility if the calls have been filtered in the switch?
 void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
                                 organ_bank *bank) {
-    if (ABOIdentical(organ_q->bt, patient_q->bt)) {
-        while (organ_q->organ_available && patient_q->number > 0) {
-            // fino a che ci sono organi disponibili
-            while (patient_q->priority_queue[0]->number != 0 && organ_q->organ_available) {
-                // fino a che ci sono pazienti critici
-                organ o = removeOrgan(0, &organ_q, bank);
-                removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
-            }
-
-            while (patient_q->priority_queue[1]->number != 0 && organ_q->organ_available) {
-                // fino a che ci sono pazienti normali
-                removeOrgan(0, &organ_q, bank);
-                removePatient(0, &patient_q->priority_queue[1], patient_q, pList);
-            }
-
-            while (patient_q->priority_queue[2]->number != 0 && organ_q->organ_available) {
-                // fino a che ci sono pazienti low
-                removeOrgan(0, &organ_q, bank);
-                removePatient(0, &patient_q->priority_queue[2], patient_q, pList);
-            }
-        }
+    if (IDENTICAL(organ_q->bt, patient_q->bt)) {
+        handleMatchingInternal(patient_q, organ_q, pList, bank);
     }
 }
 
 void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
                                  organ_bank *bank) {
-    if (ABOCompatible(organ_q->bt, patient_q->bt)) {
-        while (organ_q->organ_available && patient_q->number > 0) {
-            // fino a che ci sono organi disponibili
-            while (patient_q->priority_queue[0]->number != 0 && organ_q->organ_available) {
-                // fino a che ci sono pazienti critici
-                removeOrgan(0, &organ_q, bank);
-                removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
-            }
-
-            while (patient_q->priority_queue[1]->number != 0 && organ_q->organ_available) {
-                // fino a che ci sono pazienti normali
-                removeOrgan(0, &organ_q, bank);
-                removePatient(0, &patient_q->priority_queue[1], patient_q, pList);
-            }
-
-            while (patient_q->priority_queue[2]->number != 0 && organ_q->organ_available) {
-                // fino a che ci sono pazienti low
-                removeOrgan(0, &organ_q, bank);
-                removePatient(0, &patient_q->priority_queue[2], patient_q, pList);
-            }
-        }
+    if (COMPATIBLE(organ_q->bt, patient_q->bt)) {
+        handleMatchingInternal(patient_q, organ_q, pList, bank);
     }
-
 }
-
 
 /***
  * UTILS

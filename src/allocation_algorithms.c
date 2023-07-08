@@ -10,6 +10,7 @@
  * @param patient_type
  * @return
  */
+
 bool ABOCompatible(BLOOD_TYPE organ_type, BLOOD_TYPE patient_type) {
     if (organ_type == O) {
         return true;
