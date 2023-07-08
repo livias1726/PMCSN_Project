@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include "headers/utils.h"
 
 #define START 0.0                      /* initial time                   */
@@ -8,7 +9,9 @@ double simulation_time = START;
 
 
 int main(){
+
     // ---------------------------------------------- Intro --------------------------------------------------------
+
     printf("NICE HEADER IF WE WANT\n");
     char *simulation, *model;
 #ifdef FINITE_HORIZON
@@ -24,14 +27,19 @@ int main(){
 #endif
     printf("Simulation %s %s model\n\n", simulation, model);
 
-    // Initialize system
+    // ------------------------------------------------------- Initialization --------------------------------------
+
     patient_waiting_list waiting_list = initialize_waiting_list();
     organ_bank bank = initialize_organ_bank();
     activation activation_c = initialize_activation_center();
     transplant transplant_c = initialize_transplant_center();
 
+    // ----------------------------------------------------- Test -----------------------------------------------------
 
-    /* new organ arrival */
+    /* TEST: EVENT: new organ arrival
+     *  -> test with: 6 organs per each blood type
+     *  -> total: 24 organs
+     *  */
     for (int i = 0; i < 6; ++i) {
         handleOrganArrival(O, &bank);
         handleOrganArrival(A, &bank);
@@ -48,8 +56,12 @@ int main(){
     handleOrganRenege(B, &bank);
     handleOrganRenege(AB, &bank);*/
 
-    /* new patient arrival */
-    /*for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
+    /* TEST: EVENT: new patient arrival
+     *  -> test with: (14 critical, 20 normal, 50 low) per each blood type
+     *  -> total: 56 critical, 80 normal, 200 low
+     *  -> 336
+     *  */
+    for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
         for (int i = 0; i < 14; ++i) {
             handlePatientArrival(b, critical, &waiting_list);
         }
@@ -59,20 +71,17 @@ int main(){
         for (int i = 0; i < 50; ++i) {
             handlePatientArrival(b, low, &waiting_list);
         }
-    }*/
-    for (int i = 0; i < 14; ++i) {
-        handlePatientArrival(O, critical, &waiting_list);
-    }
-    for (int i = 0; i < 20; ++i) {
-        handlePatientArrival(O, normal, &waiting_list);
-    }
-    for (int i = 0; i < 50; ++i) {
-        handlePatientArrival(O, low, &waiting_list);
     }
 
-    /* Matching - ABOIdentical */
-    //handleMatching(ABO_Comp, &waiting_list, &bank);
-    handleMatching(ABO_Id, &waiting_list, &bank);
+    /* Matching */
+    time_t start, end;
+    start = clock();
+
+    //handleMatching(ABO_Id, &waiting_list, &bank);
+    handleMatching(ABO_Comp, &waiting_list, &bank);
+
+    end = clock();
+    time_t res = (end - start) / CLOCKS_PER_SEC;
 
     /* patient death */
     //handlePatientDeath(O, low, &waiting_list);
@@ -83,86 +92,14 @@ int main(){
     /* organ renege */
     //handleOrganRenege(O, &bank);
 
-    /*bool res;
-    res = ABOIdentical(O, O)==true;
-    printf("%b\n", res);
-    res = ABOIdentical(O, A)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(O, AB)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(O, B)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(A, O)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(A, A)==true;
-    printf("%b\n", res);
-    res = ABOIdentical(A, B)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(A, AB)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(B, O)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(B, A)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(B, B)==true;
-    printf("%b\n", res);
-    res = ABOIdentical(B, AB)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(AB, O)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(AB, A)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(AB, B)==false;
-    printf("%b\n", res);
-    res = ABOIdentical(AB, AB)==true;
-    printf("%b\n", res);*/
-
-    /* ABO compatible */
-   /* res = ABOCompatible(O, O)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(O, A)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(O, AB)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(O, B)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(A, O)==false;
-    printf("%b\n", res);
-    res = ABOCompatible(A, A)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(A, B)==false;
-    printf("%b\n", res);
-    res = ABOCompatible(A, AB)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(B, O)==false;
-    printf("%b\n", res);
-    res = ABOCompatible(B, A)==false;
-    printf("%b\n", res);
-    res = ABOCompatible(B, B)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(B, AB)==true;
-    printf("%b\n", res);
-    res = ABOCompatible(AB, O)==false;
-    printf("%b\n", res);
-    res = ABOCompatible(AB, A)==false;
-    printf("%b\n", res);
-    res = ABOCompatible(AB, B)==false;
-    printf("%b\n", res);
-    res = ABOCompatible(AB, AB)==true;
-    printf("%b\n", res);*/
-
-    printf("%f\n", bank.total_number);
-    printf("%f\n", waiting_list.total_number);
-
-    // TODO: changed cleanup in a macro
-    CLEANUP(NUM_ORGAN_QUEUES, bank.queues)
-    CLEANUP(NUM_BLOOD_TYPES, waiting_list.blood_type_queues)
-
-    void* tmp[] = {&bank, &waiting_list, &activation_c, &transplant_c};
-    CLEANUP(4, tmp)
-
+    printf("Test should have an outcome of 0 organs in queue and 312 patients in queue\n");
+    printf("Results: \n"
+           "\tOrgans in queue: %f\n"
+           "\tPatients in queue: %f\n"
+           "\tTime: %jd\n", bank.total_number, waiting_list.total_number, (intmax_t)res);
 
     // ---------------------------------------------------- Simulation -----------------------------------------------
+
 #ifdef FINITE_HORIZON
     stats *out_stats = NULL; // doubles should be zero-initialized by default
     FILE *stats_file, *samples_file;
@@ -190,10 +127,16 @@ int main(){
 
     fclose(stats_file);
     fclose(samples_file);
-
 #else
     // TODO: call the IH simulation
 #endif
 
+    // ----------------------------------------------- Clean up -----------------------------------------------------
+
+    CLEANUP(NUM_ORGAN_QUEUES, bank.queues)
+    CLEANUP(NUM_BLOOD_TYPES, waiting_list.blood_type_queues)
+
+    void* tmp[] = {&bank, &waiting_list, &activation_c, &transplant_c};
+    CLEANUP(4, tmp)
 }
 

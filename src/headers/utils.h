@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+#include <time.h>
 #include "enums.h"
 #include "model.h"
 #include "stats.h"

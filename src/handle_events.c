@@ -325,7 +325,7 @@ void decrementOrgans(organ_queue *organQueue, organ_bank *bank) {
     }
     if (organQueue->number == 0) {
         organQueue->organ_available = false;
-        printf("No organs left in queue with blood type %d\n", organQueue->bt);
+        printf("No organs left in queue with blood type %s\n", bt_to_str[organQueue->bt]);
     }
 }
 
