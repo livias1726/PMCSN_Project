@@ -248,7 +248,7 @@ void handleMatchingInternal(patient_queue_blood_type *patient_q, organ_queue *or
 bool handleMatchingFromPatient(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list *wl, organ_bank* bank) {
 
     bool found = false;
-    BLOOD_TYPE usedOrganIdx = bt;
+    BLOOD_TYPE avbOrganBt = bt;
     organ_queue **organQueues = bank->queues;
 
 #ifdef ABO_ID
@@ -258,7 +258,7 @@ bool handleMatchingFromPatient(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list 
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         if ((organQueues[i]->number != 0) && (COMPATIBLE(i, bt))) {
-            usedOrganIdx = i;
+            avbOrganBt = i;
             found = true;
             break;
         }
@@ -267,7 +267,7 @@ bool handleMatchingFromPatient(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list 
     if (!found) return found;
 #endif
 
-    handleTransplantFromPatient(bt, bank);
+    handleTransplantFromPatient(avbOrganBt, bank);
     return found;
 }
 
@@ -275,23 +275,43 @@ bool handleMatchingFromPatient(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list 
  * Upon the arrival of a new organ, this function search for a compatible patient in queue to allocate the organ to.
  * If the patient is found, the organ is transplanted without inserting it in the organ bank and the patient is removed.
  * */
+ // TODO: to be reviewed (ME FA SCHIFO MESSA COSI)
 bool handleMatchingFromOrgan(BLOOD_TYPE bt, patient_waiting_list *wl) {
 
     BLOOD_TYPE avbPatientBt = bt;
+    PRIORITY avbPatientPr;
+    bool found = false;
 
 #ifdef ABO_ID
-    if (wl->blood_type_queues[bt]->number == 0) return false; // no patient in list for a ABO_identical transplant
-#else
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        if ((wl->blood_type_queues[i]->number != 0) && COMPATIBLE(i, bt)) {
-            avbPatientBt = i;
+    if (wl->blood_type_queues[bt]->number == 0) return found; // no patient in list for a ABO_identical transplant
+    found = true;
+    for (int i = 0; i < NUM_PRIORITIES; ++i) {
+        if ((wl->blood_type_queues[bt]->priority_queue[i]->number != 0)) {
+            avbPatientPr = i;
             break;
         }
     }
+#else
+    const BLOOD_TYPE *comp = get_compatible_patient[bt];
+    const int size = get_num_compatible_patients[bt];
+
+    for (int i = 0; i < NUM_PRIORITIES; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if ((wl->blood_type_queues[comp[j]]->priority_queue[i]->number != 0)) {
+                avbPatientBt = comp[j];
+                avbPatientPr = i;
+                found = true;
+                break;
+            }
+        }
+        if (found) break;
+    }
+
+    if(!found) return found;
 #endif
 
-    handleTransplantFromOrgan(avbPatientBt, wl);
-    return true;
+    handleTransplantFromOrgan(avbPatientBt, avbPatientPr, wl);
+    return found;
 }
 
 // ------------------------------------------------------- TO CHECK -----------------------------------
@@ -363,16 +383,9 @@ void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queu
  * ------------------------------------------------- Transplant -----------------------------------------------------------
  */
 
-void handleTransplantFromOrgan(BLOOD_TYPE bt, patient_waiting_list *wl){ //TODO: temporary DUMMY transplant handling
+void handleTransplantFromOrgan(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list *wl){ //TODO: temporary DUMMY transplant handling
 
-    patient_queue_blood_type *patientsQueues = wl->blood_type_queues[bt];
-
-    for (int p = 0; p < NUM_PRIORITIES; ++p) {
-        if (patientsQueues->priority_queue[p]->number != 0) {
-            removePatient(0, &patientsQueues->priority_queue[p], patientsQueues, wl);
-            return;
-        }
-    }
+    removePatient(0, &wl->blood_type_queues[bt]->priority_queue[pr], wl->blood_type_queues[bt], wl);
 }
 
 void handleTransplantFromPatient(BLOOD_TYPE bt, organ_bank *bank){ //TODO: temporary DUMMY transplant handling
@@ -430,30 +443,34 @@ void decrementPatients(patient_queue_priority *patientQueuePriority, patient_que
     }
 }
 
-organ removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
-    organ *organs = (*pQueue)->queue;
-    organ *current = organs;
-    organ *prev = current;
-    organ *next = current->next;
+void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
 
-    REMOVE_MID_NODE(idx, organs, current, prev, next)
+    organ *prev = NULL;
+    organ *current = (*pQueue)->queue; //head
+    organ *next = current->next; //first organ
+
+    REMOVE_MID_NODE(idx, current, prev, next);
 
     decrementOrgans((*pQueue), bank);
-    // detach removed organ from the other organs in queue
-    current->next = NULL;
-    return *current;
 }
 
-patient removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
+void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
                    patient_waiting_list *pList) {
 
-    patient *patients = (*pQueue)->queue;
-    patient *current = patients;
-    patient *prev = current;
+    patient *prev = NULL;
+    patient *current = (*pQueue)->queue;
     patient *next = current->next;
 
-    REMOVE_MID_NODE(idx, patients, current, prev, next)
+    int i = 0;
+    while (i < idx+1) {
+        prev = current;
+        current = next;
+        next = current->next;
+        i++;
+    }
+    prev->next = next;
+    free(current);
+    //REMOVE_MID_NODE(idx, current, prev, next);
 
     decrementPatients((*pQueue), pQueueBT, pList);
-    return *current;
 }

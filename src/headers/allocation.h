@@ -7,6 +7,20 @@
 #define IDENTICAL(o, p) (o == p)
 #define COMPATIBLE(o, p) IDENTICAL(o,p) || (o == O) || (p == AB && (o == A || o == B))
 
+static const BLOOD_TYPE* const get_compatible_patient[] = {
+        [O] = (BLOOD_TYPE[]){O, A, B, AB},
+        [A] = (BLOOD_TYPE[]){A, AB},
+        [B] = (BLOOD_TYPE[]){B, AB},
+        [AB] = (BLOOD_TYPE[]){AB}
+};
+
+static const int get_num_compatible_patients[] = {
+        [O] = 4,
+        [A] = 2,
+        [B] = 2,
+        [AB] = 1
+};
+
 bool ABOCompatible(BLOOD_TYPE organ_type, BLOOD_TYPE patient_type);
 bool ABOIdentical(BLOOD_TYPE organ_type, BLOOD_TYPE patient_type);
 #endif //PMCSN_PROJECT_ALLOCATION_H

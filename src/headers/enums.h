@@ -17,10 +17,10 @@ static const char * const bt_to_str[] = {
 };
 
 typedef enum priority {
-    none,
     critical=0,
-    normal=1,
-    low=2
+    normal,
+    low,
+    none
 } PRIORITY;
 
 static const char * const prio_to_str[] = {

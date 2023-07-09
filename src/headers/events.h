@@ -97,7 +97,7 @@ void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queu
  * TRANSPLANT
  */
 void handleTransplant();
-void handleTransplantFromOrgan(BLOOD_TYPE bt, patient_waiting_list *wl); //DUMMY
+void handleTransplantFromOrgan(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list *wl); //DUMMY
 void handleTransplantFromPatient(BLOOD_TYPE bt, organ_bank *bank); //DUMMY
 
 /***
@@ -112,8 +112,8 @@ void decrementOrgans(organ_queue *organQueue, organ_bank *bank);
 void incrementOrgans(organ_queue *pQueue, organ_bank *pBank);
 void incrementPatients(patient_queue_priority *pPriority, patient_queue_blood_type *pType, patient_waiting_list *pList);
 void decrementPatients(patient_queue_priority *pQueue, patient_queue_blood_type *patientQueueBT, patient_waiting_list *list);
-organ removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
-patient removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
+void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
+void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
                    patient_waiting_list *pList);
 
 #endif

@@ -55,7 +55,7 @@ patient_waiting_list initialize_waiting_list() {
             MALLOC_HANDLER(waitingList.blood_type_queues[i]->priority_queue[j]->queue)
 
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->priority = none;
-            waitingList.blood_type_queues[i]->priority_queue[j]->queue->is_active = none;
+            waitingList.blood_type_queues[i]->priority_queue[j]->queue->is_active = false;
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->next = NULL;
         }
     }

@@ -36,14 +36,19 @@ int main(){
 
     // ----------------------------------------------------- Test -----------------------------------------------------
 
+    int patients_arrived = 0;
+    int organs_arrived = 0;
+
     srand(time(NULL));   // Initialization, should only be called once.
     int r_event = rand(), r_bt = rand(), r_pr = rand();
 
     for (int i = 0; i < 100; ++i) {
-        if (r_event % 2 == 0) {
+        if (r_event % 3 != 0) { // more patient arrivals
             handlePatientArrival(r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &bank);
+            patients_arrived++;
         } else {
             handleOrganArrival(r_bt % NUM_BLOOD_TYPES, &waiting_list, &bank);
+            organs_arrived++;
         }
 
         r_event = rand();
@@ -126,10 +131,43 @@ int main(){
            "\tOrgans in queue: %f\n"
            "\tPatients in queue: %f\n", bank.total_number, waiting_list.total_number);
 */
+
     printf("Executing a random test\n");
-    printf("Results: \n"
-           "\tOrgans in queue: %f\n"
-           "\tPatients in queue: %f\n", bank.total_number, waiting_list.total_number);
+    printf("Results: \n");
+    printf("\tPatients arrived: %d\n"
+           "\tOrgans arrived: %d\n", patients_arrived, organs_arrived);
+    printf("\tOrgans in queue: \n"
+           "\t\tO: %f\n"
+           "\t\tA: %f\n"
+           "\t\tB: %f\n"
+           "\t\tAB: %f\n", bank.queues[O]->number, bank.queues[A]->number, bank.queues[B]->number, bank.queues[AB]->number);
+
+    printf("\tPatients in queue: \n"
+           "\t\tO: \n"
+           "\t\t\tCritical: %f\n"
+           "\t\t\tNormal: %f\n"
+           "\t\t\tLow: %f\n", waiting_list.blood_type_queues[O]->priority_queue[critical]->number,
+                                waiting_list.blood_type_queues[O]->priority_queue[normal]->number,
+                                waiting_list.blood_type_queues[O]->priority_queue[low]->number);
+    printf("\t\tA: \n"
+           "\t\t\tCritical: %f\n"
+           "\t\t\tNormal: %f\n"
+           "\t\t\tLow: %f\n", waiting_list.blood_type_queues[A]->priority_queue[critical]->number,
+           waiting_list.blood_type_queues[A]->priority_queue[normal]->number,
+           waiting_list.blood_type_queues[A]->priority_queue[low]->number);
+    printf("\t\tB: \n"
+           "\t\t\tCritical: %f\n"
+           "\t\t\tNormal: %f\n"
+           "\t\t\tLow: %f\n", waiting_list.blood_type_queues[B]->priority_queue[critical]->number,
+           waiting_list.blood_type_queues[B]->priority_queue[normal]->number,
+           waiting_list.blood_type_queues[B]->priority_queue[low]->number);
+    printf("\t\tAB: \n"
+           "\t\t\tCritical: %f\n"
+           "\t\t\tNormal: %f\n"
+           "\t\t\tLow: %f\n", waiting_list.blood_type_queues[AB]->priority_queue[critical]->number,
+           waiting_list.blood_type_queues[AB]->priority_queue[normal]->number,
+           waiting_list.blood_type_queues[AB]->priority_queue[low]->number);
+
     // ---------------------------------------------------- Simulation -----------------------------------------------
 
 #ifdef FINITE_HORIZON
