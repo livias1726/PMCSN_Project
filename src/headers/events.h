@@ -51,13 +51,13 @@ arrival *getArrival(double simulationTime);
 /***
  * ORGAN ARRIVAL
  */
-void handleOrganArrival(BLOOD_TYPE bloodType, organ_bank* bank);
+void handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *, organ_bank* bank);
 void addOrganToQueue(organ_queue **pQueue, organ_bank *bank);
 
 /***
  * PATIENT ARRIVAL
  */
-void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list *list);
+void handlePatientArrival(BLOOD_TYPE, PRIORITY, patient_waiting_list*, organ_bank*);
 void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority, patient_waiting_list *list);
 void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY priority, patient_waiting_list *list,
                                patient_queue_blood_type *queueBloodType);
@@ -86,13 +86,19 @@ void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority 
  * MATCHING
  */
 void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_bank *bank);
+bool handleMatchingFromPatient(BLOOD_TYPE, PRIORITY, patient_waiting_list*, organ_bank*);
+bool handleMatchingFromOrgan(BLOOD_TYPE, patient_waiting_list*);
 void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
+                                organ_bank *bank);
+void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
                                 organ_bank *bank);
 
 /***
  * TRANSPLANT
  */
 void handleTransplant();
+void handleTransplantFromOrgan(BLOOD_TYPE bt, patient_waiting_list *wl); //DUMMY
+void handleTransplantFromPatient(BLOOD_TYPE bt, organ_bank *bank); //DUMMY
 
 /***
  * ACTIVATION

@@ -36,16 +36,60 @@ int main(){
 
     // ----------------------------------------------------- Test -----------------------------------------------------
 
+    srand(time(NULL));   // Initialization, should only be called once.
+    int r_event = rand(), r_bt = rand(), r_pr = rand();
+
+    for (int i = 0; i < 100; ++i) {
+        if (r_event % 2 == 0) {
+            handlePatientArrival(r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &bank);
+        } else {
+            handleOrganArrival(r_bt % NUM_BLOOD_TYPES, &waiting_list, &bank);
+        }
+
+        r_event = rand();
+        r_bt = rand();
+        r_pr = rand();
+    }
+
+    /* TEST: EVENT: new patient arrival
+     *  -> test with: (14 critical, 20 normal, 50 low) per each blood type
+     *  -> total: 56 critical, 80 normal, 200 low
+     *  -> 336
+     *  */
+    /*
+    for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
+        for (int i = 0; i < 14; ++i) {
+            handlePatientArrival(b, critical, &waiting_list, &bank);
+        }
+        for (int i = 0; i < 20; ++i) {
+            handlePatientArrival(b, normal, &waiting_list, &bank);
+        }
+        for (int i = 0; i < 50; ++i) {
+            handlePatientArrival(b, low, &waiting_list, &bank);
+        }
+    }
+     */
+
     /* TEST: EVENT: new organ arrival
      *  -> test with: 6 organs per each blood type
      *  -> total: 24 organs
      *  */
+    /*
     for (int i = 0; i < 6; ++i) {
-        handleOrganArrival(O, &bank);
+        handleOrganArrival(O, &waiting_list, &bank);
+        handleOrganArrival(A, &waiting_list, &bank);
+        handleOrganArrival(AB, &waiting_list, &bank);
+        handleOrganArrival(B, &waiting_list, &bank);
+    }
+     */
+    /*
+    for (int i = 0; i < 6; ++i) {
+        handleOrganArrival(O, &waiting_list, &bank);
         handleOrganArrival(A, &bank);
         handleOrganArrival(AB, &bank);
         handleOrganArrival(B, &bank);
     }
+     */
 
     /*organ_queue *queue = bank.queues[0];
     removeOrgan(2, &queue);*/
@@ -56,32 +100,16 @@ int main(){
     handleOrganRenege(B, &bank);
     handleOrganRenege(AB, &bank);*/
 
-    /* TEST: EVENT: new patient arrival
-     *  -> test with: (14 critical, 20 normal, 50 low) per each blood type
-     *  -> total: 56 critical, 80 normal, 200 low
-     *  -> 336
-     *  */
-    for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
-        for (int i = 0; i < 14; ++i) {
-            handlePatientArrival(b, critical, &waiting_list);
-        }
-        for (int i = 0; i < 20; ++i) {
-            handlePatientArrival(b, normal, &waiting_list);
-        }
-        for (int i = 0; i < 50; ++i) {
-            handlePatientArrival(b, low, &waiting_list);
-        }
-    }
-
-    /* Matching */
+    /* Matching
     time_t start, end;
     start = clock();
 
     //handleMatching(ABO_Id, &waiting_list, &bank);
-    handleMatching(ABO_Comp, &waiting_list, &bank);
+    //handleMatching(ABO_Comp, &waiting_list, &bank);
 
     end = clock();
     time_t res = (end - start) / CLOCKS_PER_SEC;
+    */
 
     /* patient death */
     //handlePatientDeath(O, low, &waiting_list);
@@ -92,12 +120,16 @@ int main(){
     /* organ renege */
     //handleOrganRenege(O, &bank);
 
+    /*
     printf("Test should have an outcome of 0 organs in queue and 312 patients in queue\n");
     printf("Results: \n"
            "\tOrgans in queue: %f\n"
-           "\tPatients in queue: %f\n"
-           "\tTime: %jd\n", bank.total_number, waiting_list.total_number, (intmax_t)res);
-
+           "\tPatients in queue: %f\n", bank.total_number, waiting_list.total_number);
+*/
+    printf("Executing a random test\n");
+    printf("Results: \n"
+           "\tOrgans in queue: %f\n"
+           "\tPatients in queue: %f\n", bank.total_number, waiting_list.total_number);
     // ---------------------------------------------------- Simulation -----------------------------------------------
 
 #ifdef FINITE_HORIZON
@@ -134,9 +166,12 @@ int main(){
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
     CLEANUP(NUM_ORGAN_QUEUES, bank.queues)
+    for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
+        CLEANUP(NUM_PRIORITIES, waiting_list.blood_type_queues[b]->priority_queue)
+    }
     CLEANUP(NUM_BLOOD_TYPES, waiting_list.blood_type_queues)
 
     void* tmp[] = {&bank, &waiting_list, &activation_c, &transplant_c};
-    CLEANUP(4, tmp)
+    //CLEANUP(4, tmp)
 }
 

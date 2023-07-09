@@ -12,5 +12,9 @@ if (IMPROVEMENT)
     add_definitions(-DIMPROVEMENT=1)
 endif()
 
+if (ABO_ID)
+    add_definitions(-DABO_ID=1)
+endif()
+
 add_executable(PMCSN_Project src/main.c ${SRC_INCLUDE})
 target_link_libraries(PMCSN_Project m)
