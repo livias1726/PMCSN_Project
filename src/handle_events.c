@@ -152,45 +152,16 @@ int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *
 }
 
 /***
- * PATIENT DEATH
+ * PATIENT LOSS
  */
- // TODO: these handlers can be merged into a single function that takes the loss_reason as parameter
-void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list) {
-    list->total_number--;
-    LOSS_REASON reason = death;
-
-    //removePatientsFromBloodQueue(reason, priority, &list->blood_type_queues[bloodType], NULL);
-    patient_queue_blood_type **pbtQueue = &list->blood_type_queues[bloodType];
-    patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[priority];
-
-    removePatientsFromPriorityQueue(reason, ppQueue, *pbtQueue, list);
+void handlePatientLoss(LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list* wl) {
+    patient_queue_blood_type **pbtQueue = &wl->blood_type_queues[bt];
+    patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[pr];
+    patientLossInternal(reason, ppQueue, *pbtQueue, wl);
 }
 
-/***
- * PATIENT RENEGE
- */
-void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* waitingList) {
-    waitingList->total_number--;
-    LOSS_REASON reason = renege;
-
-    //removePatientsFromBloodQueue(reason, priority, &waitingList->blood_type_queues[bloodType], waitingList);
-    patient_queue_blood_type **pbtQueue = &waitingList->blood_type_queues[bloodType];
-    patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[priority];
-
-    removePatientsFromPriorityQueue(reason, ppQueue, *pbtQueue, waitingList);
-}
-
-
-void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient_queue_blood_type **pQueue,
-                                  patient_waiting_list *patientWaitingList) {
-    /*
-    patient_queue_blood_type *blood_queue = (*pQueue);
-    removePatientsFromPriorityQueue(reason, &blood_queue->priority_queue[priority], blood_queue, patientWaitingList);
-     */
-}
-
-void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
-                                     patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList) {
+void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
+                         patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList) {
     patient *priority_queue = (*pQueuePriority)->queue;
     int max_number, index;
 
@@ -204,7 +175,6 @@ void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority 
         /* Handle patient renege from priority queue */
         // TODO choose a random job or select a specific patient with id or remove oldest one
         // FIXME now I choose a random job
-        max_number = (int) (*pQueuePriority)->number-1;
         index = ((int) rand() % (max_number-0+1)) + 0; // FIXME alternative to rand()
         removePatient(index, pQueuePriority, queueBloodType, waitingList);
         printf("A patient left the queue with priority %d\n", priority_queue->priority);

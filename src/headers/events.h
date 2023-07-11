@@ -79,8 +79,8 @@ void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting
 void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
 void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient_queue_blood_type **pQueue,
                                   patient_waiting_list *pList);
-void removePatientsFromPriorityQueue(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
-                                     patient_queue_blood_type *pType, patient_waiting_list *pList);
+void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
+                         patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList);
 
 /***
  * MATCHING
