@@ -62,6 +62,7 @@ int main(){
                 break;
         }
 
+        handleMatching(&waiting_list, &bank, &transplant_c);
         r_event = rand();
         r_bt = rand();
         r_pr = rand();

@@ -9,15 +9,12 @@
  */
 
 
-void addMatchedToTransplant(organ *organ, patient *patient, transplant **tr_center);
-
 /***
  * Function to handle the arrival of a new organ in a blood type queue of the organ bank
  * @param bloodType
  * @param bank
  */
-void
-handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *wl, organ_bank *bank, transplant *transplantCenter) {
+void handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *wl, organ_bank *bank, transplant *transplantCenter) {
 
     /* new organ */
     organ *o = new_organ(bloodType);
@@ -73,7 +70,7 @@ void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiti
     /* New patient */
     patient* p = new_patient(bloodType, priority);
 
-    bool match = handleMatchingFromPatient(bloodType, priority, waitingList, bank, transplantCenter, p);
+    bool match = handleMatchingFromPatient(bloodType, bank, transplantCenter, p);
 
     if (!match) {
         patient_queue_blood_type **pbtQueue = &waitingList->blood_type_queues[bloodType];
@@ -194,26 +191,40 @@ void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePrio
  * -------------------------------------------------------------- MATCHING
  */
 
+/***
+ * This function is executed in each simulation run and checks for available matching possible between organs and
+ * patients.
+ * @param patient_q
+ * @param organ_q
+ * @param pList
+ * @param bank
+ * @param tc
+ */
 void handleMatchingInternal(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
-                            organ_bank *bank){
+                            organ_bank *bank, transplant *tc) {
+    organ *o;
+    patient *p;
     while (organ_q->organ_available && patient_q->number > 0) {
-        // fino a che ci sono organi disponibili
+        // while there are available organs
         while (patient_q->priority_queue[critical]->number != 0 && organ_q->organ_available) {
-            // fino a che ci sono pazienti critici
-            removeOrgan(0, &organ_q, bank);
-            removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
+            // while there are available critical patients
+            o = removeOrgan(0, &organ_q, bank);
+            p = removePatient(0, &patient_q->priority_queue[0], patient_q, pList);
+            addMatchedToTransplant(o, p, &tc);
         }
 
         while (patient_q->priority_queue[normal]->number != 0 && organ_q->organ_available) {
-            // fino a che ci sono pazienti normali
-            removeOrgan(0, &organ_q, bank);
-            removePatient(0, &patient_q->priority_queue[1], patient_q, pList);
+            // while there are available normal patients
+            o = removeOrgan(0, &organ_q, bank);
+            p = removePatient(0, &patient_q->priority_queue[1], patient_q, pList);
+            addMatchedToTransplant(o, p, &tc);
         }
 
         while (patient_q->priority_queue[low]->number != 0 && organ_q->organ_available) {
-            // fino a che ci sono pazienti low
-            removeOrgan(0, &organ_q, bank);
-            removePatient(0, &patient_q->priority_queue[2], patient_q, pList);
+            // while there are available low patients
+            o = removeOrgan(0, &organ_q, bank);
+            p = removePatient(0, &patient_q->priority_queue[2], patient_q, pList);
+            addMatchedToTransplant(o, p, &tc);
         }
     }
 }
@@ -224,8 +235,7 @@ void handleMatchingInternal(patient_queue_blood_type *patient_q, organ_queue *or
  *
  * //TODO: check if the patient can be transplanted due to their priority and other patients in queue!!!
  * */
-bool handleMatchingFromPatient(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list *wl, organ_bank *bank, transplant *tc,
-                               patient *patient) {
+bool handleMatchingFromPatient(BLOOD_TYPE bt, organ_bank *bank, transplant *tc, patient *patient) {
 
     bool found = false;
     BLOOD_TYPE avbOrganBt = bt;
@@ -258,7 +268,7 @@ bool handleMatchingFromPatient(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list 
  // TODO: to be reviewed (ME FA SCHIFO MESSA COSI)
 bool handleMatchingFromOrgan(BLOOD_TYPE bt, patient_waiting_list *wl, transplant *tc, organ *organ) {
 
-    BLOOD_TYPE avbPatientBt = bt;
+    BLOOD_TYPE avbPatientBt;
     PRIORITY avbPatientPr;
     bool found = false;
 
@@ -297,66 +307,19 @@ bool handleMatchingFromOrgan(BLOOD_TYPE bt, patient_waiting_list *wl, transplant
 // ------------------------------------------------------- TO CHECK -----------------------------------
 //TODO: this function and the other three can be merged in a single function if the allocation
 // policy is used as a compilation flag
-void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_bank *bank) {
-    patient_queue_blood_type **patient_qs = pWaitingList->blood_type_queues;
+void handleMatching(patient_waiting_list *wl, organ_bank *bank, transplant *tc) {
+    patient_queue_blood_type **patient_qs = wl->blood_type_queues;
     organ_queue **organ_qs = bank->queues;
 
-    //TODO: I don't think this will ever happen when queues are allocated at initialization time
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        if (patient_qs[i] == NULL) {
-            initializePatientQueue(&patient_qs[i], (BLOOD_TYPE)i);
-        }
-        if (organ_qs[i] == NULL) {
-            initializeOrganQueue(&organ_qs[i], (BLOOD_TYPE)i);
-        }
+#ifdef ABO_ID
+    if (IDENTICAL((*organ_qs)->bt, (*patient_qs)->bt)) {
+        handleMatchingInternal((*patient_qs), (*organ_qs), wl, bank, tc);
     }
-
-    /* TODO: note: randomically choose the blood type order for matching */
-    if (policy == ABO_Comp) {
-        /* handle matching with policy ABO-compatible */
-        for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-            switch ((BLOOD_TYPE) i) {
-                case O:
-                    handleMatchingABOCompatible(patient_qs[0], organ_qs[0], pWaitingList, bank); // organ O - patient O
-                    handleMatchingABOCompatible(patient_qs[1], organ_qs[0], pWaitingList, bank); // organ O - patient A
-                    handleMatchingABOCompatible(patient_qs[2], organ_qs[0], pWaitingList, bank); // organ O - patient B
-                    handleMatchingABOCompatible(patient_qs[3], organ_qs[0], pWaitingList, bank); // organ O - patient AB
-                    break;
-                case A:
-                    handleMatchingABOCompatible(patient_qs[1], organ_qs[1], pWaitingList, bank); // organ: A - patient A
-                    handleMatchingABOCompatible(patient_qs[3], organ_qs[1], pWaitingList, bank); // organ: A - patient AB
-                    break;
-                case B:
-                    handleMatchingABOCompatible(patient_qs[2], organ_qs[2], pWaitingList, bank); // organ: B - patient B
-                    handleMatchingABOCompatible(patient_qs[3], organ_qs[2], pWaitingList, bank); // organ: B - patient B
-                    break;
-                case AB:
-                    handleMatchingABOCompatible(patient_qs[3], organ_qs[3], pWaitingList, bank); // organ: AB - patient AB
-                    break;
-            }
-        }
-    } else {
-        /* handle matching with policy ABO-identical */
-        handleMatchingABOIdentical(patient_qs[0], organ_qs[0], pWaitingList, bank); // O
-        handleMatchingABOIdentical(patient_qs[1], organ_qs[1], pWaitingList, bank); // A
-        handleMatchingABOIdentical(patient_qs[2], organ_qs[2], pWaitingList, bank); // B
-        handleMatchingABOIdentical(patient_qs[3], organ_qs[3], pWaitingList, bank); // AB
+#else
+    if (COMPATIBLE((*organ_qs)->bt, (*patient_qs)->bt)) {
+        handleMatchingInternal((*patient_qs), (*organ_qs), wl, bank, tc);
     }
-}
-
-//TODO: is it necessary to check for compatibility if the calls have been filtered in the switch?
-void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
-                                organ_bank *bank) {
-    if (IDENTICAL(organ_q->bt, patient_q->bt)) {
-        handleMatchingInternal(patient_q, organ_q, pList, bank);
-    }
-}
-
-void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
-                                 organ_bank *bank) {
-    if (COMPATIBLE(organ_q->bt, patient_q->bt)) {
-        handleMatchingInternal(patient_q, organ_q, pList, bank);
-    }
+#endif
 }
 
 /***
@@ -364,7 +327,7 @@ void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queu
  */
 
 void handleTransplantFromOrgan(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list *wl, organ *o, transplant *tc) {
-    /* get oldest patient */
+    /* get first patient */
     patient *p = removePatient(0, &wl->blood_type_queues[bt]->priority_queue[pr], wl->blood_type_queues[bt], wl);
     addMatchedToTransplant(o, p, &tc);
 }
@@ -505,8 +468,4 @@ void addOrganToLost(organ *o, organs_expired **pQueue) {
 
     /* increment loss */
     (*pQueue)->number[bt]++;
-}
-
-void addMatchToTransplant(matched *m, transplant **pTransplant) {
-    
 }

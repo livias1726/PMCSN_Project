@@ -68,11 +68,6 @@ void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *pBank, organs_expired *
 int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *pBank, organs_expired *expiredQueue);
 
 /***
- * PATIENT DEATH
- */
-void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
-
-/***
  * PATIENT RENEGE
  */
 void handlePatientLoss(LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list* wl, patients_lost *loss_queue);
@@ -83,21 +78,13 @@ void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePrio
 /***
  * MATCHING
  */
-void handleMatching(POLICY policy, patient_waiting_list *pWaitingList, organ_bank *bank);
-
-bool
-handleMatchingFromPatient(BLOOD_TYPE, PRIORITY, patient_waiting_list *, organ_bank *, transplant *tc, patient *patient);
-
+void handleMatching(patient_waiting_list *pWaitingList, organ_bank *bank, transplant *tc);
+bool handleMatchingFromPatient(BLOOD_TYPE, organ_bank *, transplant *tc, patient *patient);
 bool handleMatchingFromOrgan(BLOOD_TYPE, patient_waiting_list *, transplant *tc, organ *organ);
-void handleMatchingABOIdentical(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
-                                organ_bank *bank);
-void handleMatchingABOCompatible(patient_queue_blood_type *patient_q, organ_queue *organ_q, patient_waiting_list *pList,
-                                organ_bank *bank);
 
 /***
  * TRANSPLANT
  */
-void handleTransplant();
 void handleTransplantFromOrgan(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list *wl, organ *o, transplant *tc); //DUMMY
 void handleTransplantFromPatient(BLOOD_TYPE bt, organ_bank *bank, patient *p, transplant *tc); //DUMMY
 
@@ -118,5 +105,6 @@ patient * removePatient(int idx, patient_queue_priority **pQueue, patient_queue_
                         patient_waiting_list *pList);
 void addPatientToLost(patient *p, patients_lost **pQueue, LOSS_REASON reason);
 void addOrganToLost(organ *o, organs_expired **pQueue);
+void addMatchedToTransplant(organ *organ, patient *patient, transplant **tr_center);
 
 #endif
