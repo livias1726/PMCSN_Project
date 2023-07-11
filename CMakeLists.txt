@@ -2,7 +2,7 @@ project(PMCSN_Project)
 cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_C_STANDARD 11)
-set(SRC_INCLUDE src/utils.c src/allocation_algorithms.c src/handle_events.c lib/rngs.c lib/rvms.c src/headers/init.h src/init.c)
+set(SRC_INCLUDE src/utils.c src/handle_events.c lib/rngs.c lib/rvms.c src/headers/init.h src/init.c src/random_gen_functions.c src/headers/rgf.h)
 
 if (FINITE_HORIZON)
     add_definitions(-DFINITE_HORIZON=1)

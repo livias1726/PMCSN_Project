@@ -20,7 +20,4 @@ static const int get_num_compatible_patients[] = {
         [B] = 2,
         [AB] = 1
 };
-
-bool ABOCompatible(BLOOD_TYPE organ_type, BLOOD_TYPE patient_type);
-bool ABOIdentical(BLOOD_TYPE organ_type, BLOOD_TYPE patient_type);
 #endif //PMCSN_PROJECT_ALLOCATION_H
