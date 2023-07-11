@@ -33,6 +33,8 @@ int main(){
     organ_bank bank = initialize_organ_bank();
     activation activation_c = initialize_activation_center();
     transplant transplant_c = initialize_transplant_center();
+    patients_lost patient_loss = initialize_patient_lost_queue();
+    organs_expired organs_loss = initialize_organs_expired_queue();
 
     // ----------------------------------------------------- Test -----------------------------------------------------
 
@@ -43,12 +45,21 @@ int main(){
     int r_event = rand(), r_bt = rand(), r_pr = rand();
 
     for (int i = 0; i < 100; ++i) {
-        if (r_event % 3 != 0) { // more patient arrivals
-            handlePatientArrival(r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &bank);
-            patients_arrived++;
-        } else {
-            handleOrganArrival(r_bt % NUM_BLOOD_TYPES, &waiting_list, &bank);
-            organs_arrived++;
+        switch (r_event % 5) {
+            case 0:
+                handlePatientArrival(r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &bank);
+                patients_arrived++;
+                break;
+            case 1:
+                handleOrganArrival(r_bt % NUM_BLOOD_TYPES, &waiting_list, &bank);
+                organs_arrived++;
+                break;
+            case 3:
+                handleOrganRenege(r_bt % NUM_BLOOD_TYPES, &bank, &organs_loss);
+                break;
+            case 4:
+                handlePatientLoss(renege, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &patient_loss);
+                break;
         }
 
         r_event = rand();

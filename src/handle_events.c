@@ -8,6 +8,7 @@
  * ORGAN ARRIVAL
  */
 
+
 /***
  * Function to handle the arrival of a new organ in a blood type queue of the organ bank
  * @param bloodType
@@ -18,7 +19,7 @@ void handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *wl, organ_ba
     bool match = handleMatchingFromOrgan(bloodType, wl);
 
     if (!match){
-        addOrganToQueue(&bank->queues[bloodType], bank);
+        addOrganToQueue(&bank->queues[bloodType], bank, bloodType);
         printf("Arrived organ with blood type %s\n", bt_to_str[bloodType]);
     } else {
         printf("Arrived and dispatched organ with blood type %s\n", bt_to_str[bloodType]);
@@ -30,7 +31,7 @@ void handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *wl, organ_ba
  * @param pQueue
  * @param bloodType
  */
-void addOrganToQueue(organ_queue **pQueue, organ_bank *bank) {
+void addOrganToQueue(organ_queue **pQueue, organ_bank *bank, BLOOD_TYPE bt) {
 
     organ *curr, *new;
 
@@ -50,6 +51,7 @@ void addOrganToQueue(organ_queue **pQueue, organ_bank *bank) {
     new = malloc(sizeof(organ));
     MALLOC_HANDLER(new)
     new->starting_age = ((int) rand() % (24-0+1)) + 0;
+    new->bt = bt;
     new->next = NULL;
 
     curr->next = new;
@@ -74,7 +76,7 @@ void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiti
     if (!match) {
         patient_queue_blood_type **pbtQueue = &waitingList->blood_type_queues[bloodType];
         patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[priority];
-        addPatientToPriorityQueue(ppQueue, priority, waitingList,*pbtQueue);
+        addPatientToQueue(ppQueue, waitingList, *pbtQueue, priority, bloodType);
 
         printf("Arrived patient with blood type %s and priority %s\n", bt_to_str[bloodType], prio_to_str[priority]);
     } else {
@@ -87,8 +89,8 @@ void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiti
  * @param pQueuePriority
  * @param priority
  */
-void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY priority,
-                               patient_waiting_list *waitingList, patient_queue_blood_type *queueBloodType) {
+void addPatientToQueue(patient_queue_priority **pQueuePriority, patient_waiting_list *waitingList,
+                       patient_queue_blood_type *queueBloodType, PRIORITY priority, BLOOD_TYPE bt) {
 
     patient *curr, *new;
 
@@ -107,6 +109,7 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
     new = malloc(sizeof(patient));
     MALLOC_HANDLER(new)
     new->priority = priority;
+    new->bt = bt;
     new->is_active = (int) Random() % 2; // FIXME integrate with probability to be inactive and handle it
     new->next = NULL;
 
@@ -123,8 +126,8 @@ void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY
  * @param bloodType
  * @param bank
  */
-void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank) {
-    int num_deleted = removeExpiredOrgans(bloodType, &bank->queues[bloodType], bank);
+void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank, organs_expired *expired) {
+    int num_deleted = removeExpiredOrgans(bloodType, &bank->queues[bloodType], bank, expired);
     if (num_deleted != 0) bank->total_number -= num_deleted;
 }
 
@@ -133,20 +136,26 @@ void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank) {
  * @param bloodType
  * @param pQueue
  */
-int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *bank) {
+int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *bank, organs_expired *expiredQueue) {
     organ *o_queue = (*pQueue)->queue;
     organ *current;
-    int index, number_deleted = 0;
+    organ *o;
+    int index = 0;
+    int number_deleted = 0;
 
     current = o_queue;
     while (current->next != NULL) {
         current = current->next;
         if (current->starting_age >= 24) {
             /* The organ has expired */
-            removeOrgan(index, pQueue, bank);
-            printf("An organ has expired in the queue with blood type %d\n", bloodType);
-            number_deleted++;
+            o = removeOrgan(index, pQueue, bank);
+            if (o != NULL) {
+                addOrganToLost(o, &expiredQueue);
+                printf("An organ has expired in the queue with blood type %d\n", bloodType);
+                number_deleted++;
+            }
         }
+        index++;
     }
     return number_deleted;
 }
@@ -154,30 +163,36 @@ int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *
 /***
  * PATIENT LOSS
  */
-void handlePatientLoss(LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list* wl) {
+void handlePatientLoss(LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list* wl, patients_lost *loss_queue) {
     patient_queue_blood_type **pbtQueue = &wl->blood_type_queues[bt];
     patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[pr];
-    patientLossInternal(reason, ppQueue, *pbtQueue, wl);
+    patientLossInternal(reason, ppQueue, *pbtQueue, wl, loss_queue);
 }
 
 void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
-                         patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList) {
+                         patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList,
+                         patients_lost *lossQueue) {
     patient *priority_queue = (*pQueuePriority)->queue;
+    patient *p;
     int max_number, index;
+    max_number = (int) (*pQueuePriority)->number;
 
     if (reason == death) {
         /* Handle patient death from priority queue */
         // TODO choose a random job or select a specific patient with id or remove oldest one
         // FIXME now I remove the oldest one
-        removePatient(0, pQueuePriority, queueBloodType, waitingList);
-        printf("A patient is dead in queue with priority %d\n", priority_queue->priority);
+        index = 0;
     } else {
         /* Handle patient renege from priority queue */
         // TODO choose a random job or select a specific patient with id or remove oldest one
         // FIXME now I choose a random job
         index = ((int) rand() % (max_number-0+1)) + 0; // FIXME alternative to rand()
-        removePatient(index, pQueuePriority, queueBloodType, waitingList);
-        printf("A patient left the queue with priority %d\n", priority_queue->priority);
+    }
+
+    p = removePatient(index, pQueuePriority, queueBloodType, waitingList);
+    if (p != NULL) {
+        addPatientToLost(p, &lossQueue, reason);
+        printf("A patient has left the queue with priority %d with reason %d\n", priority_queue->priority, reason);
     }
 }
 
@@ -413,34 +428,68 @@ void decrementPatients(patient_queue_priority *patientQueuePriority, patient_que
     }
 }
 
-void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
+organ * removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
 
     organ *prev = NULL;
     organ *current = (*pQueue)->queue; //head
     organ *next = current->next; //first organ
 
+    if ((*pQueue)->number == 0) {
+        /* fixme: this event is impossible if there are no organs in queue */
+        return NULL;
+    }
     REMOVE_MID_NODE(idx, current, prev, next);
-
+    current->next = NULL;
     decrementOrgans((*pQueue), bank);
+    return current;
 }
 
-void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
-                   patient_waiting_list *pList) {
+patient * removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
+                        patient_waiting_list *pList) {
 
     patient *prev = NULL;
     patient *current = (*pQueue)->queue;
     patient *next = current->next;
 
-    int i = 0;
-    while (i < idx+1) {
-        prev = current;
-        current = next;
-        next = current->next;
-        i++;
+    if ((*pQueue)->number == 0) {
+        /* fixme: this event is impossible if there are no patients in queue */
+        return NULL;
     }
-    prev->next = next;
-    free(current);
-    //REMOVE_MID_NODE(idx, current, prev, next);
-
+    REMOVE_MID_NODE(idx, current, prev, next);
+    current->next = NULL;
     decrementPatients((*pQueue), pQueueBT, pList);
+    return current;
+}
+
+void addPatientToLost(patient *p, patients_lost **pQueue, LOSS_REASON reason) {
+    patient *curr;
+    BLOOD_TYPE bt = p->bt;
+    PRIORITY pr = p->priority;
+
+    /* roll to last node */
+    GET_LAST_NODE((*pQueue)->queue, curr)
+
+    /* append patient node */
+    curr->next = p;
+
+    /* increment loss */
+    if (reason == death) {
+        (*pQueue)->number_dead[bt][pr]++;
+    } else {
+        (*pQueue)->number_renege[bt][pr]++;
+    }
+}
+
+void addOrganToLost(organ *o, organs_expired **pQueue) {
+    organ *curr;
+    BLOOD_TYPE bt = o->bt;
+
+    /* roll to last node */
+    GET_LAST_NODE((*pQueue)->queue, curr)
+
+    /* append organ node */
+    curr->next = o;
+
+    /* increment loss */
+    (*pQueue)->number[bt]++;
 }

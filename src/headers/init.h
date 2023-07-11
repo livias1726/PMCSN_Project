@@ -8,5 +8,7 @@ patient_waiting_list initialize_waiting_list();
 organ_bank initialize_organ_bank();
 transplant initialize_transplant_center();
 activation initialize_activation_center();
+patients_lost initialize_patient_lost_queue();
+organs_expired initialize_organs_expired_queue();
 
 #endif //PMCSN_PROJECT_INIT_H

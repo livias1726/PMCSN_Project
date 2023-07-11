@@ -52,21 +52,20 @@ arrival *getArrival(double simulationTime);
  * ORGAN ARRIVAL
  */
 void handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *, organ_bank* bank);
-void addOrganToQueue(organ_queue **pQueue, organ_bank *bank);
+void addOrganToQueue(organ_queue **pQueue, organ_bank *bank, BLOOD_TYPE bt);
 
 /***
  * PATIENT ARRIVAL
  */
 void handlePatientArrival(BLOOD_TYPE, PRIORITY, patient_waiting_list*, organ_bank*);
-void addPatientToBloodQueue(patient_queue_blood_type **pQueue, PRIORITY priority, patient_waiting_list *list);
-void addPatientToPriorityQueue(patient_queue_priority **pQueuePriority, PRIORITY priority, patient_waiting_list *list,
-                               patient_queue_blood_type *queueBloodType);
+void addPatientToQueue(patient_queue_priority **pQueuePriority, patient_waiting_list *waitingList,
+                       patient_queue_blood_type *queueBloodType, PRIORITY priority, BLOOD_TYPE bt);
 
 /***
  * ORGAN RENEGE
  */
-void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *pBank);
-int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *pBank);
+void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *pBank, organs_expired *expired);
+int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *pBank, organs_expired *expiredQueue);
 
 /***
  * PATIENT DEATH
@@ -76,11 +75,10 @@ void handlePatientDeath(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting
 /***
  * PATIENT RENEGE
  */
-void handlePatientRenege(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list* list);
-void removePatientsFromBloodQueue(LOSS_REASON reason, PRIORITY priority, patient_queue_blood_type **pQueue,
-                                  patient_waiting_list *pList);
+void handlePatientLoss(LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list* wl, patients_lost *loss_queue);
 void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
-                         patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList);
+                         patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList,
+                         patients_lost *pQueue);
 
 /***
  * MATCHING
@@ -112,8 +110,10 @@ void decrementOrgans(organ_queue *organQueue, organ_bank *bank);
 void incrementOrgans(organ_queue *pQueue, organ_bank *pBank);
 void incrementPatients(patient_queue_priority *pPriority, patient_queue_blood_type *pType, patient_waiting_list *pList);
 void decrementPatients(patient_queue_priority *pQueue, patient_queue_blood_type *patientQueueBT, patient_waiting_list *list);
-void removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
-void removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
-                   patient_waiting_list *pList);
+organ * removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
+patient * removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
+                        patient_waiting_list *pList);
+void addPatientToLost(patient *p, patients_lost **pQueue, LOSS_REASON reason);
+void addOrganToLost(organ *o, organs_expired **pQueue);
 
 #endif

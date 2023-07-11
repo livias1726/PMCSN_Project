@@ -52,6 +52,7 @@ patient_waiting_list initialize_waiting_list() {
             waitingList.blood_type_queues[i]->priority_queue[j]->priority = j;
 
             waitingList.blood_type_queues[i]->priority_queue[j]->queue = malloc(sizeof(patient));
+            waitingList.blood_type_queues[i]->priority_queue[j]->queue->bt = i;
             MALLOC_HANDLER(waitingList.blood_type_queues[i]->priority_queue[j]->queue)
 
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->priority = none;
@@ -74,6 +75,7 @@ organ_bank initialize_organ_bank() {
 
         organBank.queues[i]->queue = malloc(sizeof(organ));
         MALLOC_HANDLER(organBank.queues[i]->queue)
+        organBank.queues[i]->queue->bt = i;
         organBank.queues[i]->queue->next = NULL;
     }
 
@@ -83,6 +85,9 @@ organ_bank initialize_organ_bank() {
 
 transplant initialize_transplant_center() {
     transplant transplantCenter;
+    if (transplantCenter.matched_list == NULL) {
+        transplantCenter.matched_list = malloc(sizeof(matched));
+    }
     transplantCenter.total_number = 0.0;
     transplantCenter.serviceTime = 0.0;
     return transplantCenter;
@@ -93,4 +98,29 @@ activation initialize_activation_center() {
     activationCenter.total_number = 0.0;
     activationCenter.serviceTime = 0.0;
     return activationCenter;
+}
+
+organs_expired initialize_organs_expired_queue() {
+    organs_expired organsExpired;
+    organsExpired.queue = malloc(sizeof(organ));
+    MALLOC_HANDLER(organsExpired.queue);
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        organsExpired.number[i] = 0.0;
+    }
+    return organsExpired;
+}
+
+patients_lost initialize_patient_lost_queue() {
+    patients_lost patientsLost;
+    patientsLost.queue = malloc(sizeof(patient));
+    MALLOC_HANDLER(patientsLost.queue);
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            patientsLost.number_dead[i][j] = 0.0;
+            patientsLost.number_renege[i][j] = 0.0;
+        }
+    }
+    return patientsLost;
 }

@@ -3,6 +3,7 @@
 
 // --------------------------------------------------- MODEL USERS ---------------------------------------------
 typedef struct patient {
+    BLOOD_TYPE bt;          /* patient blood type */
     PRIORITY priority;      /* needed to order patients in list based on the priority */
     bool is_active;         /* the patient is active (true or false) */
     struct patient *next;   /* pointer to the next patient in queue */
@@ -10,6 +11,7 @@ typedef struct patient {
 
 
 typedef struct organ {
+    BLOOD_TYPE bt;          /* organ blood type */
     double starting_age;    /* this is a random number that models the fact that the organ is moved in different states */
     struct organ *next;
 } organ;

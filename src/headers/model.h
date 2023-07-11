@@ -55,4 +55,15 @@ typedef struct activation_center {
     double serviceTime;         /* t_{c,del} */
 } activation;
 
+/* loss queues */
+typedef struct patient_lost_queue {
+    patient *queue;
+    double number_dead[NUM_BLOOD_TYPES][NUM_PRIORITIES];     /* number dead type bt and priority pr */
+    double number_renege[NUM_BLOOD_TYPES][NUM_PRIORITIES];     /* number reneging type bt and priority pr */
+} patients_lost;
+
+typedef struct organs_expired_queue {
+    organ *queue;
+    double number[NUM_BLOOD_TYPES];            /* number expired type bt */
+} organs_expired;
 #endif

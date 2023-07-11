@@ -36,14 +36,14 @@
 #define REMOVE_MID_NODE(idx, curr, prev, next) \
     do{                                              \
         int i = 0;              \
-        while (i < idx+1) {                           \
+        while (i < idx+1 && next != NULL) {                           \
             prev = curr;                               \
             curr = next;                      \
             next = curr->next;                         \
             i++;                                          \
         }                                             \
         prev->next = next;                     \
-        free(curr); \
-    }while(0)
+    }while(0);
+
 
 #endif //PMCSN_PROJECT_UTILS_H
