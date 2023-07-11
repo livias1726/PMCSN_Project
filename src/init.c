@@ -85,9 +85,7 @@ organ_bank initialize_organ_bank() {
 
 transplant initialize_transplant_center() {
     transplant transplantCenter;
-    if (transplantCenter.matched_list == NULL) {
-        transplantCenter.matched_list = malloc(sizeof(matched));
-    }
+    transplantCenter.matched_list = malloc(sizeof(matched));
     transplantCenter.total_number = 0.0;
     transplantCenter.serviceTime = 0.0;
     return transplantCenter;
@@ -123,4 +121,23 @@ patients_lost initialize_patient_lost_queue() {
         }
     }
     return patientsLost;
+}
+
+patient * new_patient(BLOOD_TYPE bt, PRIORITY pr) {
+    patient *new = malloc(sizeof(patient));
+    MALLOC_HANDLER(new)
+    new->priority = pr;
+    new->bt = bt;
+    new->is_active = (int) Random() % 2; // FIXME integrate with probability to be inactive and handle it
+    new->next = NULL;
+    return new;
+}
+
+organ * new_organ(BLOOD_TYPE bt) {
+    organ *new = malloc(sizeof(organ));
+    MALLOC_HANDLER(new)
+    new->starting_age = ((int) rand() % (24-0+1)) + 0;
+    new->bt = bt;
+    new->next = NULL;
+    return new;
 }

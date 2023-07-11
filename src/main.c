@@ -47,11 +47,11 @@ int main(){
     for (int i = 0; i < 100; ++i) {
         switch (r_event % 5) {
             case 0:
-                handlePatientArrival(r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &bank);
+                handlePatientArrival(r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &bank, &transplant_c);
                 patients_arrived++;
                 break;
             case 1:
-                handleOrganArrival(r_bt % NUM_BLOOD_TYPES, &waiting_list, &bank);
+                handleOrganArrival(r_bt % NUM_BLOOD_TYPES, &waiting_list, &bank, &transplant_c);
                 organs_arrived++;
                 break;
             case 3:
@@ -147,6 +147,12 @@ int main(){
     printf("Results: \n");
     printf("\tPatients arrived: %d\n"
            "\tOrgans arrived: %d\n", patients_arrived, organs_arrived);
+    printf("\tOrgans transplanted: %d\n", (int)transplant_c.total_number);
+    printf("\tOrgans lost: \n"
+           "\t\tO: %f\n"
+           "\t\tA: %f\n"
+           "\t\tB: %f\n"
+           "\t\tAB: %f\n", organs_loss.number[O], organs_loss.number[A], organs_loss.number[B], organs_loss.number[AB]);
     printf("\tOrgans in queue: \n"
            "\t\tO: %f\n"
            "\t\tA: %f\n"
