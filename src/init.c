@@ -1,39 +1,5 @@
 #include "headers/utils.h"
 
-
-void initializeOrganQueue(organ_queue **pQueue, BLOOD_TYPE bloodType) {
-    if ((*pQueue) == NULL) {
-        (*pQueue) = malloc(sizeof(organ_queue));
-        MALLOC_HANDLER(*pQueue)
-        (*pQueue)->bt = bloodType;
-    }
-
-    if ((*pQueue)->queue == NULL) {
-        (*pQueue)->queue = malloc(sizeof(organ));
-        MALLOC_HANDLER((*pQueue)->queue)
-    }
-}
-
-void initializePatientQueue(patient_queue_blood_type **pQueue, BLOOD_TYPE bloodType) {
-    if ((*pQueue) == NULL) {
-        (*pQueue) = malloc(sizeof(patient_queue_blood_type));
-        MALLOC_HANDLER(pQueue)
-        (*pQueue)->bt = bloodType;
-    }
-
-    for (int i = 0; i < NUM_PRIORITIES; ++i) {
-        if ((*pQueue)->priority_queue[i] == NULL) {
-            (*pQueue)->priority_queue[i] = malloc(sizeof(patient_queue_priority));
-            MALLOC_HANDLER((*pQueue)->priority_queue[i])
-        }
-        if ((*pQueue)->priority_queue[i]->queue == NULL) {
-            (*pQueue)->priority_queue[i]->queue = malloc(sizeof(patient));
-            MALLOC_HANDLER((*pQueue)->priority_queue[i]->queue)
-        }
-        (*pQueue)->priority_queue[i]->priority = (PRIORITY)i+1; // skip default priority
-    }
-}
-
 // Functions to initialize structs where to recover statistics for each center of the model
 patient_waiting_list initialize_waiting_list() {
     patient_waiting_list waitingList;
@@ -140,4 +106,20 @@ organ * new_organ(BLOOD_TYPE bt) {
     new->bt = bt;
     new->next = NULL;
     return new;
+}
+
+event_list initialize_event_list() {
+    patient_waiting_list waiting_list = initialize_waiting_list();
+    organ_bank bank = initialize_organ_bank();
+    transplant transplant_c = initialize_transplant_center();
+    patients_lost patient_loss = initialize_patient_lost_queue();
+    organs_expired organs_loss = initialize_organs_expired_queue();
+
+    event_list eventList;
+    eventList.organArrival = bank;
+    eventList.patientArrival = waiting_list;
+    eventList.transplantArrival = transplant_c;
+    eventList.organsLoss = organs_loss;
+    eventList.patientsLoss = patient_loss;
+    return eventList;
 }

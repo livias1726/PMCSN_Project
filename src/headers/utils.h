@@ -11,6 +11,7 @@
 #include "allocation.h"
 #include "events.h"
 #include "init.h"
+#include "time.h"
 #include "rgf.h"
 #include "../../lib/rngs.h"
 #include "../../lib/rvms.h"

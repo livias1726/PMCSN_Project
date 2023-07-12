@@ -14,12 +14,16 @@
  * @param bloodType
  * @param bank
  */
-void handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *wl, organ_bank *bank, transplant *transplantCenter) {
+void handleOrganArrival(event_list *events, BLOOD_TYPE bloodType) {
+
+    patient_waiting_list *wl = &events->patientArrival;
+    organ_bank *bank = &events->organArrival;
+    transplant *transplant = &events->transplantArrival;
 
     /* new organ */
     organ *o = new_organ(bloodType);
 
-    bool match = handleMatchingFromOrgan(bloodType, wl, transplantCenter, o);
+    bool match = handleMatchingFromOrgan(bloodType, wl, transplant, o);
 
     if (!match){
         addOrganToQueue(&bank->queues[bloodType], bank, o);
@@ -64,18 +68,21 @@ void addOrganToQueue(organ_queue **pQueue, organ_bank *bank, organ *o) {
  * @param priority
  * @param list
  */
-void handlePatientArrival(BLOOD_TYPE bloodType, PRIORITY priority, patient_waiting_list *waitingList, organ_bank *bank,
-                          transplant *transplantCenter) {
+void handlePatientArrival(event_list *events, BLOOD_TYPE bloodType, PRIORITY priority) {
+
+    patient_waiting_list *wl = &events->patientArrival;
+    organ_bank *bank = &events->organArrival;
+    transplant *transplant = &events->transplantArrival;
 
     /* New patient */
     patient* p = new_patient(bloodType, priority);
 
-    bool match = handleMatchingFromPatient(bloodType, bank, transplantCenter, p);
+    bool match = handleMatchingFromPatient(bloodType, bank, transplant, p);
 
     if (!match) {
-        patient_queue_blood_type **pbtQueue = &waitingList->blood_type_queues[bloodType];
+        patient_queue_blood_type **pbtQueue = &wl->blood_type_queues[bloodType];
         patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[priority];
-        addPatientToQueue(ppQueue, waitingList, *pbtQueue, p);
+        addPatientToQueue(ppQueue, wl, *pbtQueue, p);
 
         printf("Arrived patient with blood type %s and priority %s\n", bt_to_str[bloodType], prio_to_str[priority]);
     } else {
@@ -115,9 +122,13 @@ void addPatientToQueue(patient_queue_priority **pQueuePriority, patient_waiting_
 /***
  * Function to handle the expiration of an organ in a blood type queue of the organ bank
  * @param bloodType
- * @param bank
+ * @param pBank
  */
-void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *bank, organs_expired *expired) {
+void handleOrganRenege(event_list *events, BLOOD_TYPE bloodType) {
+
+    organ_bank *bank = &events->organArrival;
+    organs_expired *expired = &events->organsLoss;
+
     int num_deleted = removeExpiredOrgans(bloodType, &bank->queues[bloodType], bank, expired);
     if (num_deleted != 0) bank->total_number -= num_deleted;
 }
@@ -154,10 +165,14 @@ int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *
 /***
  * PATIENT LOSS
  */
-void handlePatientLoss(LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list* wl, patients_lost *loss_queue) {
+void handlePatientLoss(event_list *events, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr) {
+
+    patient_waiting_list *wl = &events->patientArrival;
+    patients_lost *lost = &events->patientsLoss;
+
     patient_queue_blood_type **pbtQueue = &wl->blood_type_queues[bt];
     patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[pr];
-    patientLossInternal(reason, ppQueue, *pbtQueue, wl, loss_queue);
+    patientLossInternal(reason, ppQueue, *pbtQueue, wl, lost);
 }
 
 void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
@@ -307,7 +322,12 @@ bool handleMatchingFromOrgan(BLOOD_TYPE bt, patient_waiting_list *wl, transplant
 // ------------------------------------------------------- TO CHECK -----------------------------------
 //TODO: this function and the other three can be merged in a single function if the allocation
 // policy is used as a compilation flag
-void handleMatching(patient_waiting_list *wl, organ_bank *bank, transplant *tc) {
+void handleMatching(event_list *events) {
+
+    patient_waiting_list *wl = &events->patientArrival;
+    organ_bank *bank = &events->organArrival;
+    transplant *transplant = &events->transplantArrival;
+
     patient_queue_blood_type **patient_qs = wl->blood_type_queues;
     organ_queue **organ_qs = bank->queues;
 
@@ -317,7 +337,7 @@ void handleMatching(patient_waiting_list *wl, organ_bank *bank, transplant *tc) 
     }
 #else
     if (COMPATIBLE((*organ_qs)->bt, (*patient_qs)->bt)) {
-        handleMatchingInternal((*patient_qs), (*organ_qs), wl, bank, tc);
+        handleMatchingInternal((*patient_qs), (*organ_qs), wl, bank, transplant);
     }
 #endif
 }

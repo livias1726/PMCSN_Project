@@ -29,12 +29,8 @@ int main(){
 
     // ------------------------------------------------------- Initialization --------------------------------------
 
-    patient_waiting_list waiting_list = initialize_waiting_list();
-    organ_bank bank = initialize_organ_bank();
+    event_list events = initialize_event_list();
     activation activation_c = initialize_activation_center();
-    transplant transplant_c = initialize_transplant_center();
-    patients_lost patient_loss = initialize_patient_lost_queue();
-    organs_expired organs_loss = initialize_organs_expired_queue();
 
     // ----------------------------------------------------- Test -----------------------------------------------------
 
@@ -47,22 +43,22 @@ int main(){
     for (int i = 0; i < 100; ++i) {
         switch (r_event % 5) {
             case 0:
-                handlePatientArrival(r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &bank, &transplant_c);
+                handlePatientArrival(&events, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
                 patients_arrived++;
                 break;
             case 1:
-                handleOrganArrival(r_bt % NUM_BLOOD_TYPES, &waiting_list, &bank, &transplant_c);
+                handleOrganArrival(&events, r_bt % NUM_BLOOD_TYPES);
                 organs_arrived++;
                 break;
             case 3:
-                handleOrganRenege(r_bt % NUM_BLOOD_TYPES, &bank, &organs_loss);
+                handleOrganRenege(&events, r_bt % NUM_BLOOD_TYPES);
                 break;
             case 4:
-                handlePatientLoss(renege, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES, &waiting_list, &patient_loss);
+                handlePatientLoss(&events, renege, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
                 break;
         }
 
-        handleMatching(&waiting_list, &bank, &transplant_c);
+        handleMatching(&events);
         r_event = rand();
         r_bt = rand();
         r_pr = rand();
@@ -143,6 +139,12 @@ int main(){
            "\tOrgans in queue: %f\n"
            "\tPatients in queue: %f\n", bank.total_number, waiting_list.total_number);
 */
+
+    patient_waiting_list waiting_list = events.patientArrival;
+    organ_bank bank = events.organArrival;
+    transplant transplant_c = events.transplantArrival;
+    patients_lost patient_loss = events.patientsLoss;
+    organs_expired organs_loss = events.organsLoss;
 
     printf("Executing a random test\n");
     printf("Results: \n");

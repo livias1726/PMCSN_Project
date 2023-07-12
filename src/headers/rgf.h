@@ -24,7 +24,7 @@
 #define MU_DEATH_PAT_O_LOW 1.137
 #define MU_DEATH_PAT_A_CRIT 0.009
 #define MU_DEATH_PAT_A_NORM 1.703
-#define MU_DEATH_A_LOW 0.679
+#define MU_DEATH_PAT_A_LOW 0.679
 #define MU_DEATH_PAT_B_CRIT 0.005
 #define MU_DEATH_PAT_B_NORM 1.032
 #define MU_DEATH_PAT_B_LOW 0.352
@@ -37,7 +37,7 @@
 #define MU_RENEGE_PAT_O_LOW 1.971
 #define MU_RENEGE_PAT_A_CRIT 0.018
 #define MU_RENEGE_PAT_A_NORM 4.707
-#define MU_RENEGE_A_LOW 1.257
+#define MU_RENEGE_PAT_A_LOW 1.257
 #define MU_RENEGE_PAT_B_CRIT 0.007
 #define MU_RENEGE_PAT_B_NORM 2.029
 #define MU_RENEGE_PAT_B_LOW 0.605
@@ -48,11 +48,9 @@
 #define MU_ORG 1
 
 double Exponential(double mu);
-double[4]
-getOrganArrival(BLOOD_TYPE bt, double[3] arrival
-);
-double *[3] getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival[4][3]);
-double *getOrganRenege(BLOOD_TYPE bt, double arrival[4]);
-double getPatientRenege(double arrival);
-double getPatientDeath(double arrival);
+double * getOrganArrival(BLOOD_TYPE bt, double arrival[3]);
+double ** getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival[4][3]);
+double getOrganRenege(BLOOD_TYPE bt, double arrival);
+double ** getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival[3][4]);
+double ** getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival[3][4]);
 #endif //PMCSN_PROJECT_RGF_H

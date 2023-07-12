@@ -45,32 +45,45 @@ arrival *getArrival(double simulationTime);
 */
 
 /***
+ * EVENT LIST
+ */
+
+typedef struct event_list {
+    struct patient_waiting_list patientArrival;
+    struct organ_bank organArrival;
+    struct transplant_center transplantArrival;
+    struct organs_expired_queue organsLoss;
+    struct patient_lost_queue patientsLoss;
+} event_list;
+
+/***
  * --------------------------------------------- EVENT HANDLERS PROTOTYPES ---------------------------------------------
  */
 
 /***
  * ORGAN ARRIVAL
  */
-void handleOrganArrival(BLOOD_TYPE bloodType, patient_waiting_list *, organ_bank *bank, transplant *transplantCenter);
+void handleOrganArrival(event_list *events, BLOOD_TYPE bloodType);
 void addOrganToQueue(organ_queue **pQueue, organ_bank *bank, organ *o);
 
 /***
  * PATIENT ARRIVAL
  */
-void handlePatientArrival(BLOOD_TYPE, PRIORITY, patient_waiting_list *, organ_bank *, transplant *transplantCenter);
+void handlePatientArrival(event_list *events, BLOOD_TYPE, PRIORITY);
 void addPatientToQueue(patient_queue_priority **pQueuePriority, patient_waiting_list *waitingList,
                        patient_queue_blood_type *queueBloodType, patient *p);
 
 /***
  * ORGAN RENEGE
  */
-void handleOrganRenege(BLOOD_TYPE bloodType, organ_bank *pBank, organs_expired *expired);
+void handleOrganRenege(event_list *events, BLOOD_TYPE bloodType);
 int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *pBank, organs_expired *expiredQueue);
 
 /***
  * PATIENT RENEGE
  */
-void handlePatientLoss(LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list* wl, patients_lost *loss_queue);
+void
+handlePatientLoss(event_list *events, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr);
 void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
                          patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList,
                          patients_lost *pQueue);
@@ -78,7 +91,7 @@ void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePrio
 /***
  * MATCHING
  */
-void handleMatching(patient_waiting_list *pWaitingList, organ_bank *bank, transplant *tc);
+void handleMatching(event_list *events);
 bool handleMatchingFromPatient(BLOOD_TYPE, organ_bank *, transplant *tc, patient *patient);
 bool handleMatchingFromOrgan(BLOOD_TYPE, patient_waiting_list *, transplant *tc, organ *organ);
 
