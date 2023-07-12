@@ -7,6 +7,69 @@
 
 double simulation_time = START;
 
+double getSmallest(double *values, int len) {
+
+    double smallest = (double) INFINITY;
+
+    for(int i=0; i<len; i++) {
+        if(values[i] < smallest)
+            smallest = values[i];
+    }
+
+    return smallest;
+
+}
+
+double getMininumTime(event_list *events) {
+    int len = 44;
+    double timesToCompare[len];
+    timesToCompare[0] = events->organArrival.interArrivalTime[O];
+    timesToCompare[1] = events->organArrival.interArrivalTime[A];
+    timesToCompare[2] = events->organArrival.interArrivalTime[B];
+    timesToCompare[3] = events->organArrival.interArrivalTime[AB];
+    timesToCompare[4] = events->patientArrival.interArrivalTime[O][critical];
+    timesToCompare[5] = events->patientArrival.interArrivalTime[O][normal];
+    timesToCompare[6] = events->patientArrival.interArrivalTime[O][low];
+    timesToCompare[7] = events->patientArrival.interArrivalTime[A][critical];
+    timesToCompare[8] = events->patientArrival.interArrivalTime[A][normal];
+    timesToCompare[9] = events->patientArrival.interArrivalTime[A][low];
+    timesToCompare[10] = events->patientArrival.interArrivalTime[B][critical];
+    timesToCompare[11] = events->patientArrival.interArrivalTime[B][normal];
+    timesToCompare[12] = events->patientArrival.interArrivalTime[B][low];
+    timesToCompare[13] = events->patientArrival.interArrivalTime[AB][critical];
+    timesToCompare[14] = events->patientArrival.interArrivalTime[AB][normal];
+    timesToCompare[15] = events->patientArrival.interArrivalTime[AB][low];
+    timesToCompare[16] = events->organsLoss.renegingTime[O];
+    timesToCompare[17] = events->organsLoss.renegingTime[A];
+    timesToCompare[18] = events->organsLoss.renegingTime[B];
+    timesToCompare[19] = events->organsLoss.renegingTime[AB];
+    timesToCompare[20] = events->patientsLoss.renegingTime[O][critical];
+    timesToCompare[21] = events->patientsLoss.renegingTime[O][normal];
+    timesToCompare[22] = events->patientsLoss.renegingTime[O][low];
+    timesToCompare[23] = events->patientsLoss.renegingTime[A][critical];
+    timesToCompare[24] = events->patientsLoss.renegingTime[A][normal];
+    timesToCompare[25] = events->patientsLoss.renegingTime[A][low];
+    timesToCompare[26] = events->patientsLoss.renegingTime[B][critical];
+    timesToCompare[27] = events->patientsLoss.renegingTime[B][normal];
+    timesToCompare[28] = events->patientsLoss.renegingTime[B][low];
+    timesToCompare[29] = events->patientsLoss.renegingTime[AB][critical];
+    timesToCompare[30] = events->patientsLoss.renegingTime[AB][normal];
+    timesToCompare[31] = events->patientsLoss.renegingTime[AB][low];
+    timesToCompare[32] = events->patientsLoss.deathTime[O][critical];
+    timesToCompare[33] = events->patientsLoss.deathTime[O][normal];
+    timesToCompare[34] = events->patientsLoss.deathTime[O][low];
+    timesToCompare[35] = events->patientsLoss.deathTime[A][critical];
+    timesToCompare[36] = events->patientsLoss.deathTime[A][normal];
+    timesToCompare[37] = events->patientsLoss.deathTime[A][low];
+    timesToCompare[38] = events->patientsLoss.deathTime[B][critical];
+    timesToCompare[39] = events->patientsLoss.deathTime[B][normal];
+    timesToCompare[40] = events->patientsLoss.deathTime[B][low];
+    timesToCompare[41] = events->patientsLoss.deathTime[AB][critical];
+    timesToCompare[42] = events->patientsLoss.deathTime[AB][normal];
+    timesToCompare[43] = events->patientsLoss.deathTime[AB][low];
+
+    return getSmallest(timesToCompare, len);
+}
 
 int main(){
 
@@ -57,14 +120,61 @@ int main(){
     }
 
     /* Choose next event selecting minimum time */
-
-
-    // ----------------------------------------------------- Test -----------------------------------------------------
-
     int patients_arrived = 0;
     int organs_arrived = 0;
 
-    srand(time(NULL));   // Initialization, should only be called once.
+    int idx = 0;
+    while (idx<500000) {
+
+        simTime.next = getMininumTime(&events);		                //Next event time
+        simTime.current = simTime.next;                             //Clock update
+
+        for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+            if (simTime.current == events.organArrival.interArrivalTime[i]) {
+                handleOrganArrival(&events, &simTime, i);
+                organs_arrived++;
+                break;
+            } else if (simTime.current == events.organsLoss.renegingTime[i]) {
+                handleOrganRenege(&events, &simTime, i);
+                break;
+            } else if (simTime.current == events.patientArrival.interArrivalTime[i][critical]) {
+                handlePatientArrival(&events, &simTime, i, critical);
+                patients_arrived++;
+                break;
+            } else if (simTime.current == events.patientArrival.interArrivalTime[i][normal]) {
+                handlePatientArrival(&events, &simTime, i, normal);
+                patients_arrived++;
+                break;
+            } else if (simTime.current == events.patientArrival.interArrivalTime[i][low]) {
+                handlePatientArrival(&events, &simTime, i, low);
+                patients_arrived++;
+                break;
+            } else if (simTime.current == events.patientsLoss.renegingTime[i][critical]) {
+                handlePatientLoss(&events, &simTime, renege, i, critical);
+                break;
+            } else if (simTime.current == events.patientsLoss.renegingTime[i][normal]) {
+                handlePatientLoss(&events, &simTime, renege, i, normal);
+                break;
+            } else if (simTime.current == events.patientsLoss.renegingTime[i][low]) {
+                handlePatientLoss(&events, &simTime, renege, i, low);
+                break;
+            } else if (simTime.current == events.patientsLoss.deathTime[i][critical]) {
+                handlePatientLoss(&events, &simTime, death, i, critical);
+                break;
+            } else if (simTime.current == events.patientsLoss.deathTime[i][normal]) {
+                handlePatientLoss(&events, &simTime, death, i, normal);
+                break;
+            } else if (simTime.current == events.patientsLoss.deathTime[i][low]) {
+                handlePatientLoss(&events, &simTime, death, i, low);
+                break;
+            }
+        }
+        idx++;
+    }
+
+    // ----------------------------------------------------- Test -----------------------------------------------------
+
+ /*   srand(time(NULL));   // Initialization, should only be called once.
     int r_event = rand(), r_bt = rand(), r_pr = rand();
 
     for (int i = 0; i < 100; ++i) {
@@ -89,7 +199,7 @@ int main(){
         r_event = rand();
         r_bt = rand();
         r_pr = rand();
-    }
+    }*/
 
     /* TEST: EVENT: new patient arrival
      *  -> test with: (14 critical, 20 normal, 50 low) per each blood type
@@ -173,10 +283,21 @@ int main(){
     patients_lost patient_loss = events.patientsLoss;
     organs_expired organs_loss = events.organsLoss;
 
+    int patients_dead = 0;
+    int patient_reneged = 0;
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            patients_dead += (int)patient_loss.number_dead[i][j];
+            patient_reneged += (int)patient_loss.number_renege[i][j];
+        }
+    }
+
     printf("Executing a random test\n");
     printf("Results: \n");
     printf("\tPatients arrived: %d\n"
            "\tOrgans arrived: %d\n", patients_arrived, organs_arrived);
+    printf("\tPatients dead: %d\n"
+           "\tPatients reneging: %d\n", patients_dead, patient_reneged);
     printf("\tOrgans transplanted: %d\n", (int)transplant_c.total_number);
     printf("\tOrgans lost: \n"
            "\t\tO: %f\n"
@@ -214,6 +335,7 @@ int main(){
            "\t\t\tLow: %f\n", waiting_list.blood_type_queues[AB]->priority_queue[critical]->number,
            waiting_list.blood_type_queues[AB]->priority_queue[normal]->number,
            waiting_list.blood_type_queues[AB]->priority_queue[low]->number);
+
 
     // ---------------------------------------------------- Simulation -----------------------------------------------
 

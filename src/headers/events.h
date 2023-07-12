@@ -63,13 +63,13 @@ typedef struct event_list {
  * ORGAN ARRIVAL
  */
 void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType);
-void addOrganToQueue(organ_queue **pQueue, organ_bank *bank, organ *o);
+void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, organ *o);
 
 /***
  * PATIENT ARRIVAL
  */
 void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE, PRIORITY);
-void addPatientToQueue(patient_queue_priority **pQueuePriority, patient_waiting_list *waitingList,
+void addPatientToQueue(event_list *events, sim_time *t, patient_queue_priority **pQueuePriority,
                        patient_queue_blood_type *queueBloodType, patient *p);
 
 /***
@@ -83,22 +83,23 @@ int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *
  */
 void
 handlePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr);
-void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
-                         patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList,
-                         patients_lost *pQueue);
+void patientLossInternal(event_list *events, sim_time *t, LOSS_REASON reason, patient_queue_priority **pQueuePriority,
+                         patient_queue_blood_type *queueBloodType);
 
 /***
  * MATCHING
  */
 void handleMatching(event_list *events);
-bool handleMatchingFromPatient(BLOOD_TYPE, organ_bank *, transplant *tc, patient *patient);
-bool handleMatchingFromOrgan(BLOOD_TYPE, patient_waiting_list *, transplant *tc, organ *organ);
+
+bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE, patient *patient);
+
+bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE, organ *organ);
 
 /***
  * TRANSPLANT
  */
-void handleTransplantFromOrgan(BLOOD_TYPE bt, PRIORITY pr, patient_waiting_list *wl, organ *o, transplant *tc); //DUMMY
-void handleTransplantFromPatient(BLOOD_TYPE bt, organ_bank *bank, patient *p, transplant *tc); //DUMMY
+void handleTransplantFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, PRIORITY pr, organ *o); //DUMMY
+void handleTransplantFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, patient *p); //DUMMY
 
 /***
  * ACTIVATION
@@ -115,8 +116,8 @@ void decrementPatients(patient_queue_priority *pQueue, patient_queue_blood_type 
 organ * removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank);
 patient * removePatient(int idx, patient_queue_priority **pQueue, patient_queue_blood_type *pQueueBT,
                         patient_waiting_list *pList);
-void addPatientToLost(patient *p, patients_lost **pQueue, LOSS_REASON reason);
-void addOrganToLost(organ *o, organs_expired **pQueue);
-void addMatchedToTransplant(organ *organ, patient *patient, transplant **tr_center);
+void addPatientToLost(event_list *events, sim_time *t, patient *p, patients_lost **pQueue, LOSS_REASON reason);
+void addOrganToLost(event_list *events, sim_time *t, organ *o, organs_expired **pQueue);
+void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patient *patient);
 
 #endif
