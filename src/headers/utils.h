@@ -1,22 +1,23 @@
 #ifndef PMCSN_PROJECT_UTILS_H
 #define PMCSN_PROJECT_UTILS_H
+#define NUM_ITER 100
+#define SEED 123456789
+#define NUM_EVENTS 5
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
 #include <time.h>
+#include "sim_time.h"
 #include "enums.h"
 #include "model.h"
 #include "stats.h"
 #include "allocation.h"
 #include "events.h"
 #include "init.h"
-#include "time.h"
 #include "rgf.h"
 #include "../../lib/rngs.h"
 #include "../../lib/rvms.h"
-#define NUM_ITER 100
-#define SEED 123456789
 
 #define MALLOC_HANDLER(p) \
     if(p == NULL){ \

@@ -14,7 +14,7 @@
  * @param bloodType
  * @param bank
  */
-void handleOrganArrival(event_list *events, BLOOD_TYPE bloodType) {
+void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType) {
 
     patient_waiting_list *wl = &events->patientArrival;
     organ_bank *bank = &events->organArrival;
@@ -68,7 +68,7 @@ void addOrganToQueue(organ_queue **pQueue, organ_bank *bank, organ *o) {
  * @param priority
  * @param list
  */
-void handlePatientArrival(event_list *events, BLOOD_TYPE bloodType, PRIORITY priority) {
+void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType, PRIORITY priority) {
 
     patient_waiting_list *wl = &events->patientArrival;
     organ_bank *bank = &events->organArrival;
@@ -124,7 +124,7 @@ void addPatientToQueue(patient_queue_priority **pQueuePriority, patient_waiting_
  * @param bloodType
  * @param pBank
  */
-void handleOrganRenege(event_list *events, BLOOD_TYPE bloodType) {
+void handleOrganRenege(event_list *events, sim_time *t, BLOOD_TYPE bloodType) {
 
     organ_bank *bank = &events->organArrival;
     organs_expired *expired = &events->organsLoss;
@@ -165,7 +165,7 @@ int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *
 /***
  * PATIENT LOSS
  */
-void handlePatientLoss(event_list *events, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr) {
+void handlePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr) {
 
     patient_waiting_list *wl = &events->patientArrival;
     patients_lost *lost = &events->patientsLoss;

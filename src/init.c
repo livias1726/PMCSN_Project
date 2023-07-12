@@ -123,3 +123,13 @@ event_list initialize_event_list() {
     eventList.patientsLoss = patient_loss;
     return eventList;
 }
+
+sim_time initialize_time() {
+    sim_time t;
+    t.current = 0.0;
+    t.next = 0.0;
+    for(int i=0; i<5; i++) {
+        t.last[i] = 0.0;
+    }
+    return t;
+}

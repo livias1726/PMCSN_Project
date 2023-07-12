@@ -26,8 +26,6 @@ typedef struct patient_waiting_list {
     patient_queue_blood_type *blood_type_queues[NUM_BLOOD_TYPES];
     double total_number;                                                /* l_{p} */
     double interArrivalTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];           /* t_{a,p,BT} */
-    double renegingTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];               /* t_{r,p,BT} */
-    double deathTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];                  /* t_{d,p,BT} */
 } patient_waiting_list;
 
 typedef struct organ_queue {
@@ -41,7 +39,6 @@ typedef struct organ_bank {
     organ_queue *queues[NUM_ORGAN_QUEUES];              /* organ queues for blood type */
     double total_number;                                /* l_{o} */
     double interArrivalTime[NUM_BLOOD_TYPES];           /* t_{a,o,BT} */
-    double renegingTime[NUM_BLOOD_TYPES];               /* t_{r,o,BT} */
 } organ_bank;
 
 typedef struct transplant_center {
@@ -58,14 +55,15 @@ typedef struct activation_center {
 /* loss queues */
 typedef struct patient_lost_queue {
     patient *queue;
-    double number_dead[NUM_BLOOD_TYPES][NUM_PRIORITIES];     /* number dead type bt and priority pr */
-    double number_renege[NUM_BLOOD_TYPES][NUM_PRIORITIES];     /* number reneging type bt and priority pr */
-    double abandonTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double number_dead[NUM_BLOOD_TYPES][NUM_PRIORITIES];                /* number dead type bt and priority pr */
+    double number_renege[NUM_BLOOD_TYPES][NUM_PRIORITIES];              /* number reneging type bt and priority pr */
+    double renegingTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];               /* t_{r,p,BT} */
+    double deathTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];                  /* t_{d,p,BT} */
 } patients_lost;
 
 typedef struct organs_expired_queue {
     organ *queue;
-    double number[NUM_BLOOD_TYPES];            /* number expired type bt */
-    double abandonTime[NUM_BLOOD_TYPES];
+    double number[NUM_BLOOD_TYPES];                     /* number expired type bt */
+    double renegingTime[NUM_BLOOD_TYPES];               /* t_{r,o,BT} */
 } organs_expired;
 #endif

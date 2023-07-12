@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include "headers/utils.h"
 
-#define START 0.0                      /* initial time                   */
-#define STOP 2190                      /* terminal (close the door) time - 365*6 */
+#define START 0.0                      /* initial sim_time                   */
+#define STOP 2190                      /* terminal (close the door) sim_time - 365*6 */
 #define INFINITE   (100.0 * STOP)      /* must be much larger than STOP  */
 
 double simulation_time = START;
@@ -30,7 +30,34 @@ int main(){
     // ------------------------------------------------------- Initialization --------------------------------------
 
     event_list events = initialize_event_list();
+    sim_time simTime = initialize_time();
     activation activation_c = initialize_activation_center();
+
+    events.organArrival.interArrivalTime[O] = getOrganArrival(O, START);
+    events.organArrival.interArrivalTime[A] = getOrganArrival(A, START);
+    events.organArrival.interArrivalTime[B] = getOrganArrival(B, START);
+    events.organArrival.interArrivalTime[AB] = getOrganArrival(AB, START);
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            events.patientArrival.interArrivalTime[i][j] = getPatientArrival(i, j, START);
+        }
+    }
+
+    events.organsLoss.renegingTime[O] = INFINITY;
+    events.organsLoss.renegingTime[A] = INFINITY;
+    events.organsLoss.renegingTime[B] = INFINITY;
+    events.organsLoss.renegingTime[AB] = INFINITY;
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            events.patientsLoss.renegingTime[i][j] = INFINITY;
+            events.patientsLoss.deathTime[i][j] = INFINITY;
+        }
+    }
+
+    /* Choose next event selecting minimum time */
+
 
     // ----------------------------------------------------- Test -----------------------------------------------------
 
@@ -43,18 +70,18 @@ int main(){
     for (int i = 0; i < 100; ++i) {
         switch (r_event % 5) {
             case 0:
-                handlePatientArrival(&events, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
+                handlePatientArrival(&events, &simTime, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
                 patients_arrived++;
                 break;
             case 1:
-                handleOrganArrival(&events, r_bt % NUM_BLOOD_TYPES);
+                handleOrganArrival(&events, &simTime, r_bt % NUM_BLOOD_TYPES);
                 organs_arrived++;
                 break;
             case 3:
-                handleOrganRenege(&events, r_bt % NUM_BLOOD_TYPES);
+                handleOrganRenege(&events, &simTime, r_bt % NUM_BLOOD_TYPES);
                 break;
             case 4:
-                handlePatientLoss(&events, renege, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
+                handlePatientLoss(&events, &simTime, renege, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
                 break;
         }
 

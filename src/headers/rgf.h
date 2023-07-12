@@ -48,9 +48,9 @@
 #define MU_ORG 1
 
 double Exponential(double mu);
-double * getOrganArrival(BLOOD_TYPE bt, double arrival[3]);
-double ** getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival[4][3]);
+double getOrganArrival(BLOOD_TYPE bt, double arrival);
+double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival);
 double getOrganRenege(BLOOD_TYPE bt, double arrival);
-double ** getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival[3][4]);
-double ** getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival[3][4]);
+double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival);
+double getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival);
 #endif //PMCSN_PROJECT_RGF_H

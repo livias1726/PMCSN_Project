@@ -6,14 +6,13 @@
  * It also defines the stream for the RNGs and declares a function prototype, used to generate a new arrival in the system.
  */
 
-
 //TODO: don't know if an enum is of any use rather than macro definitions for each stream
 typedef enum streams {
     MEAN_PATIENTS_INTERARRIVAL_STREAM, //TODO: to be divided by blood type and urgency??
     MEAN_ORGANS_INTERARRIVAL_STREAM, //TODO: to be divided by blood type??
     MATCHING_TIME_STREAM, //TODO: could be the same as the MEAN_ORGANS_INTERARRIVAL_STREAM if patients queues are never empty
     USER_PROBABILITY_STREAM,
-    MEAN_WAITING_TIME_CRITICAL_STREAM, //TODO: could be the same as the matching time but for critical patients
+    MEAN_WAITING_TIME_CRITICAL_STREAM, //TODO: could be the same as the matching sim_time but for critical patients
     MEAN_WAITING_TIME_NORMAL_STREAM,
     MEAN_WAITING_TIME_LOW_STREAM,
     MEAN_THINK_TIME_STREAM,
@@ -21,14 +20,14 @@ typedef enum streams {
 
 /* TODO: to be adapted
 typedef struct __arrival{
-    double time;                // time of the arrival
+    double sim_time;                // sim_time of the arrival
     Job job;                    // job associated to the event
     center center;              // ID of the center receiving the arrival
     struct __arrival *next;     // Pointer to next node of the queue
 }arrival;
 
 typedef struct __termination{
-    double time;                // time of the termination of the job
+    double sim_time;                // sim_time of the termination of the job
     Job job;                    // job associated to the event
     center center;              // ID of the center that processed the job
     int server_index;           // Index of the server that becomes idle. This value is not set for digest calculation node
@@ -37,8 +36,8 @@ typedef struct __termination{
 
 typedef struct __event_list
 {
-    arrival *arrivals;          // list of arrival events; it's an ordered by time list
-    termination *terminations;  // list of termination events; it's an ordered by time list
+    arrival *arrivals;          // list of arrival events; it's an ordered by sim_time list
+    termination *terminations;  // list of termination events; it's an ordered by sim_time list
 } event_list;
 
 arrival *getArrival(double simulationTime);
@@ -63,27 +62,27 @@ typedef struct event_list {
 /***
  * ORGAN ARRIVAL
  */
-void handleOrganArrival(event_list *events, BLOOD_TYPE bloodType);
+void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType);
 void addOrganToQueue(organ_queue **pQueue, organ_bank *bank, organ *o);
 
 /***
  * PATIENT ARRIVAL
  */
-void handlePatientArrival(event_list *events, BLOOD_TYPE, PRIORITY);
+void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE, PRIORITY);
 void addPatientToQueue(patient_queue_priority **pQueuePriority, patient_waiting_list *waitingList,
                        patient_queue_blood_type *queueBloodType, patient *p);
 
 /***
  * ORGAN RENEGE
  */
-void handleOrganRenege(event_list *events, BLOOD_TYPE bloodType);
+void handleOrganRenege(event_list *events, sim_time *t, BLOOD_TYPE bloodType);
 int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *pBank, organs_expired *expiredQueue);
 
 /***
  * PATIENT RENEGE
  */
 void
-handlePatientLoss(event_list *events, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr);
+handlePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr);
 void patientLossInternal(LOSS_REASON reason, patient_queue_priority **pQueuePriority,
                          patient_queue_blood_type *queueBloodType, patient_waiting_list *waitingList,
                          patients_lost *pQueue);

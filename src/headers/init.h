@@ -1,6 +1,8 @@
 #ifndef PMCSN_PROJECT_INIT_H
 #define PMCSN_PROJECT_INIT_H
 
+#include "sim_time.h"
+
 patient_waiting_list initialize_waiting_list();
 organ_bank initialize_organ_bank();
 transplant initialize_transplant_center();
@@ -11,5 +13,6 @@ patient *new_patient(BLOOD_TYPE bt, PRIORITY pr);
 organ *new_organ(BLOOD_TYPE bt);
 
 event_list initialize_event_list();
+sim_time initialize_time();
 
 #endif //PMCSN_PROJECT_INIT_H
