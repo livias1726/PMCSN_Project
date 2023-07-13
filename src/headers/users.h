@@ -22,4 +22,18 @@ typedef struct matched {    /* this is a struct that represents the organs that 
     struct matched *next;
 } matched;
 
+typedef struct in_activation {
+    patient* patient;
+    int serverOffset;           /* offset to the server */
+    double completionTime;      /* time of activation completion - t_{c,del} */
+    struct in_activation *next;
+} in_activation;
+
+typedef struct in_transplant {
+    matched* matched;
+    int serverOffset;           /* offset to the server */
+    double completionTime;      /* time of the transplant completion */
+    struct in_transplant *next;
+} in_transplant;
+
 #endif //PMCSN_PROJECT_USERS_H

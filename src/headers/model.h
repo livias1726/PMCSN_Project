@@ -48,8 +48,8 @@ typedef struct transplant_center {
 } transplant;
 
 typedef struct activation_center {
-    double total_number;        /* l_{del} */
-    double serviceTime;         /* t_{c,del} */
+    in_activation *inactive_patients;               /* list of the inactive patients */
+    double total_number;                            /* l_{del} */
 } activation;
 
 /* loss queues */

@@ -3,9 +3,20 @@
 * ------------------------------------------- RANDOM GENERATOR FUNCTIONS -----------------------------------------------
 */
 
-double Exponential(double mu)
-{
-    return (-mu * log(1.0 - Random()));
+double TruncatedNormal(double a, double b) {
+    /* approximate mean and stdev from max and min */
+    double mu = (a+b)/2;
+    double s = (b-a)/4;
+    double alpha = (a-mu)/s;
+    double beta = (b-mu)/s;
+
+    /* calculate pdf and cdf of a standard normal from alpha and beta */
+    double pdf = pdfNormal(0,1, beta) - pdfNormal(0, 1, alpha);
+    double cdf = cdfNormal(0,1,beta)-cdfNormal(0,1,alpha);
+
+    double t_mean = mu - s*(pdf)/(cdf);
+    double t_var = pow(s, 2) * (1 - (beta* pdfNormal(0,1,beta)-alpha* pdfNormal(0,1,alpha))/(cdf) - (pow(pdf/cdf, 2)));
+    return Normal(t_mean, sqrt(t_var));
 }
 
 double getOrganArrival(BLOOD_TYPE bt, double arrival) {
@@ -341,4 +352,21 @@ double getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival) {
         default:
             break;
     }
+}
+
+double getRejectionProb() {
+    SelectStream(41);
+    return Random();
+}
+
+double getActivationCompletion(double arrival) {
+    SelectStream(42);
+    arrival += TruncatedNormal(MIN_ACTIVATION, MAX_ACTIVATION);
+    return arrival;
+}
+
+double getTransplantCompletion(double arrival) {
+    SelectStream(43);
+    arrival += TruncatedNormal(MIN_TRANSPLANT, MAX_TRANSPLANT);
+    return arrival;
 }

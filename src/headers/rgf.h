@@ -47,10 +47,22 @@
 
 #define MU_ORG 1
 
-double Exponential(double mu);
+#define REJECT_P 0.11
+
+#define MIN_ACTIVATION 730.0
+#define MAX_ACTIVATION 1095.0           // 2*365-3*365 giorni di attesa
+#define MEAN_ACTIVATION 912.5
+#define S_ACTIVATION 182.5
+
+#define MIN_TRANSPLANT 12.0
+#define MAX_TRANSPLANT 24.0             // 12-24 giorni di trapianto + monitoraggio
+
 double getOrganArrival(BLOOD_TYPE bt, double arrival);
 double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival);
 double getOrganRenege(BLOOD_TYPE bt, double arrival);
 double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival);
 double getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival);
+double getActivationCompletion(double arrival);
+double getTransplantCompletion(double arrival);
+double getRejectionProb();
 #endif //PMCSN_PROJECT_RGF_H

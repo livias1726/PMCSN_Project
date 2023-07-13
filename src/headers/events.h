@@ -49,6 +49,7 @@ arrival *getArrival(double simulationTime);
 
 typedef struct event_list {
     struct patient_waiting_list patientArrival;
+    struct activation_center activationArrival;
     struct organ_bank organArrival;
     struct transplant_center transplantArrival;
     struct organs_expired_queue organsLoss;
@@ -69,6 +70,7 @@ void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, orga
  * PATIENT ARRIVAL
  */
 void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE, PRIORITY);
+void addToWaitingList(event_list *events, sim_time* t, patient *p);
 void addPatientToQueue(event_list *events, sim_time *t, patient_queue_priority **pQueuePriority,
                        patient_queue_blood_type *queueBloodType, patient *p);
 
@@ -92,7 +94,6 @@ void patientLossInternal(event_list *events, sim_time *t, LOSS_REASON reason, pa
 void handleMatching(event_list *events);
 
 bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE, patient *patient);
-
 bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE, organ *organ);
 
 /***
@@ -104,7 +105,8 @@ void handleTransplantFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt,
 /***
  * ACTIVATION
  */
-void handleActivation();
+void handlePatientActivation(event_list *events, sim_time *t);
+void addToActivationCenter(event_list *events, sim_time *t, patient *patient);
 
 /***
  * UTILS

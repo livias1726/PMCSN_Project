@@ -32,7 +32,6 @@ patient_waiting_list initialize_waiting_list() {
 
 organ_bank initialize_organ_bank() {
     organ_bank organBank;
-
     for (int i = 0; i < NUM_ORGAN_QUEUES; ++i) {
         organBank.queues[i] = malloc(sizeof(organ_queue));
         MALLOC_HANDLER(organBank.queues[i])
@@ -52,6 +51,7 @@ organ_bank initialize_organ_bank() {
 transplant initialize_transplant_center() {
     transplant transplantCenter;
     transplantCenter.matched_list = malloc(sizeof(matched));
+    MALLOC_HANDLER(transplantCenter.matched_list);
     transplantCenter.total_number = 0.0;
     transplantCenter.serviceTime = 0.0;
     return transplantCenter;
@@ -59,8 +59,9 @@ transplant initialize_transplant_center() {
 
 activation initialize_activation_center() {
     activation activationCenter;
+    activationCenter.inactive_patients = malloc(sizeof(in_activation));
+    MALLOC_HANDLER(activationCenter.inactive_patients);
     activationCenter.total_number = 0.0;
-    activationCenter.serviceTime = 0.0;
     return activationCenter;
 }
 
@@ -110,6 +111,7 @@ organ * new_organ(BLOOD_TYPE bt) {
 
 event_list initialize_event_list() {
     patient_waiting_list waiting_list = initialize_waiting_list();
+    activation activation_c = initialize_activation_center();
     organ_bank bank = initialize_organ_bank();
     transplant transplant_c = initialize_transplant_center();
     patients_lost patient_loss = initialize_patient_lost_queue();
@@ -118,6 +120,7 @@ event_list initialize_event_list() {
     event_list eventList;
     eventList.organArrival = bank;
     eventList.patientArrival = waiting_list;
+    eventList.activationArrival = activation_c;
     eventList.transplantArrival = transplant_c;
     eventList.organsLoss = organs_loss;
     eventList.patientsLoss = patient_loss;

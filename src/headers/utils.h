@@ -8,16 +8,18 @@
 #include <math.h>
 #include <stdbool.h>
 #include <time.h>
-#include "sim_time.h"
 #include "enums.h"
 #include "model.h"
 #include "stats.h"
 #include "allocation.h"
+#include "sim_time.h"
 #include "events.h"
+#include "sim.h"
 #include "init.h"
 #include "rgf.h"
 #include "../../lib/rngs.h"
 #include "../../lib/rvms.h"
+#include "../../lib/rvgs.h"
 
 #define MALLOC_HANDLER(p) \
     if(p == NULL){ \
