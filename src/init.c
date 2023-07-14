@@ -53,7 +53,6 @@ transplant initialize_transplant_center() {
     transplantCenter.transplanted_patients = malloc(sizeof(in_transplant));
     MALLOC_HANDLER(transplantCenter.transplanted_patients);
     transplantCenter.transplanted_patients->next=NULL;
-    transplantCenter.transplanted_patients->matched->next = NULL;
     transplantCenter.total_number = 0.0;
     transplantCenter.completed_transplants = 0.0;
     transplantCenter.rejected_transplants = 0.0;
