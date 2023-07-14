@@ -1,6 +1,7 @@
 #include "headers/utils.h"
 
-
+// TODO: can be a utils macro
+/*
 double getSmallest(double *values, int len) {
 
     double smallest = (double) INFINITY;
@@ -11,8 +12,9 @@ double getSmallest(double *values, int len) {
     }
 
     return smallest;
-
 }
+ */
+
 
 double getMinTime(event_list *events) {
     int len = 45;
@@ -65,7 +67,12 @@ double getMinTime(event_list *events) {
     timesToCompare[44] = getMinActivation(events->activationArrival.inactive_patients);
     //timesToCompare[45] = getMinTransplant(events->transplantArrival.matched_list);
 
-    return getSmallest(timesToCompare, len);
+    //return getSmallest(timesToCompare, len);
+
+    double min;
+    GET_SMALLEST(timesToCompare, len, min);
+
+    return min;
 }
 
 double getMinActivation(in_activation *inactive) {
@@ -113,7 +120,6 @@ void sim(event_list* events, sim_time* t, int* organ_arrived, int* patients_arri
     /* Choose next event selecting minimum time */
     t->current = 0;
     while (t->current < STOP) {
-
         t->next = getMinTime(events);		                //Next event time
         t->current = t->next;                             //Clock update
 

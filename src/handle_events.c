@@ -478,6 +478,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     matched *m = malloc(sizeof(matched));
     m->patient = *patient;
     m->organ = *organ;
+    m->next = NULL;
 
     patient_waiting_list *wl = &events->patientArrival;
     organ_bank *bank = &events->organArrival;

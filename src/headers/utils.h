@@ -12,7 +12,6 @@
 #include "model.h"
 #include "stats.h"
 #include "allocation.h"
-#include "sim_time.h"
 #include "events.h"
 #include "sim.h"
 #include "init.h"
@@ -50,5 +49,10 @@
         prev->next = next;                     \
     }while(0);
 
+#define GET_SMALLEST(values, len, res)  \
+    res = values[0]; \
+    for(int i=1; i<len; ++i)  { \
+        res = (values[i] < res) ? values[i] : res; \
+    }
 
 #endif //PMCSN_PROJECT_UTILS_H

@@ -1,8 +1,6 @@
 #ifndef PMCSN_PROJECT_INIT_H
 #define PMCSN_PROJECT_INIT_H
 
-#include "sim_time.h"
-
 patient_waiting_list initialize_waiting_list();
 organ_bank initialize_organ_bank();
 transplant initialize_transplant_center();
