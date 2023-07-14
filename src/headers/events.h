@@ -99,14 +99,19 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE, organ 
 /***
  * TRANSPLANT
  */
-void handleTransplantFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, PRIORITY pr, organ *o); //DUMMY
-void handleTransplantFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, patient *p); //DUMMY
+void handleTransplantFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, PRIORITY pr, organ *o);
+void handleTransplantFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, patient *p);
+void handleTransplantCompletion(event_list *events, sim_time *t);
+in_transplant *getNextTransplant(double minCompletion, in_transplant *transplanted);
+void updateTransplantOffsets(in_transplant *transplanted);
 
 /***
  * ACTIVATION
  */
 void handlePatientActivation(event_list *events, sim_time *t);
 void addToActivationCenter(event_list *events, sim_time *t, patient *patient);
+in_activation *getNextActivation(double minCompletion, in_activation* inactive);
+void updateActivationOffsets(in_activation *inactive);
 
 /***
  * UTILS

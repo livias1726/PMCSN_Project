@@ -8,9 +8,6 @@
  * ORGAN ARRIVAL
  */
 
-
-void updateOffsets(in_activation *inactive);
-
 /***
  * Function to handle the arrival of a new organ in a blood type queue of the organ bank
  * @param bloodType
@@ -140,7 +137,7 @@ void handlePatientActivation(event_list *events, sim_time *t) {
     events->activationArrival.total_number--;
 
     /* update offsets */
-    updateOffsets(inactive);
+    updateActivationOffsets(inactive);
 
     /* get patient to activate and send it to the waiting list with low priority */
     patient* p = n->patient;
@@ -148,7 +145,7 @@ void handlePatientActivation(event_list *events, sim_time *t) {
     printf("Patient with blood type %d activated and sent to waiting list\n", p->bt);
 }
 
-void updateOffsets(in_activation *inactive) {
+void updateActivationOffsets(in_activation *inactive) {
     int idx = 1;
     while (inactive->next != NULL) {
         inactive = inactive->next;
@@ -520,24 +517,32 @@ void handleTransplantFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt,
 }
 
 void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patient *patient) {
-    matched *curr;
-    matched *m = malloc(sizeof(matched));
-    m->patient = *patient;
-    m->organ = *organ;
+    in_transplant *curr;
 
     patient_waiting_list *wl = &events->patientArrival;
     organ_bank *bank = &events->organArrival;
     transplant *tc = &events->transplantArrival;
 
-    /* add to transplant center */
-    /* roll to last node */
-    GET_LAST_NODE(tc->matched_list, curr)
-
-    /* append patient node */
-    curr->next = m;
+    /* new match */
+    matched *m = malloc(sizeof(matched));
+    m->patient = *patient;
+    m->organ = *organ;
 
     /* increment transplant number */
     tc->total_number++;
+
+    /* add match to transplant queue */
+    in_transplant *in_tr = malloc(sizeof(in_transplant));
+    in_tr->matched = m;
+    in_tr->next = NULL;
+    in_tr->serverOffset = (int)tc->total_number;
+
+    /* generate and change transplant completion time */
+    in_tr->completionTime = getTransplantCompletion(t->current);
+
+    /* add new in transplant */
+    GET_LAST_NODE(tc->transplanted_patients, curr)
+    curr->next = in_tr;
 
     /* Check if patient queue is empty to eventually deactivate death and renege events */
     if (wl->blood_type_queues[patient->bt]->priority_queue[patient->priority]->number == 0) {
@@ -557,6 +562,55 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
         events->organsLoss.renegingTime[organ->bt] = INFINITY;
     } else {
         events->organsLoss.renegingTime[organ->bt] = getOrganRenege(organ->bt, t->current);
+    }
+}
+
+in_transplant *getNextTransplant(double minCompletion, in_transplant *transplanted) {
+    while (transplanted->next != NULL) {
+        transplanted = transplanted->next;
+        if (transplanted->completionTime == minCompletion) {
+            return transplanted;
+        }
+    }
+}
+
+void updateTransplantOffsets(in_transplant *transplanted) {
+    int idx = 1;
+    while (transplanted->next != NULL) {
+        transplanted = transplanted->next;
+        transplanted->serverOffset = idx;
+        idx++;
+    }
+}
+
+void handleTransplantCompletion(event_list *events, sim_time *t) {
+    in_transplant *transplanted = events->transplantArrival.transplanted_patients;
+    double min = getMinTransplant(transplanted);
+    in_transplant *n = getNextTransplant(min, transplanted);
+
+    int idx = n->serverOffset-1;
+    in_transplant *prev = NULL;
+    in_transplant *curr = transplanted; //head
+    in_transplant *next = curr->next; //first inactive
+
+    /*remove completed transplant */
+    REMOVE_MID_NODE(idx, curr, prev, next)
+    curr->next = NULL;
+    events->transplantArrival.total_number--;
+
+    /* update offsets */
+    updateTransplantOffsets(transplanted);
+
+    /* reject transplant with a probability below level and send patient back in queue with high priority */
+    double prob = getRejectionProb();
+    if (prob < REJECT_P) {
+        patient *p = &n->matched->patient;
+        p->priority = critical;
+        addToWaitingList(events, t, p);
+        printf("Patient with blood type %d was rejected and and sent back to waiting list with priority %d\n", p->bt, p->priority);
+        events->transplantArrival.rejected_transplants++;
+    } else {
+        events->transplantArrival.completed_transplants++;
     }
 }
 

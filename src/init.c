@@ -50,10 +50,11 @@ organ_bank initialize_organ_bank() {
 
 transplant initialize_transplant_center() {
     transplant transplantCenter;
-    transplantCenter.matched_list = malloc(sizeof(matched));
-    MALLOC_HANDLER(transplantCenter.matched_list);
+    transplantCenter.transplanted_patients = malloc(sizeof(in_transplant));
+    MALLOC_HANDLER(transplantCenter.transplanted_patients);
     transplantCenter.total_number = 0.0;
-    transplantCenter.serviceTime = 0.0;
+    transplantCenter.completed_transplants = 0.0;
+    transplantCenter.rejected_transplants = 0.0;
     return transplantCenter;
 }
 

@@ -227,7 +227,9 @@ int main(){
            "\t\tnormal: %d\n"
            "\t\tlow: %d\n"
            "\tPatients reneging: %d\n", patients_dead_c, patients_dead_n, patients_dead_l, patient_reneged);
-    printf("\tOrgans transplanted: %d\n", (int)transplant_c.total_number);
+    printf("\tTransplants: \n"
+           "\t\tsuccessful: %d\n"
+           "\t\trejected: %d\n", (int)transplant_c.completed_transplants, (int)transplant_c.rejected_transplants);
     printf("\tOrgans lost: \n"
            "\t\tO: %f\n"
            "\t\tA: %f\n"

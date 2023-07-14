@@ -30,9 +30,9 @@ typedef struct in_activation {
 } in_activation;
 
 typedef struct in_transplant {
-    matched* matched;
+    matched* matched;           /* list of the organs matched with patients */
     int serverOffset;           /* offset to the server */
-    double completionTime;      /* time of the transplant completion */
+    double completionTime;      /* time of the transplant completion - t_{c,trans} */
     struct in_transplant *next;
 } in_transplant;
 

@@ -1,6 +1,5 @@
 #include "headers/utils.h"
 
-
 double getSmallest(double *values, int len) {
 
     double smallest = (double) INFINITY;
@@ -15,7 +14,7 @@ double getSmallest(double *values, int len) {
 }
 
 double getMinTime(event_list *events) {
-    int len = 45;
+    int len = 46;
 
     double timesToCompare[len];
     timesToCompare[0] = events->organArrival.interArrivalTime[O];
@@ -63,9 +62,25 @@ double getMinTime(event_list *events) {
     timesToCompare[42] = events->patientsLoss.deathTime[AB][normal];
     timesToCompare[43] = events->patientsLoss.deathTime[AB][low];
     timesToCompare[44] = getMinActivation(events->activationArrival.inactive_patients);
-    //timesToCompare[45] = getMinTransplant(events->transplantArrival.matched_list);
+    timesToCompare[45] = getMinTransplant(events->transplantArrival.transplanted_patients);
 
     return getSmallest(timesToCompare, len);
+}
+
+double getMinTransplant(in_transplant *transplanted) {
+    double min, tmp;
+
+    if (transplanted->next == NULL) {
+        return INFINITY;
+    }
+    min = transplanted->next->completionTime;
+    while (transplanted->next != NULL) {
+        transplanted = transplanted->next;
+        tmp = transplanted->completionTime;
+        if (tmp < min)
+            min = transplanted->completionTime;
+    }
+    return min;
 }
 
 double getMinActivation(in_activation *inactive) {
@@ -158,6 +173,9 @@ void sim(event_list *events, sim_time *t, int *organ_arrived, int *patients_arri
                 break;
             } else if (t->current == getMinActivation(events->activationArrival.inactive_patients)) {
                 handlePatientActivation(events, t);
+                break;
+            } else if (t->current == getMinTransplant(events->transplantArrival.transplanted_patients)) {
+                handleTransplantCompletion(events, t);
                 break;
             }
         }
