@@ -9,16 +9,34 @@ typedef enum blood_type {
     AB
 } BLOOD_TYPE;
 
+static const char * const bt_to_str[] = {
+    [O] = "0",
+    [A] = "A",
+    [B] = "B",
+    [AB] = "AB"
+};
+
 typedef enum priority {
-    critical=1,
-    normal=2,
-    low=3,
+    critical=0,
+    normal,
+    low,
     none
 } PRIORITY;
+
+static const char * const prio_to_str[] = {
+    [critical] = "critical",
+    [normal] = "normal",
+    [low] = "low",
+};
 
 typedef enum policy {
     ABO_Id,
     ABO_Comp
 } POLICY;
+
+typedef enum loss_reason {
+    death,
+    renege
+} LOSS_REASON;
 
 #endif //PMCSN_PROJECT_ENUMS_H

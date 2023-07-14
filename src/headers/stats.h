@@ -17,16 +17,16 @@ typedef struct statistics{
     int numDeaths[NUM_PATIENT_QUEUES];              // number of death occurred in each waiting list
     int numOrganOut[NUM_ORGAN_QUEUES];              // number of organ outdatings
 
-    double waitTime[NUM_PATIENT_QUEUES];                    // avg time in each waiting list
+    double waitTime[NUM_PATIENT_QUEUES];                    // avg sim_time in each waiting list
     double avgWaitingPatients[NUM_PATIENT_QUEUES];          // avg number of patients in each waiting list
-    double patientsInterarrivalTime[NUM_PATIENT_QUEUES];    // avg patients interarrival time
-    double organsInterarrivalTime[NUM_ORGAN_QUEUES];        // avg organs interarrival time
+    double patientsInterarrivalTime[NUM_PATIENT_QUEUES];    // avg patients interarrival sim_time
+    double organsInterarrivalTime[NUM_ORGAN_QUEUES];        // avg organs interarrival sim_time
     double avgActivationDelay;                              // avg delay for temporarily inactive patients
     double utilization;                                     // utilization of the center
 
-    double globalWaitingTime;                       // avg time waiting for a transplant
-    double globalWaitingTimeByBloodType;            // avg time waiting for a transplant by blood type
-    double globalWaitingTimeByPriority;             // avg time waiting for a transplant by medical urgency
+    double globalWaitingTime;                       // avg sim_time waiting for a transplant
+    double globalWaitingTimeByBloodType;            // avg sim_time waiting for a transplant by blood type
+    double globalWaitingTimeByPriority;             // avg sim_time waiting for a transplant by medical urgency
 } stats;
 
 // ------------------- PROTOTYPES ----------------
