@@ -18,8 +18,8 @@ patient_waiting_list initialize_waiting_list() {
             waitingList.blood_type_queues[i]->priority_queue[j]->priority = j;
 
             waitingList.blood_type_queues[i]->priority_queue[j]->queue = malloc(sizeof(patient));
-            waitingList.blood_type_queues[i]->priority_queue[j]->queue->bt = i;
             MALLOC_HANDLER(waitingList.blood_type_queues[i]->priority_queue[j]->queue)
+            waitingList.blood_type_queues[i]->priority_queue[j]->queue->bt = i;
 
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->priority = none;
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->is_active = false;
@@ -52,6 +52,8 @@ transplant initialize_transplant_center() {
     transplant transplantCenter;
     transplantCenter.transplanted_patients = malloc(sizeof(in_transplant));
     MALLOC_HANDLER(transplantCenter.transplanted_patients);
+    transplantCenter.transplanted_patients->next=NULL;
+    transplantCenter.transplanted_patients->matched->next = NULL;
     transplantCenter.total_number = 0.0;
     transplantCenter.completed_transplants = 0.0;
     transplantCenter.rejected_transplants = 0.0;
@@ -61,7 +63,14 @@ transplant initialize_transplant_center() {
 activation initialize_activation_center() {
     activation activationCenter;
     activationCenter.inactive_patients = malloc(sizeof(in_activation));
-    MALLOC_HANDLER(activationCenter.inactive_patients);
+    MALLOC_HANDLER(activationCenter.inactive_patients)
+    // init head
+    activationCenter.inactive_patients->next = NULL;
+    // init patients head
+    activationCenter.inactive_patients->patient = malloc(sizeof(patient));
+    MALLOC_HANDLER(activationCenter.inactive_patients->patient)
+    activationCenter.inactive_patients->patient->next = NULL;
+
     activationCenter.total_number = 0.0;
     return activationCenter;
 }
@@ -69,23 +78,40 @@ activation initialize_activation_center() {
 organs_expired initialize_organs_expired_queue() {
     organs_expired organsExpired;
     organsExpired.queue = malloc(sizeof(organ));
-    MALLOC_HANDLER(organsExpired.queue);
+    MALLOC_HANDLER(organsExpired.queue)
+    // head init
+    organsExpired.queue->next = NULL;
+    organsExpired.queue->starting_age = -1;
 
+    // TODO Loop unroll: so che fa schifo ma aiuta le prestazioni, giuro
+    organsExpired.number[O] = 0.0;
+    organsExpired.number[A] = 0.0;
+    organsExpired.number[B] = 0.0;
+    organsExpired.number[AB] = 0.0;
+    organsExpired.renegingTime[O] = -1;
+    organsExpired.renegingTime[A] = -1;
+    organsExpired.renegingTime[B] = -1;
+    organsExpired.renegingTime[AB] = -1;
+    /*
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         organsExpired.number[i] = 0.0;
     }
+     */
     return organsExpired;
 }
 
 patients_lost initialize_patient_lost_queue() {
     patients_lost patientsLost;
     patientsLost.queue = malloc(sizeof(patient));
-    MALLOC_HANDLER(patientsLost.queue);
+    MALLOC_HANDLER(patientsLost.queue)
+    patientsLost.queue->next = NULL;
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
             patientsLost.number_dead[i][j] = 0.0;
+            patientsLost.deathTime[i][j] = -1;
             patientsLost.number_renege[i][j] = 0.0;
+            patientsLost.renegingTime[i][j] = -1;
         }
     }
     return patientsLost;
@@ -132,8 +158,17 @@ sim_time initialize_time() {
     sim_time t;
     t.current = 0.0;
     t.next = 0.0;
+
+    //loop unroll
+    t.last[0] = 0.0;
+    t.last[1] = 0.0;
+    t.last[2] = 0.0;
+    t.last[3] = 0.0;
+    t.last[4] = 0.0;
+    /*
     for(int i=0; i<5; i++) {
         t.last[i] = 0.0;
     }
+     */
     return t;
 }

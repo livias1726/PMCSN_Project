@@ -94,8 +94,6 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
     BLOOD_TYPE bloodType = p->bt;
     PRIORITY priority = p->priority;
 
-
-    /* FIXME questo non è corretto! perché se arriva prima un paziente low di normal viene servito prima! */
     bool match = handleMatchingFromPatient(events, t, bloodType, p);
 
     if (!match) {
@@ -527,6 +525,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     matched *m = malloc(sizeof(matched));
     m->patient = *patient;
     m->organ = *organ;
+    m->next = NULL;
 
     /* increment transplant number */
     tc->total_number++;
