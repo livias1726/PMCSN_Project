@@ -97,6 +97,8 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
     BLOOD_TYPE bloodType = p->bt;
     PRIORITY priority = p->priority;
 
+
+    /* FIXME questo non è corretto! perché se arriva prima un paziente low di normal viene servito prima! */
     bool match = handleMatchingFromPatient(events, t, bloodType, p);
 
     if (!match) {
@@ -156,7 +158,7 @@ void updateOffsets(in_activation *inactive) {
 }
 
 /***
- *
+ * Adds inactive patient to the activation center
  * @param events
  * @param t
  * @param p
@@ -354,6 +356,37 @@ void handleMatchingInternal(patient_queue_blood_type *patient_q, organ_queue *or
  * //TODO: check if the patient can be transplanted due to their priority and other patients in queue!!!
  * */
 bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, patient *patient) {
+    PRIORITY pr = patient->priority;
+    PRIORITY priority_placement = pr;
+
+    /* check if the patient can be transplanted due to their priority and other patients in queue */
+    switch (pr) {
+        case critical:
+            // instantly serve patient
+            break;
+        case normal:
+            // check if there are critical patients
+            if (events->patientArrival.blood_type_queues[bt]->priority_queue[critical]->number != 0) {
+                // serve patient in queue critical
+                priority_placement = critical;
+            }
+            break;
+        case low:
+            // check if there are critical patients
+            if (events->patientArrival.blood_type_queues[bt]->priority_queue[critical]->number != 0) {
+                // serve patient in queue critical
+                priority_placement = critical;
+            }
+            // check if there are normal patients
+            if (events->patientArrival.blood_type_queues[bt]->priority_queue[normal]->number != 0) {
+                // serve patient in queue normal
+                priority_placement = normal;
+            }
+            break;
+        case none:
+            break;
+    }
+
 
     organ_bank *bank = &events->organArrival;
 
@@ -376,6 +409,19 @@ bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, p
 
     if (!found) return found;
 #endif
+
+    if (priority_placement == pr) {
+        // serve original patient
+    } else {
+        // serve new selected patient and add original patient in queue
+        addPatientToQueue(events, t,
+                          &events->patientArrival.blood_type_queues[bt]->priority_queue[pr],
+                          events->patientArrival.blood_type_queues[bt],
+                          patient);
+        patient = removePatient(0, &events->patientArrival.blood_type_queues[bt]->priority_queue[priority_placement],
+                                events->patientArrival.blood_type_queues[bt],
+                                &events->patientArrival);
+    }
 
     handleTransplantFromPatient(events, t, avbOrganBt, patient);
     return found;

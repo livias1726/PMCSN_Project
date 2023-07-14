@@ -109,7 +109,8 @@ void initializeEventTime(event_list* events) {
     }
 }
 
-void sim(event_list* events, sim_time* t, int* organ_arrived, int* patients_arrived) {
+void sim(event_list *events, sim_time *t, int *organ_arrived, int *patients_arrived_c, int *patients_arrived_n,
+         int *patients_arrived_low) {
     /* Choose next event selecting minimum time */
     t->current = 0;
     while (t->current < STOP) {
@@ -127,15 +128,15 @@ void sim(event_list* events, sim_time* t, int* organ_arrived, int* patients_arri
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][critical]) {
                 handlePatientArrival(events, t, i, critical);
-                (*patients_arrived)++;
+                (*patients_arrived_c)++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][normal]) {
                 handlePatientArrival(events, t, i, normal);
-                (*patients_arrived)++;
+                (*patients_arrived_n)++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][low]) {
                 handlePatientArrival(events, t, i, low);
-                (*patients_arrived)++;
+                (*patients_arrived_low)++;
                 break;
             } else if (t->current == events->patientsLoss.renegingTime[i][critical]) {
                 handlePatientLoss(events, t, renege, i, critical);

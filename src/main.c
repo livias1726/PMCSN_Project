@@ -28,10 +28,12 @@ int main(){
     initializeEventTime(&events);
 
     /* Choose next event selecting minimum time */
-    int patients_arrived = 0;
+    int patients_arrived_c = 0;
+    int patients_arrived_n = 0;
+    int patients_arrived_l = 0;
     int organs_arrived = 0;
 
-    sim(&events, &simTime, &organs_arrived, &patients_arrived);
+    sim(&events, &simTime, &organs_arrived, &patients_arrived_c, &patients_arrived_n, &patients_arrived_l);
 
     /*simTime.current = 0;
     while (simTime.current < STOP) {
@@ -193,21 +195,38 @@ int main(){
     patients_lost patient_loss = events.patientsLoss;
     organs_expired organs_loss = events.organsLoss;
 
-    int patients_dead = 0;
+    int patients_dead_n = 0;
+    int patients_dead_c = 0;
+    int patients_dead_l = 0;
     int patient_reneged = 0;
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            patients_dead += (int)patient_loss.number_dead[i][j];
+            switch (j) {
+                case critical:
+                    patients_dead_c += (int)patient_loss.number_dead[i][j];
+                case normal:
+                    patients_dead_n += (int)patient_loss.number_dead[i][j];
+                case low:
+                    patients_dead_l += (int)patient_loss.number_dead[i][j];
+                default:
+                    break;
+            }
             patient_reneged += (int)patient_loss.number_renege[i][j];
         }
     }
 
     printf("Executing a random test\n");
     printf("Results: \n");
-    printf("\tPatients arrived: %d\n"
-           "\tOrgans arrived: %d\n", patients_arrived, organs_arrived);
-    printf("\tPatients dead: %d\n"
-           "\tPatients reneging: %d\n", patients_dead, patient_reneged);
+    printf("\tPatients arrived: \n"
+           "\t\tcrit: %d\n"
+           "\t\tnormal: %d\n"
+           "\t\tlow: %d\n"
+           "\tOrgans arrived: %d\n", patients_arrived_c, patients_arrived_n, patients_arrived_l, organs_arrived);
+    printf("\tPatients dead: \n"
+           "\t\tcrit: %d\n"
+           "\t\tnormal: %d\n"
+           "\t\tlow: %d\n"
+           "\tPatients reneging: %d\n", patients_dead_c, patients_dead_n, patients_dead_l, patient_reneged);
     printf("\tOrgans transplanted: %d\n", (int)transplant_c.total_number);
     printf("\tOrgans lost: \n"
            "\t\tO: %f\n"
