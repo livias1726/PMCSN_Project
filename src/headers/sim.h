@@ -2,7 +2,7 @@
 #define PMCSN_PROJECT_SIM_H
 
 #define START 0.0                       /* initial sim_time                   */
-#define STOP 365*3                        /* terminal (close the door) sim_time - 365*6 */
+#define STOP 365*5                        /* terminal (close the door) sim_time - 365*6 */
 
 //double getSmallest(double* values, int len); //TODO: can be a utils macro
 double getMinTime(event_list *events);

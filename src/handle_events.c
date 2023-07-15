@@ -94,7 +94,7 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
     BLOOD_TYPE bloodType = p->bt;
     PRIORITY priority = p->priority;
 
-    bool match = handleMatchingFromPatient(events, t, bloodType, p);
+    /*bool match = handleMatchingFromPatient(events, t, bloodType, p);
 
     if (!match) {
         patient_queue_blood_type **pbtQueue = &wl->blood_type_queues[bloodType];
@@ -104,7 +104,12 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
         printf("Arrived patient with blood type %s and priority %s\n", bt_to_str[bloodType], prio_to_str[priority]);
     } else {
         printf("Arrived and served patient with blood type %s and priority %s\n", bt_to_str[bloodType], prio_to_str[priority]);
-    }
+    }*/
+
+    patient_queue_blood_type **pbtQueue = &wl->blood_type_queues[bloodType];
+    patient_queue_priority **ppQueue = &(*pbtQueue)->priority_queue[priority];
+    addPatientToQueue(events, t, ppQueue, *pbtQueue, p);
+    printf("Arrived and served patient with blood type %s and priority %s\n", bt_to_str[bloodType], prio_to_str[priority]);
 }
 
 /***
@@ -217,17 +222,22 @@ void addPatientToQueue(event_list *events, sim_time *t, patient_queue_priority *
  * @param pBank
  */
 void handleOrganRenege(event_list *events, sim_time *t, BLOOD_TYPE bloodType) {
-    
-    // Generate next renege time for organ
-    events->organsLoss.reneging_time[bloodType] = getOrganRenege(bloodType, t->current);
-    t->last[0] = t->current;
 
     organ_bank *bank = &events->organArrival;
     organs_expired *expired = &events->organsLoss;
     
     /* Remove the oldest organ in the queue */
-    organ *o = removeOrgan(0, bank->queues, bank);
+    organ *o = removeOrgan(0, &bank->queues[bloodType], bank);
     addOrganToLost(events, t, o, &expired);
+
+    /* check if queue is empty to deactivate renege event */
+    if (bank->queues[bloodType]->number == 0) {
+        events->organsLoss.reneging_time[bloodType] = INFINITY;
+    } else {
+        // Generate next renege time for organ
+        events->organsLoss.reneging_time[bloodType] = getOrganRenege(bloodType, t->current);
+        t->last[0] = t->current;
+    }
 
     /*FIXME remove: int num_deleted = removeExpiredOrgans(bloodType, &bank->queues[bloodType], bank, expired);
      * if (num_deleted != 0) bank->total_number -= num_deleted;*/
