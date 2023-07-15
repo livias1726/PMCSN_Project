@@ -66,7 +66,7 @@ void gather_results(stats* statistics, event_list *events){
 
 void save_results(stats* statistics){
     FILE *f;
-    char path[1024];
+    char path[MAX_LEN];
 #ifdef ABO_ID
     snprintf(path, MAX_LEN, "output/res_%s.txt", "id");
 #else

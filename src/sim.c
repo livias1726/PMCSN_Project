@@ -60,15 +60,13 @@ double getMinTime(event_list *events) {
 double getMinTransplant(in_transplant *transplanted) {
     double min, tmp;
 
-    if (transplanted->next == NULL) {
-        return INFINITY;
-    }
+    if (transplanted->next == NULL) return INFINITY;
+
     min = transplanted->next->completionTime;
     while (transplanted->next != NULL) {
         transplanted = transplanted->next;
         tmp = transplanted->completionTime;
-        if (tmp < min)
-            min = transplanted->completionTime;
+        if (tmp < min) min = tmp;
     }
     return min;
 }
@@ -76,21 +74,18 @@ double getMinTransplant(in_transplant *transplanted) {
 double getMinActivation(in_activation *inactive) {
     double min, tmp;
 
-    if (inactive->next == NULL) {
-        return INFINITY;
-    }
+    if (inactive->next == NULL) return INFINITY;
+
     min = inactive->next->completionTime;
     while (inactive->next != NULL) {
         inactive = inactive->next;
         tmp = inactive->completionTime;
-        if (tmp < min)
-            min = inactive->completionTime;
+        if (tmp < min) min = tmp;
     }
     return min;
 }
 
-void sim(event_list *events, sim_time *t, int *organ_arrived, int *patients_arrived_c, int *patients_arrived_n,
-         int *patients_arrived_low) {
+void finite_sim(event_list *events, sim_time *t) {
     /* Choose next event selecting minimum time */
     t->current = 0;
     while (t->current < STOP) {
@@ -100,22 +95,18 @@ void sim(event_list *events, sim_time *t, int *organ_arrived, int *patients_arri
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organArrival.interArrivalTime[i]) {
                 handleOrganArrival(events, t, i);
-                (*organ_arrived)++;
                 break;
             } else if (t->current == events->organsLoss.reneging_time[i]) {
                 handleOrganRenege(events, t, i);
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][critical]) {
                 handlePatientArrival(events, t, i, critical);
-                (*patients_arrived_c)++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][normal]) {
                 handlePatientArrival(events, t, i, normal);
-                (*patients_arrived_n)++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][low]) {
                 handlePatientArrival(events, t, i, low);
-                (*patients_arrived_low)++;
                 break;
             } else if (t->current == events->patientsLoss.reneging_time[i][critical]) {
                 handlePatientLoss(events, t, renege, i, critical);

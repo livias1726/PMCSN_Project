@@ -151,6 +151,7 @@ patient * new_patient(BLOOD_TYPE bt, PRIORITY pr) {
     new->priority = pr;
     new->bt = bt;
     new->is_active = (int) Random() % 2; // FIXME integrate with probability to be inactive and handle it
+    new->start_time = clock();
     new->next = NULL;
     return new;
 }
