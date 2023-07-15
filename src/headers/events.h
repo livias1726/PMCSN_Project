@@ -1,6 +1,8 @@
 #ifndef PMCSN_PROJECT_EVENTS_H
 #define PMCSN_PROJECT_EVENTS_H
 
+#define NUM_EVENTS 5
+
 typedef struct sim_time {
     double current;
     double next;
@@ -46,16 +48,13 @@ int removeExpiredOrgans(BLOOD_TYPE bloodType, organ_queue **pQueue, organ_bank *
 /***
  * PATIENT RENEGE
  */
-void
-handlePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr);
+void handlePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr);
 void patientLossInternal(event_list *events, sim_time *t, LOSS_REASON reason, patient_queue_priority **pQueuePriority,
                          patient_queue_blood_type *queueBloodType);
 
 /***
  * MATCHING
  */
-void handleMatching(event_list *events);
-
 bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE, patient *patient);
 bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE, organ *organ);
 

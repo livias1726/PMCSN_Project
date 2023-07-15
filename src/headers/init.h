@@ -12,5 +12,7 @@ organ *new_organ(BLOOD_TYPE bt);
 
 event_list initialize_event_list();
 sim_time initialize_time();
+void initializeStatistics(stats*);
+void initializeEventTime(event_list* events);
 
 #endif //PMCSN_PROJECT_INIT_H

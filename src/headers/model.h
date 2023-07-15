@@ -1,10 +1,80 @@
 #ifndef PMCSN_PROJECT_MODEL_H
 #define PMCSN_PROJECT_MODEL_H
+
 #define NUM_PATIENT_QUEUES 12
 #define NUM_ORGAN_QUEUES 4
 #define NUM_BLOOD_TYPES 4
 #define NUM_PRIORITIES 3
-#include "users.h"
+
+// ---------------------------------------- MODEL ENUMS ---------------------------------------------------
+typedef enum blood_type {
+    O,
+    A,
+    B,
+    AB,
+    nbt
+} BLOOD_TYPE;
+
+static const char * const bt_to_str[] = {
+        [O] = "0",
+        [A] = "A",
+        [B] = "B",
+        [AB] = "AB"
+};
+
+typedef enum priority {
+    critical=0,
+    normal,
+    low,
+    none
+} PRIORITY;
+
+static const char * const prio_to_str[] = {
+        [critical] = "critical",
+        [normal] = "normal",
+        [low] = "low",
+};
+
+typedef enum loss_reason {
+    death,
+    renege
+} LOSS_REASON;
+
+// --------------------------------------------------- MODEL USERS ---------------------------------------------
+typedef struct patient {
+    BLOOD_TYPE bt;          /* patient blood type */
+    PRIORITY priority;      /* needed to order patients in list based on the priority */
+    bool is_active;         /* the patient is active (true or false) */
+    struct patient *next;   /* pointer to the next patient in queue */
+} patient;
+
+
+typedef struct organ {
+    BLOOD_TYPE bt;          /* organ blood type */
+    double starting_age;    /* this is a random number that models the fact that the organ is moved in different states */
+    struct organ *next;
+} organ;
+
+typedef struct matched {    /* this is a struct that represents the organs that were matched with a patient */
+    organ organ;
+    patient patient;
+    struct matched *next;
+} matched;
+
+typedef struct in_activation {
+    patient* patient;
+    int serverOffset;           /* offset to the server */
+    double completionTime;      /* time of activation completion - t_{c,del} */
+    struct in_activation *next;
+} in_activation;
+
+typedef struct in_transplant {
+    matched* matched;           /* list of the organs matched with patients */
+    int serverOffset;           /* offset to the server */
+    double completionTime;      /* time of the transplant completion - t_{c,trans} */
+    struct in_transplant *next;
+} in_transplant;
+
 // -------------------------------------- CENTERS STRUCTS ----------------------------------------------------
 //bool matching_servers[NUM_BLOOD_TYPES]; // the availability of an organ for a given blood type marks a free and ready server
 typedef struct patient_queue_priority {
@@ -67,4 +137,5 @@ typedef struct organs_expired_queue {
     double number[NUM_BLOOD_TYPES];                     /* number expired type bt */
     double renegingTime[NUM_BLOOD_TYPES];               /* t_{r,o,BT} */
 } organs_expired;
+
 #endif

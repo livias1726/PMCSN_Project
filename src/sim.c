@@ -1,21 +1,5 @@
 #include "headers/utils.h"
 
-// TODO: can be a utils macro
-/*
-double getSmallest(double *values, int len) {
-
-    double smallest = (double) INFINITY;
-
-    for(int i=0; i<len; i++) {
-        if(values[i] < smallest)
-            smallest = values[i];
-    }
-
-    return smallest;
-}
- */
-
-
 double getMinTime(event_list *events) {
     int len = 46;
 
@@ -67,10 +51,8 @@ double getMinTime(event_list *events) {
     timesToCompare[44] = getMinActivation(events->activationArrival.inactive_patients);
     timesToCompare[45] = getMinTransplant(events->transplantArrival.transplanted_patients);
 
-    //return getSmallest(timesToCompare, len);
-
     double min;
-    GET_SMALLEST(timesToCompare, len, min);
+    GET_SMALLEST(timesToCompare, len, min)
 
     return min;
 }
@@ -78,15 +60,13 @@ double getMinTime(event_list *events) {
 double getMinTransplant(in_transplant *transplanted) {
     double min, tmp;
 
-    if (transplanted->next == NULL) {
-        return INFINITY;
-    }
+    if (transplanted->next == NULL) return INFINITY;
+
     min = transplanted->next->completionTime;
     while (transplanted->next != NULL) {
         transplanted = transplanted->next;
         tmp = transplanted->completionTime;
-        if (tmp < min)
-            min = transplanted->completionTime;
+        if (tmp < min) min = tmp;
     }
     return min;
 }
@@ -94,46 +74,18 @@ double getMinTransplant(in_transplant *transplanted) {
 double getMinActivation(in_activation *inactive) {
     double min, tmp;
 
-    if (inactive->next == NULL) {
-        return INFINITY;
-    }
+    if (inactive->next == NULL) return INFINITY;
+
     min = inactive->next->completionTime;
     while (inactive->next != NULL) {
         inactive = inactive->next;
         tmp = inactive->completionTime;
-        if (tmp < min)
-            min = inactive->completionTime;
+        if (tmp < min) min = tmp;
     }
     return min;
 }
 
-void initializeEventTime(event_list* events) {
-    events->organArrival.interArrivalTime[O] = getOrganArrival(O, START);
-    events->organArrival.interArrivalTime[A] = getOrganArrival(A, START);
-    events->organArrival.interArrivalTime[B] = getOrganArrival(B, START);
-    events->organArrival.interArrivalTime[AB] = getOrganArrival(AB, START);
-
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patientArrival.interArrivalTime[i][j] = getPatientArrival(i, j, START);
-        }
-    }
-
-    events->organsLoss.renegingTime[O] = INFINITY;
-    events->organsLoss.renegingTime[A] = INFINITY;
-    events->organsLoss.renegingTime[B] = INFINITY;
-    events->organsLoss.renegingTime[AB] = INFINITY;
-
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patientsLoss.renegingTime[i][j] = INFINITY;
-            events->patientsLoss.deathTime[i][j] = INFINITY;
-        }
-    }
-}
-
-void sim(event_list *events, sim_time *t, int *organ_arrived, int *patients_arrived_c, int *patients_arrived_n,
-         int *patients_arrived_low) {
+void finite_sim(event_list *events, sim_time *t, stats *statistics) {
     /* Choose next event selecting minimum time */
     t->current = 0;
     while (t->current < STOP) {
@@ -143,40 +95,47 @@ void sim(event_list *events, sim_time *t, int *organ_arrived, int *patients_arri
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organArrival.interArrivalTime[i]) {
                 handleOrganArrival(events, t, i);
-                (*organ_arrived)++;
+                statistics->numOrganArrivals[i]++;
                 break;
             } else if (t->current == events->organsLoss.renegingTime[i]) {
                 handleOrganRenege(events, t, i);
+                statistics->numOrganOutdatings[i]++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][critical]) {
                 handlePatientArrival(events, t, i, critical);
-                (*patients_arrived_c)++;
+                statistics->numPatientArrivals[i*NUM_PRIORITIES + critical]++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][normal]) {
                 handlePatientArrival(events, t, i, normal);
-                (*patients_arrived_n)++;
+                statistics->numPatientArrivals[i*NUM_PRIORITIES + normal]++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][low]) {
                 handlePatientArrival(events, t, i, low);
-                (*patients_arrived_low)++;
+                statistics->numPatientArrivals[i*NUM_PRIORITIES + low]++;
                 break;
             } else if (t->current == events->patientsLoss.renegingTime[i][critical]) {
                 handlePatientLoss(events, t, renege, i, critical);
+                statistics->numReneges[i*NUM_PRIORITIES + critical]++;
                 break;
             } else if (t->current == events->patientsLoss.renegingTime[i][normal]) {
                 handlePatientLoss(events, t, renege, i, normal);
+                statistics->numReneges[i*NUM_PRIORITIES + normal]++;
                 break;
             } else if (t->current == events->patientsLoss.renegingTime[i][low]) {
                 handlePatientLoss(events, t, renege, i, low);
+                statistics->numReneges[i*NUM_PRIORITIES + low]++;
                 break;
             } else if (t->current == events->patientsLoss.deathTime[i][critical]) {
                 handlePatientLoss(events, t, death, i, critical);
+                statistics->numDeaths[i*NUM_PRIORITIES + critical]++;
                 break;
             } else if (t->current == events->patientsLoss.deathTime[i][normal]) {
                 handlePatientLoss(events, t, death, i, normal);
+                statistics->numDeaths[i*NUM_PRIORITIES + normal]++;
                 break;
             } else if (t->current == events->patientsLoss.deathTime[i][low]) {
                 handlePatientLoss(events, t, death, i, low);
+                statistics->numDeaths[i*NUM_PRIORITIES + low]++;
                 break;
             } else if (t->current == getMinActivation(events->activationArrival.inactive_patients)) {
                 handlePatientActivation(events, t);

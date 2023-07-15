@@ -164,10 +164,51 @@ sim_time initialize_time() {
     t.last[2] = 0.0;
     t.last[3] = 0.0;
     t.last[4] = 0.0;
-    /*
-    for(int i=0; i<5; i++) {
-        t.last[i] = 0.0;
-    }
-     */
+
     return t;
+}
+
+void initializeEventTime(event_list* events) {
+    events->organArrival.interArrivalTime[O] = getOrganArrival(O, START);
+    events->organArrival.interArrivalTime[A] = getOrganArrival(A, START);
+    events->organArrival.interArrivalTime[B] = getOrganArrival(B, START);
+    events->organArrival.interArrivalTime[AB] = getOrganArrival(AB, START);
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            events->patientArrival.interArrivalTime[i][j] = getPatientArrival(i, j, START);
+        }
+    }
+
+    events->organsLoss.renegingTime[O] = INFINITY;
+    events->organsLoss.renegingTime[A] = INFINITY;
+    events->organsLoss.renegingTime[B] = INFINITY;
+    events->organsLoss.renegingTime[AB] = INFINITY;
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            events->patientsLoss.renegingTime[i][j] = INFINITY;
+            events->patientsLoss.deathTime[i][j] = INFINITY;
+        }
+    }
+
+    events->transplantArrival.completed_transplants = 0;
+    events->transplantArrival.rejected_transplants = 0;
+}
+
+void initializeStatistics(stats *statistics){
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        statistics->numOrganArrivals[i] = 0;
+        statistics->numOrganOutdatings[i] = 0;
+        statistics->numOrgans[i] = 0;
+
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            statistics->numPatientArrivals[i*NUM_PRIORITIES + j] = 0;
+            statistics->numDeaths[i*NUM_PRIORITIES + j] = 0;
+            statistics->numReneges[i*NUM_PRIORITIES + j] = 0;
+            statistics->numPatients[i*NUM_PRIORITIES + j] = 0;
+        }
+    }
+
+    statistics->numTransplants[0] = statistics->numTransplants[1] = 0;
 }
