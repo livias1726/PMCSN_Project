@@ -50,7 +50,7 @@ void gather_results(stats* statistics, patient_waiting_list waiting_list, organ_
     }
 
     statistics->numTransplants[0] = (int)transplant_c.completed_transplants;
-    statistics->numTransplants[0] = (int)transplant_c.rejected_transplants;
+    statistics->numTransplants[1] = (int)transplant_c.rejected_transplants;
 }
 
 void save_results(stats* statistics){

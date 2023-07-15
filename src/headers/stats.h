@@ -11,14 +11,14 @@
  * Report of the system statistics given an allocation policy
  * */
 typedef struct statistics{
-    int numPatientArrivals[NUM_PATIENT_QUEUES];
-    int numDeaths[NUM_PATIENT_QUEUES];              // number of death occurred in each waiting list
-    int numReneges[NUM_PATIENT_QUEUES];             // number of reneges occurred in each waiting list
-    int numPatients[NUM_PATIENT_QUEUES];
-    int numOrganArrivals[NUM_ORGAN_QUEUES];
-    int numOrganOutdatings[NUM_ORGAN_QUEUES];              // number of organ outdatings
-    int numOrgans[NUM_ORGAN_QUEUES];
-    int numTransplants[2];         // number of performed transplants
+    double numPatientArrivals[NUM_PATIENT_QUEUES];
+    double numDeaths[NUM_PATIENT_QUEUES];              // number of death occurred in each waiting list
+    double numReneges[NUM_PATIENT_QUEUES];             // number of reneges occurred in each waiting list
+    double numPatients[NUM_PATIENT_QUEUES];
+    double numOrganArrivals[NUM_ORGAN_QUEUES];
+    double numOrganOutdatings[NUM_ORGAN_QUEUES];              // number of organ outdatings
+    double numOrgans[NUM_ORGAN_QUEUES];
+    double numTransplants[2];         // number of performed transplants
 
     /* NOT YET USED
     double waitTime[NUM_PATIENT_QUEUES];                    // avg sim_time in each waiting list
