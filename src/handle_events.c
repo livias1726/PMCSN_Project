@@ -23,9 +23,6 @@ void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, orga
     }
     bank->total_number++;
 
-    /* increment arrivals */
-    events->organArrival.numOrganArrivals[o->bt]++;
-
     /* Add new organ */
     GET_LAST_NODE((*pQueue)->queue, curr)
     curr->next = o;
@@ -54,6 +51,8 @@ void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType) {
     events->organArrival.interArrivalTime[bloodType] = getOrganArrival(bloodType, t->current);
     t->last[0] = t->current;
 
+    /* increment arrivals */
+    events->organArrival.numOrganArrivals[bloodType]++;
 
     /* Init new organ and check for matching */
     organ *o = new_organ(bloodType);
