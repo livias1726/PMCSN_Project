@@ -29,7 +29,7 @@ typedef enum priority {
     none
 } PRIORITY;
 
-static const char * const prio_to_str[] = {
+static const char * const pr_to_str[] = {
         [critical] = "critical",
         [normal] = "normal",
         [low] = "low",
@@ -45,9 +45,10 @@ typedef struct patient {
     BLOOD_TYPE bt;          /* patient blood type */
     PRIORITY priority;      /* needed to order patients in list based on the priority */
     bool is_active;         /* the patient is active (true or false) */
+    time_t start_time;      /* time of waiting list addition */
+    time_t end_time;        /* time of waiting list removal */
     struct patient *next;   /* pointer to the next patient in queue */
 } patient;
-
 
 typedef struct organ {
     BLOOD_TYPE bt;          /* organ blood type */
@@ -63,20 +64,19 @@ typedef struct matched {    /* this is a struct that represents the organs that 
 
 typedef struct in_activation {
     patient* patient;
-    int serverOffset;           /* offset to the server */
+    double serverOffset;           /* offset to the server */
     double completionTime;      /* time of activation completion - t_{c,del} */
     struct in_activation *next;
 } in_activation;
 
 typedef struct in_transplant {
     matched* matched;           /* list of the organs matched with patients */
-    int serverOffset;           /* offset to the server */
+    double serverOffset;           /* offset to the server */
     double completionTime;      /* time of the transplant completion - t_{c,trans} */
     struct in_transplant *next;
 } in_transplant;
 
 // -------------------------------------- CENTERS STRUCTS ----------------------------------------------------
-//bool matching_servers[NUM_BLOOD_TYPES]; // the availability of an organ for a given blood type marks a free and ready server
 typedef struct patient_queue_priority {
     PRIORITY priority;
     patient *queue;

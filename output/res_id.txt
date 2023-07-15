@@ -59,7 +59,8 @@ Organs outdated:
 		A: 0
 		B: 0
 		AB: 0
-	Transplants:
+Transplants:
+
 		Successful: 2543
 		Rejected: 0
 Organs in queue:

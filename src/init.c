@@ -116,12 +116,43 @@ patients_lost initialize_patient_lost_queue() {
     return patientsLost;
 }
 
+matched * new_matched(patient p, organ o){
+    matched *m = malloc(sizeof(matched));
+    MALLOC_HANDLER(m)
+    m->patient = p;
+    m->organ = o;
+    m->next = NULL;
+
+    return m;
+}
+
+in_transplant * new_transplant(matched *m, double so){
+    in_transplant *in_tr = malloc(sizeof(in_transplant));
+    MALLOC_HANDLER(in_tr)
+    in_tr->matched = m;
+    in_tr->next = NULL;
+    in_tr->serverOffset = so;
+
+    return in_tr;
+}
+
+in_activation * new_inactive(patient *p, double so){
+    in_activation *inactive = malloc(sizeof(in_activation));
+    MALLOC_HANDLER(inactive)
+    inactive->patient = p;
+    inactive->next = NULL;
+    inactive->serverOffset = so;
+
+    return inactive;
+}
+
 patient * new_patient(BLOOD_TYPE bt, PRIORITY pr) {
     patient *new = malloc(sizeof(patient));
     MALLOC_HANDLER(new)
     new->priority = pr;
     new->bt = bt;
     new->is_active = (int) Random() % 2; // FIXME integrate with probability to be inactive and handle it
+    new->start_time = clock();
     new->next = NULL;
     return new;
 }
