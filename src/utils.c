@@ -41,16 +41,27 @@ void save_output_stats(int i, stats *mean, stats* conf_mean, FILE *stats_file){
 */
 }
 
-void gather_results(stats* statistics, patient_waiting_list waiting_list, organ_bank bank, transplant transplant_c){
+void gather_results(stats* statistics, event_list *events){
+    patient_waiting_list waiting_list = events->patientArrival;
+    organ_bank bank = events->organArrival;
+    transplant transplant_c = events->transplantArrival;
+    organs_expired organs_expired = events->organsLoss;
+    patients_lost patients_lost = events->patientsLoss;
+
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        statistics->numOrgans[i] = (int)bank.queues[i]->number;
+        statistics->numOrgans[i] = bank.queues[i]->number;
+        statistics->numOrganArrivals[i] = bank.numOrganArrivals[i];
+        statistics->numOrganOutdatings[i] = organs_expired.number[i];
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            statistics->numPatients[i*NUM_PRIORITIES + j] = (int)waiting_list.blood_type_queues[i]->priority_queue[j]->number;
+            statistics->numPatients[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
+            statistics->numPatientArrivals[i][j] = waiting_list.numPatientArrivals[i][j];
+            statistics->numDeaths[i][j] = patients_lost.number_dead[i][j];
+            statistics->numReneges[i][j] = patients_lost.number_renege[i][j];
         }
     }
 
-    statistics->numTransplants[0] = (int)transplant_c.completed_transplants;
-    statistics->numTransplants[1] = (int)transplant_c.rejected_transplants;
+    statistics->numTransplants[0] = transplant_c.completed_transplants;
+    statistics->numTransplants[1] = transplant_c.rejected_transplants;
 }
 
 void save_results(stats* statistics){
@@ -75,6 +86,7 @@ void save_results(stats* statistics){
     print_by_blood_type("Organs in queue:\n", statistics->numOrgans, f)
     print_by_all("Patients in queue:\n", statistics->numPatients, f)
 }
+
 
 void print_results(stats* statistics){
     printf("\nResults:\n");

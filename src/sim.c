@@ -20,34 +20,34 @@ double getMinTime(event_list *events) {
     timesToCompare[13] = events->patientArrival.interArrivalTime[AB][critical];
     timesToCompare[14] = events->patientArrival.interArrivalTime[AB][normal];
     timesToCompare[15] = events->patientArrival.interArrivalTime[AB][low];
-    timesToCompare[16] = events->organsLoss.renegingTime[O];
-    timesToCompare[17] = events->organsLoss.renegingTime[A];
-    timesToCompare[18] = events->organsLoss.renegingTime[B];
-    timesToCompare[19] = events->organsLoss.renegingTime[AB];
-    timesToCompare[20] = events->patientsLoss.renegingTime[O][critical];
-    timesToCompare[21] = events->patientsLoss.renegingTime[O][normal];
-    timesToCompare[22] = events->patientsLoss.renegingTime[O][low];
-    timesToCompare[23] = events->patientsLoss.renegingTime[A][critical];
-    timesToCompare[24] = events->patientsLoss.renegingTime[A][normal];
-    timesToCompare[25] = events->patientsLoss.renegingTime[A][low];
-    timesToCompare[26] = events->patientsLoss.renegingTime[B][critical];
-    timesToCompare[27] = events->patientsLoss.renegingTime[B][normal];
-    timesToCompare[28] = events->patientsLoss.renegingTime[B][low];
-    timesToCompare[29] = events->patientsLoss.renegingTime[AB][critical];
-    timesToCompare[30] = events->patientsLoss.renegingTime[AB][normal];
-    timesToCompare[31] = events->patientsLoss.renegingTime[AB][low];
-    timesToCompare[32] = events->patientsLoss.deathTime[O][critical];
-    timesToCompare[33] = events->patientsLoss.deathTime[O][normal];
-    timesToCompare[34] = events->patientsLoss.deathTime[O][low];
-    timesToCompare[35] = events->patientsLoss.deathTime[A][critical];
-    timesToCompare[36] = events->patientsLoss.deathTime[A][normal];
-    timesToCompare[37] = events->patientsLoss.deathTime[A][low];
-    timesToCompare[38] = events->patientsLoss.deathTime[B][critical];
-    timesToCompare[39] = events->patientsLoss.deathTime[B][normal];
-    timesToCompare[40] = events->patientsLoss.deathTime[B][low];
-    timesToCompare[41] = events->patientsLoss.deathTime[AB][critical];
-    timesToCompare[42] = events->patientsLoss.deathTime[AB][normal];
-    timesToCompare[43] = events->patientsLoss.deathTime[AB][low];
+    timesToCompare[16] = events->organsLoss.reneging_time[O];
+    timesToCompare[17] = events->organsLoss.reneging_time[A];
+    timesToCompare[18] = events->organsLoss.reneging_time[B];
+    timesToCompare[19] = events->organsLoss.reneging_time[AB];
+    timesToCompare[20] = events->patientsLoss.reneging_time[O][critical];
+    timesToCompare[21] = events->patientsLoss.reneging_time[O][normal];
+    timesToCompare[22] = events->patientsLoss.reneging_time[O][low];
+    timesToCompare[23] = events->patientsLoss.reneging_time[A][critical];
+    timesToCompare[24] = events->patientsLoss.reneging_time[A][normal];
+    timesToCompare[25] = events->patientsLoss.reneging_time[A][low];
+    timesToCompare[26] = events->patientsLoss.reneging_time[B][critical];
+    timesToCompare[27] = events->patientsLoss.reneging_time[B][normal];
+    timesToCompare[28] = events->patientsLoss.reneging_time[B][low];
+    timesToCompare[29] = events->patientsLoss.reneging_time[AB][critical];
+    timesToCompare[30] = events->patientsLoss.reneging_time[AB][normal];
+    timesToCompare[31] = events->patientsLoss.reneging_time[AB][low];
+    timesToCompare[32] = events->patientsLoss.death_time[O][critical];
+    timesToCompare[33] = events->patientsLoss.death_time[O][normal];
+    timesToCompare[34] = events->patientsLoss.death_time[O][low];
+    timesToCompare[35] = events->patientsLoss.death_time[A][critical];
+    timesToCompare[36] = events->patientsLoss.death_time[A][normal];
+    timesToCompare[37] = events->patientsLoss.death_time[A][low];
+    timesToCompare[38] = events->patientsLoss.death_time[B][critical];
+    timesToCompare[39] = events->patientsLoss.death_time[B][normal];
+    timesToCompare[40] = events->patientsLoss.death_time[B][low];
+    timesToCompare[41] = events->patientsLoss.death_time[AB][critical];
+    timesToCompare[42] = events->patientsLoss.death_time[AB][normal];
+    timesToCompare[43] = events->patientsLoss.death_time[AB][low];
     timesToCompare[44] = getMinActivation(events->activationArrival.inactive_patients);
     timesToCompare[45] = getMinTransplant(events->transplantArrival.transplanted_patients);
 
@@ -85,7 +85,7 @@ double getMinActivation(in_activation *inactive) {
     return min;
 }
 
-void finite_sim(event_list *events, sim_time *t, stats *statistics) {
+void finite_sim(event_list *events, sim_time *t) {
     /* Choose next event selecting minimum time */
     t->current = 0;
     while (t->current < STOP) {
@@ -95,47 +95,36 @@ void finite_sim(event_list *events, sim_time *t, stats *statistics) {
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organArrival.interArrivalTime[i]) {
                 handleOrganArrival(events, t, i);
-                statistics->numOrganArrivals[i]++;
                 break;
-            } else if (t->current == events->organsLoss.renegingTime[i]) {
+            } else if (t->current == events->organsLoss.reneging_time[i]) {
                 handleOrganRenege(events, t, i);
-                statistics->numOrganOutdatings[i]++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][critical]) {
                 handlePatientArrival(events, t, i, critical);
-                statistics->numPatientArrivals[i*NUM_PRIORITIES + critical]++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][normal]) {
                 handlePatientArrival(events, t, i, normal);
-                statistics->numPatientArrivals[i*NUM_PRIORITIES + normal]++;
                 break;
             } else if (t->current == events->patientArrival.interArrivalTime[i][low]) {
                 handlePatientArrival(events, t, i, low);
-                statistics->numPatientArrivals[i*NUM_PRIORITIES + low]++;
                 break;
-            } else if (t->current == events->patientsLoss.renegingTime[i][critical]) {
+            } else if (t->current == events->patientsLoss.reneging_time[i][critical]) {
                 handlePatientLoss(events, t, renege, i, critical);
-                statistics->numReneges[i*NUM_PRIORITIES + critical]++;
                 break;
-            } else if (t->current == events->patientsLoss.renegingTime[i][normal]) {
+            } else if (t->current == events->patientsLoss.reneging_time[i][normal]) {
                 handlePatientLoss(events, t, renege, i, normal);
-                statistics->numReneges[i*NUM_PRIORITIES + normal]++;
                 break;
-            } else if (t->current == events->patientsLoss.renegingTime[i][low]) {
+            } else if (t->current == events->patientsLoss.reneging_time[i][low]) {
                 handlePatientLoss(events, t, renege, i, low);
-                statistics->numReneges[i*NUM_PRIORITIES + low]++;
                 break;
-            } else if (t->current == events->patientsLoss.deathTime[i][critical]) {
+            } else if (t->current == events->patientsLoss.death_time[i][critical]) {
                 handlePatientLoss(events, t, death, i, critical);
-                statistics->numDeaths[i*NUM_PRIORITIES + critical]++;
                 break;
-            } else if (t->current == events->patientsLoss.deathTime[i][normal]) {
+            } else if (t->current == events->patientsLoss.death_time[i][normal]) {
                 handlePatientLoss(events, t, death, i, normal);
-                statistics->numDeaths[i*NUM_PRIORITIES + normal]++;
                 break;
-            } else if (t->current == events->patientsLoss.deathTime[i][low]) {
+            } else if (t->current == events->patientsLoss.death_time[i][low]) {
                 handlePatientLoss(events, t, death, i, low);
-                statistics->numDeaths[i*NUM_PRIORITIES + low]++;
                 break;
             } else if (t->current == getMinActivation(events->activationArrival.inactive_patients)) {
                 handlePatientActivation(events, t);

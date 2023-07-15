@@ -57,25 +57,25 @@
     }
 
 #define print_transplants_res(header, list, ch) \
-    fprintf(ch, "%s\n\t\tSuccessful: %d\n\t\tRejected: %d\n", header, list[0], list[1]);
+    fprintf(ch, "%s\t\tSuccessful: %f\n\t\tRejected: %f\n", header, list[0], list[1]);
 
 #define print_by_blood_type(header, list, ch) \
-    fprintf(ch, "%s\t\tO: %d\n\t\tA: %d\n\t\tB: %d\n\t\tAB: %d\n", header, list[O], list[A], list[B], list[AB]);
+    fprintf(ch, "%s\t\tO: %f\n\t\tA: %f\n\t\tB: %f\n\t\tAB: %f\n", header, list[O], list[A], list[B], list[AB]);
 
 #define print_by_all(header, queues, ch) \
     fprintf(ch, "%s", header); \
     for (int b = 0; b < NUM_BLOOD_TYPES; ++b) { \
-        fprintf(ch, "\t\t%s: \n\t\t\tCritical: %d\n\t\t\tNormal: %d\n\t\t\tLow: %d\n",   \
+        fprintf(ch, "\t\t%s: \n\t\t\tCritical: %f\n\t\t\tNormal: %f\n\t\t\tLow: %f\n",   \
                bt_to_str[b],    \
-               queues[b*NUM_PRIORITIES + critical], \
-               queues[b*NUM_PRIORITIES + normal],   \
-               queues[b*NUM_PRIORITIES + low]); \
+               queues[b][critical], \
+               queues[b][normal],   \
+               queues[b][low]); \
     }
 
 //-----------------------------------------------------------------------------
 
-void save_results(stats*);
+void save_results(stats *);
 void print_results(stats*);
-void gather_results(stats*, patient_waiting_list, organ_bank, transplant);
+void gather_results(stats *, event_list *);
 
 #endif //PMCSN_PROJECT_UTILS_H

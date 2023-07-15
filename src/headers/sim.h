@@ -7,6 +7,6 @@
 double getMinTime(event_list *events);
 double getMinActivation(in_activation *inactive);
 double getMinTransplant(in_transplant *transplanted);
-void finite_sim(event_list *events, sim_time *t, stats*);
+void finite_sim(event_list *events, sim_time *t);
 
 #endif //PMCSN_PROJECT_SIM_H

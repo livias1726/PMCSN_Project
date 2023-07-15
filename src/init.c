@@ -24,6 +24,8 @@ patient_waiting_list initialize_waiting_list() {
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->priority = none;
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->is_active = false;
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->next = NULL;
+
+            waitingList.numPatientArrivals[i][j] = 0.0;
         }
     }
     waitingList.total_number = 0.0;
@@ -32,7 +34,7 @@ patient_waiting_list initialize_waiting_list() {
 
 organ_bank initialize_organ_bank() {
     organ_bank organBank;
-    for (int i = 0; i < NUM_ORGAN_QUEUES; ++i) {
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         organBank.queues[i] = malloc(sizeof(organ_queue));
         MALLOC_HANDLER(organBank.queues[i])
         organBank.queues[i]->bt = i;
@@ -42,6 +44,8 @@ organ_bank initialize_organ_bank() {
         MALLOC_HANDLER(organBank.queues[i]->queue)
         organBank.queues[i]->queue->bt = i;
         organBank.queues[i]->queue->next = NULL;
+
+        organBank.numOrganArrivals[i] = 0.0;
     }
 
     organBank.total_number = 0.0;
@@ -82,20 +86,15 @@ organs_expired initialize_organs_expired_queue() {
     organsExpired.queue->next = NULL;
     organsExpired.queue->starting_age = -1;
 
-    // TODO Loop unroll: so che fa schifo ma aiuta le prestazioni, giuro
     organsExpired.number[O] = 0.0;
     organsExpired.number[A] = 0.0;
     organsExpired.number[B] = 0.0;
     organsExpired.number[AB] = 0.0;
-    organsExpired.renegingTime[O] = -1;
-    organsExpired.renegingTime[A] = -1;
-    organsExpired.renegingTime[B] = -1;
-    organsExpired.renegingTime[AB] = -1;
-    /*
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        organsExpired.number[i] = 0.0;
-    }
-     */
+    organsExpired.reneging_time[O] = -1;
+    organsExpired.reneging_time[A] = -1;
+    organsExpired.reneging_time[B] = -1;
+    organsExpired.reneging_time[AB] = -1;
+
     return organsExpired;
 }
 
@@ -108,9 +107,9 @@ patients_lost initialize_patient_lost_queue() {
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
             patientsLost.number_dead[i][j] = 0.0;
-            patientsLost.deathTime[i][j] = -1;
+            patientsLost.death_time[i][j] = -1;
             patientsLost.number_renege[i][j] = 0.0;
-            patientsLost.renegingTime[i][j] = -1;
+            patientsLost.reneging_time[i][j] = -1;
         }
     }
     return patientsLost;
@@ -211,15 +210,15 @@ void initializeEventTime(event_list* events) {
         }
     }
 
-    events->organsLoss.renegingTime[O] = INFINITY;
-    events->organsLoss.renegingTime[A] = INFINITY;
-    events->organsLoss.renegingTime[B] = INFINITY;
-    events->organsLoss.renegingTime[AB] = INFINITY;
+    events->organsLoss.reneging_time[O] = INFINITY;
+    events->organsLoss.reneging_time[A] = INFINITY;
+    events->organsLoss.reneging_time[B] = INFINITY;
+    events->organsLoss.reneging_time[AB] = INFINITY;
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patientsLoss.renegingTime[i][j] = INFINITY;
-            events->patientsLoss.deathTime[i][j] = INFINITY;
+            events->patientsLoss.reneging_time[i][j] = INFINITY;
+            events->patientsLoss.death_time[i][j] = INFINITY;
         }
     }
 
@@ -227,19 +226,24 @@ void initializeEventTime(event_list* events) {
     events->transplantArrival.rejected_transplants = 0;
 }
 
-void initializeStatistics(stats *statistics){
+stats * initializeStatistics(){
+
+    stats *statistics = malloc(sizeof(stats));
+
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         statistics->numOrganArrivals[i] = 0;
         statistics->numOrganOutdatings[i] = 0;
         statistics->numOrgans[i] = 0;
 
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            statistics->numPatientArrivals[i*NUM_PRIORITIES + j] = 0;
-            statistics->numDeaths[i*NUM_PRIORITIES + j] = 0;
-            statistics->numReneges[i*NUM_PRIORITIES + j] = 0;
-            statistics->numPatients[i*NUM_PRIORITIES + j] = 0;
+            statistics->numPatientArrivals[i][j] = 0;
+            statistics->numDeaths[i][j] = 0;
+            statistics->numReneges[i][j] = 0;
+            statistics->numPatients[i][j] = 0;
         }
     }
 
     statistics->numTransplants[0] = statistics->numTransplants[1] = 0;
+
+    return statistics;
 }

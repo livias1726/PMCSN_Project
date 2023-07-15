@@ -11,13 +11,14 @@
  * Report of the system statistics given an allocation policy
  * */
 typedef struct statistics{
-    double numPatientArrivals[NUM_PATIENT_QUEUES];
-    double numDeaths[NUM_PATIENT_QUEUES];              // number of death occurred in each waiting list
-    double numReneges[NUM_PATIENT_QUEUES];             // number of reneges occurred in each waiting list
-    double numPatients[NUM_PATIENT_QUEUES];
-    double numOrganArrivals[NUM_ORGAN_QUEUES];
-    double numOrganOutdatings[NUM_ORGAN_QUEUES];              // number of organ outdatings
-    double numOrgans[NUM_ORGAN_QUEUES];
+
+    double numOrganArrivals[NUM_BLOOD_TYPES];
+    double numPatientArrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double numDeaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];              // number of death occurred in each waiting list
+    double numReneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];             // number of reneges occurred in each waiting list
+    double numPatients[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double numOrganOutdatings[NUM_BLOOD_TYPES];              // number of organ outdatings
+    double numOrgans[NUM_BLOOD_TYPES];
     double numTransplants[2];         // number of performed transplants
 
     /* NOT YET USED

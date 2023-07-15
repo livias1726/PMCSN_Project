@@ -32,14 +32,10 @@ int main(){
     sim_time simTime = initialize_time();
     initializeEventTime(&events);
 
-    stats *statistics = malloc(sizeof(stats));
-    MALLOC_HANDLER(statistics)
-    initializeStatistics(statistics);
-
     // --------------------------------------------- Simulation ------------------------------------------------------
 
 #ifdef FINITE_HORIZON
-    finite_sim(&events, &simTime, statistics);
+    finite_sim(&events, &simTime);
 #else
     /* TODO */
 #endif
@@ -51,7 +47,9 @@ int main(){
     transplant transplant_c = events.transplantArrival;
     activation activation_c = events.activationArrival;
 
-    gather_results(statistics, waiting_list, bank, transplant_c);
+    stats *statistics = initializeStatistics();
+
+    gather_results(statistics, &events);
 
 #ifdef AUDIT
     print_results(statistics);
@@ -61,7 +59,7 @@ int main(){
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
-    CLEANUP(NUM_ORGAN_QUEUES, bank.queues)
+    CLEANUP(NUM_BLOOD_TYPES, bank.queues)
     for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
         CLEANUP(NUM_PRIORITIES, waiting_list.blood_type_queues[b]->priority_queue)
     }

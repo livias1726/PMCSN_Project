@@ -15,7 +15,7 @@ matched * new_matched(patient, organ);
 
 event_list initialize_event_list();
 sim_time initialize_time();
-void initializeStatistics(stats*);
+stats * initializeStatistics();
 void initializeEventTime(event_list* events);
 
 #endif //PMCSN_PROJECT_INIT_H

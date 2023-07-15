@@ -1,59 +1,59 @@
 Patients arrived:
 		0: 
-			Critical: 61
-			Normal: 37194
-			Low: 14982
+			Critical: 0
+			Normal: 0
+			Low: 0
 		A: 
-			Critical: 26
-			Normal: 24886
-			Low: 10170
+			Critical: 0
+			Normal: 0
+			Low: 0
 		B: 
-			Critical: 17
-			Normal: 11148
-			Low: 4623
+			Critical: 0
+			Normal: 0
+			Low: 0
 		AB: 
-			Critical: 3
-			Normal: 2867
-			Low: 1151
+			Critical: 0
+			Normal: 0
+			Low: 0
 Patients dead:
 		0: 
 			Critical: 0
-			Normal: 2934
-			Low: 582
+			Normal: 0
+			Low: 0
 		A: 
 			Critical: 0
-			Normal: 1506
-			Low: 425
+			Normal: 0
+			Low: 0
 		B: 
 			Critical: 0
-			Normal: 901
-			Low: 181
+			Normal: 0
+			Low: 0
 		AB: 
 			Critical: 0
-			Normal: 143
-			Low: 31
+			Normal: 0
+			Low: 0
 Patients reneged:
 		0: 
 			Critical: 0
-			Normal: 9474
-			Low: 1810
+			Normal: 0
+			Low: 0
 		A: 
 			Critical: 0
-			Normal: 7052
-			Low: 1296
+			Normal: 0
+			Low: 0
 		B: 
 			Critical: 0
-			Normal: 2761
-			Low: 619
+			Normal: 0
+			Low: 0
 		AB: 
 			Critical: 0
-			Normal: 746
-			Low: 154
+			Normal: 0
+			Low: 0
 Organs arrived:
-		O: 11350
-		A: 8849
-		B: 2840
-		AB: 780
+		O: 0
+		A: 0
+		B: 0
+		AB: 0
 Organs outdated:
 		O: 0
 		A: 0
@@ -61,7 +61,7 @@ Organs outdated:
 		AB: 0
 Transplants:
 
-		Successful: 2543
+		Successful: 0
 		Rejected: 0
 Organs in queue:
 		O: 0
@@ -71,17 +71,17 @@ Organs in queue:
 Patients in queue:
 		0: 
 			Critical: 0
-			Normal: 15434
-			Low: 6
+			Normal: 0
+			Low: 0
 		A: 
 			Critical: 0
-			Normal: 8021
-			Low: 1
+			Normal: 0
+			Low: 0
 		B: 
 			Critical: 0
-			Normal: 4754
-			Low: 1
+			Normal: 0
+			Low: 0
 		AB: 
 			Critical: 0
-			Normal: 1200
-			Low: 16
+			Normal: 0
+			Low: 0
