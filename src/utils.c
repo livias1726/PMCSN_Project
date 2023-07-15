@@ -41,6 +41,66 @@ void save_output_stats(int i, stats *mean, stats* conf_mean, FILE *stats_file){
 */
 }
 
+void gather_results(stats* statistics, event_list *events){
+    patient_waiting_list waiting_list = events->patientArrival;
+    organ_bank bank = events->organArrival;
+    transplant transplant_c = events->transplantArrival;
+    organs_expired organs_expired = events->organsLoss;
+    patients_lost patients_lost = events->patientsLoss;
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        statistics->numOrgans[i] = bank.queues[i]->number;
+        statistics->numOrganArrivals[i] = bank.numOrganArrivals[i];
+        statistics->numOrganOutdatings[i] = organs_expired.number[i];
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            statistics->numPatients[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
+            statistics->numPatientArrivals[i][j] = waiting_list.numPatientArrivals[i][j];
+            statistics->numDeaths[i][j] = patients_lost.number_dead[i][j];
+            statistics->numReneges[i][j] = patients_lost.number_renege[i][j];
+        }
+    }
+
+    statistics->numTransplants[0] = transplant_c.completed_transplants;
+    statistics->numTransplants[1] = transplant_c.rejected_transplants;
+}
+
+void save_results(stats* statistics){
+    FILE *f;
+    char path[1024];
+#ifdef ABO_ID
+    snprintf(path, MAX_LEN, "output/res_%s.txt", "id");
+#else
+    snprintf(path, MAX_LEN, "output/res_%s.txt", "comp");
+#endif
+    if((f = fopen(path, "w")) == NULL) {
+        fprintf(stderr, "Cannot open output file");
+        exit(EXIT_FAILURE);
+    }
+
+    print_by_all("Patients arrived:\n", statistics->numPatientArrivals, f)
+    print_by_all("Patients dead:\n", statistics->numDeaths, f)
+    print_by_all("Patients reneged:\n", statistics->numReneges, f)
+    print_by_blood_type("Organs arrived:\n", statistics->numOrganArrivals, f)
+    print_by_blood_type("Organs outdated:\n", statistics->numOrganOutdatings, f)
+    print_transplants_res("Transplants:\n", statistics->numTransplants, f)
+    print_by_blood_type("Organs in queue:\n", statistics->numOrgans, f)
+    print_by_all("Patients in queue:\n", statistics->numPatients, f)
+}
+
+
+void print_results(stats* statistics){
+    printf("\nResults:\n");
+
+    print_by_all("\tPatients arrived:\n", statistics->numPatientArrivals, stdout)
+    print_by_all("\tPatients dead:\n", statistics->numDeaths, stdout)
+    print_by_all("\tPatients reneged:\n", statistics->numReneges, stdout)
+    print_by_blood_type("\tOrgans arrived:\n", statistics->numOrganArrivals, stdout)
+    print_by_blood_type("\tOrgans outdated:\n", statistics->numOrganOutdatings, stdout)
+    print_transplants_res("\tTransplants:\n", statistics->numTransplants, stdout)
+    print_by_blood_type("\tOrgans in queue:\n", statistics->numOrgans, stdout)
+    print_by_all("\tPatients in queue:\n", statistics->numPatients, stdout)
+}
+
 void print_output_stats(stats* mean, stats* variance, stats* out_stats){
 
   //  double criticalValue = idfStudent(NUM_ITER-1,1-0.025); //alpha = 0.05

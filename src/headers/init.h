@@ -9,8 +9,13 @@ patients_lost initialize_patient_lost_queue();
 organs_expired initialize_organs_expired_queue();
 patient *new_patient(BLOOD_TYPE bt, PRIORITY pr);
 organ *new_organ(BLOOD_TYPE bt);
+in_activation * new_inactive(patient*, double);
+in_transplant * new_transplant(matched*, double);
+matched * new_matched(patient, organ);
 
 event_list initialize_event_list();
 sim_time initialize_time();
+stats * initializeStatistics();
+void initializeEventTime(event_list* events);
 
 #endif //PMCSN_PROJECT_INIT_H

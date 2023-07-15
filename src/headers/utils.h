@@ -1,8 +1,6 @@
 #ifndef PMCSN_PROJECT_UTILS_H
 #define PMCSN_PROJECT_UTILS_H
-#define NUM_ITER 100
-#define SEED 123456789
-#define NUM_EVENTS 5
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -19,6 +17,11 @@
 #include "../../lib/rngs.h"
 #include "../../lib/rvms.h"
 #include "../../lib/rvgs.h"
+
+#define NUM_ITER 100
+#define SEED 123456789
+#define MAX_LEN 1024
+
 
 #define MALLOC_HANDLER(p) \
     if(p == NULL){ \
@@ -51,8 +54,30 @@
 
 #define GET_SMALLEST(values, len, res)  \
     res = values[0]; \
-    for(int i=1; i<len; ++i)  { \
+    for(int i = 1; i < len; ++i)  { \
         res = (values[i] < res) ? values[i] : res; \
     }
+
+#define print_transplants_res(header, list, ch) \
+    fprintf(ch, "%s\t\tSuccessful: %f\n\t\tRejected: %f\n", header, list[0], list[1]);
+
+#define print_by_blood_type(header, list, ch) \
+    fprintf(ch, "%s\t\tO: %f\n\t\tA: %f\n\t\tB: %f\n\t\tAB: %f\n", header, list[O], list[A], list[B], list[AB]);
+
+#define print_by_all(header, queues, ch) \
+    fprintf(ch, "%s", header); \
+    for (int b = 0; b < NUM_BLOOD_TYPES; ++b) { \
+        fprintf(ch, "\t\t%s: \n\t\t\tCritical: %f\n\t\t\tNormal: %f\n\t\t\tLow: %f\n",   \
+               bt_to_str[b],    \
+               queues[b][critical], \
+               queues[b][normal],   \
+               queues[b][low]); \
+    }
+
+//-----------------------------------------------------------------------------
+
+void save_results(stats *);
+void print_results(stats*);
+void gather_results(stats *, event_list *);
 
 #endif //PMCSN_PROJECT_UTILS_H

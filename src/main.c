@@ -14,23 +14,22 @@ int main(){
 
 #ifdef IMPROVEMENT
     model = "Improved";
+    policy = "Incompatible";
 #else
     model = "Base";
-#endif
-
-#ifdef ABO_ID
-    policy = "Identical";
-#else
-    policy = "Compatible";
+    #ifdef ABO_ID
+        policy = "Identical";
+    #else
+        policy = "Compatible";
+    #endif
 #endif
 
     printf("Simulation: %s horizon - %s model (Policy: ABO %s)\n\n", simulation, model, policy);
 
-    // ------------------------------------------------------- Initialization --------------------------------------
+    // -------------------------------------------- Initialization ---------------------------------------------------
 
     event_list events = initialize_event_list();
     sim_time simTime = initialize_time();
-
     initializeEventTime(&events);
 
     /* Choose next event selecting minimum time */
@@ -41,82 +40,13 @@ int main(){
 
     sim(&events, &simTime, &organs_arrived, &patients_arrived_c, &patients_arrived_n, &patients_arrived_l);
 
-    /*simTime.current = 0;
-    while (simTime.current < STOP) {
-
-        simTime.next = getMinTime(&events);		                //Next event time
-        simTime.current = simTime.next;                             //Clock update
-
-        for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-            if (simTime.current == events.organArrival.interArrivalTime[i]) {
-                handleOrganArrival(&events, &simTime, i);
-                organs_arrived++;
-                break;
-            } else if (simTime.current == events.organsLoss.renegingTime[i]) {
-                handleOrganRenege(&events, &simTime, i);
-                break;
-            } else if (simTime.current == events.patientArrival.interArrivalTime[i][critical]) {
-                handlePatientArrival(&events, &simTime, i, critical);
-                patients_arrived++;
-                break;
-            } else if (simTime.current == events.patientArrival.interArrivalTime[i][normal]) {
-                handlePatientArrival(&events, &simTime, i, normal);
-                patients_arrived++;
-                break;
-            } else if (simTime.current == events.patientArrival.interArrivalTime[i][low]) {
-                handlePatientArrival(&events, &simTime, i, low);
-                patients_arrived++;
-                break;
-            } else if (simTime.current == events.patientsLoss.renegingTime[i][critical]) {
-                handlePatientLoss(&events, &simTime, renege, i, critical);
-                break;
-            } else if (simTime.current == events.patientsLoss.renegingTime[i][normal]) {
-                handlePatientLoss(&events, &simTime, renege, i, normal);
-                break;
-            } else if (simTime.current == events.patientsLoss.renegingTime[i][low]) {
-                handlePatientLoss(&events, &simTime, renege, i, low);
-                break;
-            } else if (simTime.current == events.patientsLoss.deathTime[i][critical]) {
-                handlePatientLoss(&events, &simTime, death, i, critical);
-                break;
-            } else if (simTime.current == events.patientsLoss.deathTime[i][normal]) {
-                handlePatientLoss(&events, &simTime, death, i, normal);
-                break;
-            } else if (simTime.current == events.patientsLoss.deathTime[i][low]) {
-                handlePatientLoss(&events, &simTime, death, i, low);
-                break;
-            }
-        }
-    }*/
+#ifdef FINITE_HORIZON
+    finite_sim(&events, &simTime);
+#else
+    /* TODO */
+#endif
 
     // ----------------------------------------------------- Test -----------------------------------------------------
-
- /*   srand(time(NULL));   // Initialization, should only be called once.
-    int r_event = rand(), r_bt = rand(), r_pr = rand();
-
-    for (int i = 0; i < 100; ++i) {
-        switch (r_event % 5) {
-            case 0:
-                handlePatientArrival(&events, &simTime, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
-                patients_arrived++;
-                break;
-            case 1:
-                handleOrganArrival(&events, &simTime, r_bt % NUM_BLOOD_TYPES);
-                organs_arrived++;
-                break;
-            case 3:
-                handleOrganRenege(&events, &simTime, r_bt % NUM_BLOOD_TYPES);
-                break;
-            case 4:
-                handlePatientLoss(&events, &simTime, renege, r_bt % NUM_BLOOD_TYPES, r_pr % NUM_PRIORITIES);
-                break;
-        }
-
-        handleMatching(&events);
-        r_event = rand();
-        r_bt = rand();
-        r_pr = rand();
-    }*/
 
     patient_waiting_list waiting_list = events.patientArrival;
     organ_bank bank = events.organArrival;
@@ -204,36 +134,19 @@ int main(){
     stats *out_stats = NULL; // doubles should be zero-initialized by default
     FILE *stats_file, *samples_file;
 
-    // Setup
-    if ((stats_file = fopen("data/fhStats.txt", "w+")) == NULL
-            || (samples_file = fopen("data/fhSamples.txt", "w+")) == NULL){
-        fprintf(stderr, "Cannot open file\n");
-        exit(-1);
-    }
+    stats *statistics = initializeStatistics();
 
-    out_stats = malloc(sizeof(stats));
-    MALLOC_HANDLER(out_stats)
+    gather_results(statistics, &events);
 
-    PlantSeeds(SEED);
-
-    // Iterations
-    for (int i = 1; i <= NUM_ITER; ++i){
-        // TODO: call the FH simulation for iteration i -> input: samples, output: out_stats
-
-        compute_stats();
-    }
-
-    //print_stats();
-
-    fclose(stats_file);
-    fclose(samples_file);
+#ifdef AUDIT
+    print_results(statistics);
 #else
-    // TODO: call the IH simulation
+    save_results(statistics);
 #endif
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
-    CLEANUP(NUM_ORGAN_QUEUES, bank.queues)
+    CLEANUP(NUM_BLOOD_TYPES, bank.queues)
     for (int b = 0; b < NUM_BLOOD_TYPES; ++b) {
         CLEANUP(NUM_PRIORITIES, waiting_list.blood_type_queues[b]->priority_queue)
     }
@@ -243,3 +156,5 @@ int main(){
     //CLEANUP(4, tmp)
 }
 
+#endif
+}
