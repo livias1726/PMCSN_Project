@@ -370,3 +370,8 @@ double getTransplantCompletion(double arrival) {
     arrival += TruncatedNormal(MIN_TRANSPLANT, MAX_TRANSPLANT);
     return arrival;
 }
+
+double getMatchProb() {
+    SelectStream(44);
+    return Random();
+}

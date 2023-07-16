@@ -8,9 +8,9 @@
 #define COMPATIBLE(o, p) IDENTICAL(o,p) || (o == O) || (p == AB && (o == A || o == B))
 
 static const BLOOD_TYPE* const get_compatibles[] = {
-        [O] = (BLOOD_TYPE[]){O, A, B, AB},
-        [A] = (BLOOD_TYPE[]){A, AB},
-        [B] = (BLOOD_TYPE[]){B, AB},
+        [O] = (BLOOD_TYPE[]){AB, B, A, O},
+        [A] = (BLOOD_TYPE[]){AB, A},
+        [B] = (BLOOD_TYPE[]){AB, B},
         [AB] = (BLOOD_TYPE[]){AB}
 };
 

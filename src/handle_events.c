@@ -7,8 +7,10 @@
 // Internal MATCHING
 bool handleMatchingFromPatient(event_list*, sim_time*, BLOOD_TYPE, patient*);
 bool handleMatchingFromOrgan(event_list*, sim_time*, BLOOD_TYPE, organ*);
+bool checkCompatibility(BLOOD_TYPE bt, const BLOOD_TYPE *compatibles, int size_compatibles);
 
 // ------------------------------------------ ORGAN ARRIVAL -----------------------------------------------------------
+
 
 // Internal usage: adds an organ to the organ queue with a specific blood type
 void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, organ *o) {
@@ -249,15 +251,7 @@ organ * removeOrgan(int idx, organ_queue **pQueue, organ_bank *bank) {
     organ *current = (*pQueue)->queue; //head
     organ *next = current->next; //first organ
 
-    //REMOVE_MID_NODE(idx, current, prev, next)
-    int i = 0;
-    while (i < idx+1 && next != NULL) {
-        prev = current;
-        current = next;
-        next = current->next;
-        i++;
-    }
-    prev->next = next;
+    REMOVE_MID_NODE(idx, current, prev, next)
 
     current->next = NULL;
     decrementOrgans((*pQueue), bank);
@@ -498,9 +492,23 @@ bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, p
  *      - Upon the arrival of a new organ, this function search for a compatible patient in queue to allocate the organ to.
  *      - If the patient is found, the organ is transplanted without inserting it in the organ bank and the patient is removed.
  * */
+bool checkCompatibility(BLOOD_TYPE bt, const BLOOD_TYPE *compatibles, int size_compatibles) {
+    bool ret = false;
+
+    for (int i = 0; i < size_compatibles; ++i) {
+        if (bt == compatibles[i]) {
+            ret = true;
+            break;
+        }
+    }
+    return ret;
+}
+
 bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, organ *organ) {
 
     patient_waiting_list *wl = &events->patientArrival;
+    organ_bank *bank = &events->organArrival;
+    struct organ *o;
 
     BLOOD_TYPE avbPatientBt = nbt;
     PRIORITY avbPatientPr = none;
@@ -520,11 +528,69 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
     const BLOOD_TYPE *comp = get_compatibles[bt];
     const int size = get_num_compatibles[bt];
 
+    /*TODO forse ti può servire? In realtà è praticamente equivalente a ABO id nella pratica!
+    int i = 0;
+    double prob = getMatchProb();
+    while (i < NUM_PRIORITIES && !found) {
+        for (int j = 0; j < size; ++j) {
+            BLOOD_TYPE b = comp[j];
+            switch (b) {
+                case AB:
+                    if (prob < MATCH_AB_P && (wl->blood_type_queues[b]->priority_queue[i]->number != 0)) {
+                        avbPatientBt = AB;
+                        avbPatientPr = i;
+                        found = true;
+                    }
+                    break;
+                case B:
+                    if (prob < MATCH_B_P && (wl->blood_type_queues[b]->priority_queue[i]->number != 0)) {
+                        avbPatientBt = B;
+                        avbPatientPr = i;
+                        found = true;
+                    }
+                    break;
+                case A:
+                    if (prob < MATCH_A_P && (wl->blood_type_queues[b]->priority_queue[i]->number != 0)) {
+                        avbPatientBt = A;
+                        avbPatientPr = i;
+                        found = true;
+                    }
+                    break;
+                case O:
+                    if (prob < MATCH_O_P && (wl->blood_type_queues[b]->priority_queue[i]->number != 0)) {
+                        avbPatientBt = O;
+                        avbPatientPr = i;
+                        found = true;
+                    }
+                    break;
+                case nbt:
+                    avbPatientBt = bt;
+                    break;
+            }
+        }
+        ++i;
+    }
+
+    if (!found) {
+        // try checking identical ABO as last resort
+        if (wl->blood_type_queues[bt]->number == 0) return found; // no patient in list for a ABO_identical transplant
+        found = true;
+        for (int x = 0; x < NUM_PRIORITIES; ++x) {
+            if (wl->blood_type_queues[bt]->priority_queue[x]->number != 0) {
+                avbPatientPr = x;
+                avbPatientBt = bt;
+                break;
+            }
+        }
+    }*/
+
+    // IDEA: what if we serve the rarest blood types first?
     int i = 0;
     while (i < NUM_PRIORITIES && !found) {
         for (int j = 0; j < size; ++j) {
-            if ((wl->blood_type_queues[comp[j]]->priority_queue[i]->number != 0)) {
-                avbPatientBt = comp[j];
+            BLOOD_TYPE b = comp[j];
+            if ((wl->blood_type_queues[b]->priority_queue[i]->number != 0)) {
+                avbPatientBt = b;
                 avbPatientPr = i;
                 found = true;
                 break;
@@ -532,13 +598,18 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
         }
         ++i;
     }
-    if(!found) return found;
+
+    if (!found) return found;
 #endif
+
+    /* Add newly arrived organ into queue, recover oldest organ and handle matching */
+    addOrganToQueue(events, t, &bank->queues[bt], organ);
+    o = removeOrgan(0, &bank->queues[bt], bank);
 
     /* get first patient */
     patient *p = removePatient(0, &wl->blood_type_queues[avbPatientBt]->priority_queue[avbPatientPr],
                                wl->blood_type_queues[avbPatientBt], wl);
-    addMatchedToTransplant(events, t, organ, p);
+    addMatchedToTransplant(events, t, o, p);
 
     return found;
 }

@@ -90,7 +90,7 @@ void finite_sim(event_list *events, sim_time *t) {
     t->current = 0;
     while (t->current < STOP) {
         t->next = getMinTime(events);		                //Next event time
-        t->current = t->next;                             //Clock update
+        t->current = t->next;                               //Clock update
 
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organArrival.interArrivalTime[i]) {

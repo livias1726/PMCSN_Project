@@ -48,6 +48,10 @@
 #define MU_ORG 1
 
 #define REJECT_P 0.11
+#define MATCH_O_P 0.46
+#define MATCH_A_P 0.36
+#define MATCH_B_P 0.13
+#define MATCH_AB_P 0.05
 
 #define MIN_ACTIVATION 730.0
 #define MAX_ACTIVATION 1095.0           // 2*365-3*365 giorni di attesa
@@ -63,5 +67,6 @@ double getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival);
 double getActivationCompletion(double arrival);
 double getTransplantCompletion(double arrival);
 double getRejectionProb();
+double getMatchProb();
 
 #endif //PMCSN_PROJECT_RGF_H
