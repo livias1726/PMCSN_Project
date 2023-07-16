@@ -1,6 +1,8 @@
 #ifndef PMCSN_PROJECT_EVENTS_H
 #define PMCSN_PROJECT_EVENTS_H
 
+#include "model.h"
+
 #define NUM_EVENTS 5
 
 typedef struct sim_time {
@@ -13,12 +15,12 @@ typedef struct sim_time {
  * EVENT LIST: this struct handles every event that can happen in the system and its effects on the model's entities
  */
 typedef struct event_list {
-    struct patient_waiting_list patientArrival;
-    struct activation_center activationArrival;
-    struct organ_bank organArrival;
-    struct transplant_center transplantArrival;
-    struct organs_expired_queue organsLoss;
-    struct patient_lost_queue patientsLoss;
+    patient_waiting_list patient_arrival;
+    activation activation_arrival;
+    organ_bank organ_arrival;
+    transplant transplant_arrival;
+    organs_expired organs_loss;
+    patients_lost patients_loss;
 } event_list;
 
 // ------------------------------------ Exported EVENT HANDLERS PROTOTYPES ---------------------------------------------

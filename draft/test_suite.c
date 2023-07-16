@@ -48,7 +48,7 @@ void print_arrivals_result(organ_bank bank, patient_waiting_list waiting_list, i
 //void test_arrivals(patient_waiting_list *waiting_list, organ_bank *bank){
 
     /* TEST: EVENT: new patient arrival
-     *  -> test with: (14 critical, 20 normal, 50 low) per each blood type
+     *  -> draft with: (14 critical, 20 normal, 50 low) per each blood type
      *  -> total: 56 critical, 80 normal, 200 low
      *  -> 336
      *
@@ -65,7 +65,7 @@ void print_arrivals_result(organ_bank bank, patient_waiting_list waiting_list, i
     }*/
 
     /* TEST: EVENT: new organ arrival
-     *  -> test with: 6 organs per each blood type
+     *  -> draft with: 6 organs per each blood type
      *  -> total: 24 organs
      *
     for (int i = 0; i < 6; ++i) {

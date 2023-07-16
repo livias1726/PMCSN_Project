@@ -28,9 +28,9 @@ typedef enum priority {
 } PRIORITY;
 
 static const char * const pr_to_str[] = {
-        [critical] = "critical",
-        [normal] = "normal",
-        [low] = "low",
+    [critical] = "critical",
+    [normal] = "normal",
+    [low] = "low",
 };
 
 typedef enum loss_reason {
@@ -43,8 +43,8 @@ typedef struct patient {
     BLOOD_TYPE bt;          /* patient blood type */
     PRIORITY priority;      /* needed to order patients in list based on the priority */
     bool is_active;         /* the patient is active (true or false) */
-    time_t start_time;      /* time of waiting list addition */
-    time_t end_time;        /* time of waiting list removal */
+    double start_time;      /* time of waiting list addition */
+    double end_time;        /* time of waiting list removal */
     struct patient *next;   /* pointer to the next patient in queue */
 } patient;
 
@@ -93,6 +93,7 @@ typedef struct patient_waiting_list {
     double total_number;                                                /* l_{p} */
     double interArrivalTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];           /* t_{a,p,BT} */
     double numPatientArrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double globalWaitingTimes[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 } patient_waiting_list;
 
 typedef struct organ_queue {

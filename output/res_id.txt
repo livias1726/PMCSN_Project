@@ -50,10 +50,10 @@ Patients reneged:
 			Normal: 737.000000
 			Low: 154.000000
 Organs arrived:
-		O: 2.000000
-		A: 2.000000
-		B: 0.000000
-		AB: 1.000000
+		O: 11350.000000
+		A: 8849.000000
+		B: 2840.000000
+		AB: 780.000000
 Organs outdated:
 		O: 2.000000
 		A: 2.000000
@@ -84,3 +84,21 @@ Patients in queue:
 			Critical: 1.000000
 			Normal: 1297.000000
 			Low: 16.000000
+Average waiting time: 169.458561
+Average waiting times:
+		0: 
+			Critical: 0.111142
+			Normal: 200.941172
+			Low: 0.188148
+		A: 
+			Critical: 0.129635
+			Normal: 178.137820
+			Low: 0.348934
+		B: 
+			Critical: 0.450687
+			Normal: 230.551720
+			Low: 0.836320
+		AB: 
+			Critical: 1.284809
+			Normal: 222.916858
+			Low: 4.425846

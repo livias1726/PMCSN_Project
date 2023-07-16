@@ -1,6 +1,8 @@
 #ifndef PMCSN_PROJECT_STATS_H
 #define PMCSN_PROJECT_STATS_H
 
+#include "events.h"
+
 // ------------------- MACROS ---------------------------
 //TODO: uvs.c should perform all these
 #define GET_MEAN(a, b, i) ((a-b)/i)
@@ -11,31 +13,30 @@
  * Report of the system statistics given an allocation policy
  * */
 typedef struct statistics{
-
-    double numOrganArrivals[NUM_BLOOD_TYPES];
-    double numPatientArrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    // population
+    double numOrganArrivals[NUM_BLOOD_TYPES];                       // total number of organs arrived to the system
+    double numPatientArrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];     // total number of patients arrived to the system
     double numDeaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];              // number of death occurred in each waiting list
     double numReneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];             // number of reneges occurred in each waiting list
-    double numPatients[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-    double numOrganOutdatings[NUM_BLOOD_TYPES];              // number of organ outdatings
-    double numOrgans[NUM_BLOOD_TYPES];
-    double numTransplants[2];         // number of performed transplants
+    double numPatients[NUM_BLOOD_TYPES][NUM_PRIORITIES];            // number of patients still in waiting list
+    double numOrganOutdatings[NUM_BLOOD_TYPES];                     // number of organ outdatings
+    double numOrgans[NUM_BLOOD_TYPES];                              // number of organs still in the bank
+    double numTransplants[2];                                       // number of transplants (successful and rejected)
+
+    // time                                          // avg sim_time waiting for a transplant
+    double meanGlobalWaitingTimePerQueue[NUM_BLOOD_TYPES][NUM_PRIORITIES];  // avg sim_time waiting for a transplant in each queue
+    double patientsInterarrivalTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];   // avg patients interarrival sim_time
+    double organsInterarrivalTime[NUM_BLOOD_TYPES];                     // avg organs interarrival sim_time
 
     /* NOT YET USED
-    double waitTime[NUM_PATIENT_QUEUES];                    // avg sim_time in each waiting list
     double avgWaitingPatients[NUM_PATIENT_QUEUES];          // avg number of patients in each waiting list
-    double patientsInterarrivalTime[NUM_PATIENT_QUEUES];    // avg patients interarrival sim_time
-    double organsInterarrivalTime[NUM_ORGAN_QUEUES];        // avg organs interarrival sim_time
     double avgActivationDelay;                              // avg delay for temporarily inactive patients
     double utilization;                                     // utilization of the center
-    double globalWaitingTime;                       // avg sim_time waiting for a transplant
-    double globalWaitingTimeByBloodType;            // avg sim_time waiting for a transplant by blood type
-    double globalWaitingTimeByPriority;             // avg sim_time waiting for a transplant by medical urgency
      */
 } stats;
 
 // ------------------- PROTOTYPES ----------------
-void compute_stats();
-void print_stats();
+void computeStats(stats *statistics);
+void gatherResults(stats *statistics, event_list *events);
 
 #endif //PMCSN_PROJECT_STATS_H

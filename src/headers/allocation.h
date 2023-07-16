@@ -7,6 +7,9 @@
 #define IDENTICAL(o, p) (o == p)
 #define COMPATIBLE(o, p) IDENTICAL(o,p) || (o == O) || (p == AB && (o == A || o == B))
 
+/**
+ * Returns a constant array of compatible blood types with the one in input ordered by rarest first
+ * */
 static const BLOOD_TYPE* const get_compatibles[] = {
         [O] = (BLOOD_TYPE[]){AB, B, A, O},
         [A] = (BLOOD_TYPE[]){AB, A},

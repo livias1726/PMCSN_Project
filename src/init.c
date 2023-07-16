@@ -1,7 +1,7 @@
 #include "headers/utils.h"
 
 // Functions to initialize structs where to recover statistics for each center of the model
-patient_waiting_list initialize_waiting_list() {
+patient_waiting_list initializeWaitingList() {
     patient_waiting_list waitingList;
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         waitingList.blood_type_queues[i] = malloc(sizeof(patient_queue_blood_type));
@@ -26,13 +26,14 @@ patient_waiting_list initialize_waiting_list() {
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->next = NULL;
 
             waitingList.numPatientArrivals[i][j] = 0.0;
+            waitingList.globalWaitingTimes[i][j] = 0.0;
         }
     }
     waitingList.total_number = 0.0;
     return waitingList;
 }
 
-organ_bank initialize_organ_bank() {
+organ_bank initializeOrganBank() {
     organ_bank organBank;
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         organBank.queues[i] = malloc(sizeof(organ_queue));
@@ -52,7 +53,7 @@ organ_bank initialize_organ_bank() {
     return organBank;
 }
 
-transplant initialize_transplant_center() {
+transplant initializeTransplantCenter() {
     transplant transplantCenter;
     transplantCenter.transplanted_patients = malloc(sizeof(in_transplant));
     MALLOC_HANDLER(transplantCenter.transplanted_patients);
@@ -63,7 +64,7 @@ transplant initialize_transplant_center() {
     return transplantCenter;
 }
 
-activation initialize_activation_center() {
+activation initializeActivationCenter() {
     activation activationCenter;
     activationCenter.inactive_patients = malloc(sizeof(in_activation));
     MALLOC_HANDLER(activationCenter.inactive_patients)
@@ -78,7 +79,7 @@ activation initialize_activation_center() {
     return activationCenter;
 }
 
-organs_expired initialize_organs_expired_queue() {
+organs_expired initializeOrgansExpiredQueue() {
     organs_expired organsExpired;
     organsExpired.queue = malloc(sizeof(organ));
     MALLOC_HANDLER(organsExpired.queue)
@@ -98,7 +99,7 @@ organs_expired initialize_organs_expired_queue() {
     return organsExpired;
 }
 
-patients_lost initialize_patient_lost_queue() {
+patients_lost initializePatientLostQueue() {
     patients_lost patientsLost;
     patientsLost.queue = malloc(sizeof(patient));
     MALLOC_HANDLER(patientsLost.queue)
@@ -115,7 +116,7 @@ patients_lost initialize_patient_lost_queue() {
     return patientsLost;
 }
 
-matched * new_matched(patient p, organ o){
+matched * newMatched(patient p, organ o){
     matched *m = malloc(sizeof(matched));
     MALLOC_HANDLER(m)
     m->patient = p;
@@ -125,7 +126,7 @@ matched * new_matched(patient p, organ o){
     return m;
 }
 
-in_transplant * new_transplant(matched *m, double so){
+in_transplant * newTransplant(matched *m, double so){
     in_transplant *in_tr = malloc(sizeof(in_transplant));
     MALLOC_HANDLER(in_tr)
     in_tr->matched = m;
@@ -135,28 +136,29 @@ in_transplant * new_transplant(matched *m, double so){
     return in_tr;
 }
 
-in_activation * new_inactive(patient *p, double so){
+in_activation * newInactive(patient *patient, double server_offset){
     in_activation *inactive = malloc(sizeof(in_activation));
     MALLOC_HANDLER(inactive)
-    inactive->patient = p;
+    inactive->patient = patient;
     inactive->next = NULL;
-    inactive->serverOffset = so;
+    inactive->serverOffset = server_offset;
 
     return inactive;
 }
 
-patient * new_patient(BLOOD_TYPE bt, PRIORITY pr) {
+patient *newPatient(BLOOD_TYPE bt, PRIORITY pr) {
     patient *new = malloc(sizeof(patient));
     MALLOC_HANDLER(new)
     new->priority = pr;
     new->bt = bt;
     new->is_active = (int) Random() % 2; // FIXME integrate with probability to be inactive and handle it
-    new->start_time = clock();
+    new->start_time = -1;
+    new->end_time = -1;
     new->next = NULL;
     return new;
 }
 
-organ * new_organ(BLOOD_TYPE bt) {
+organ * newOrgan(BLOOD_TYPE bt) {
     organ *new = malloc(sizeof(organ));
     MALLOC_HANDLER(new)
     new->starting_age = ((int) rand() % (24-0+1)) + 0;
@@ -165,25 +167,25 @@ organ * new_organ(BLOOD_TYPE bt) {
     return new;
 }
 
-event_list initialize_event_list() {
-    patient_waiting_list waiting_list = initialize_waiting_list();
-    activation activation_c = initialize_activation_center();
-    organ_bank bank = initialize_organ_bank();
-    transplant transplant_c = initialize_transplant_center();
-    patients_lost patient_loss = initialize_patient_lost_queue();
-    organs_expired organs_loss = initialize_organs_expired_queue();
+event_list initializeEventList() {
+    patient_waiting_list waiting_list = initializeWaitingList();
+    activation activation_c = initializeActivationCenter();
+    organ_bank bank = initializeOrganBank();
+    transplant transplant_c = initializeTransplantCenter();
+    patients_lost patient_loss = initializePatientLostQueue();
+    organs_expired organs_loss = initializeOrgansExpiredQueue();
 
     event_list eventList;
-    eventList.organArrival = bank;
-    eventList.patientArrival = waiting_list;
-    eventList.activationArrival = activation_c;
-    eventList.transplantArrival = transplant_c;
-    eventList.organsLoss = organs_loss;
-    eventList.patientsLoss = patient_loss;
+    eventList.organ_arrival = bank;
+    eventList.patient_arrival = waiting_list;
+    eventList.activation_arrival = activation_c;
+    eventList.transplant_arrival = transplant_c;
+    eventList.organs_loss = organs_loss;
+    eventList.patients_loss = patient_loss;
     return eventList;
 }
 
-sim_time initialize_time() {
+sim_time initializeTime() {
     sim_time t;
     t.current = 0.0;
     t.next = 0.0;
@@ -199,26 +201,26 @@ sim_time initialize_time() {
 }
 
 void initializeEventTime(event_list* events) {
-    events->organArrival.interArrivalTime[O] = getOrganArrival(O, START);
-    events->organArrival.interArrivalTime[A] = getOrganArrival(A, START);
-    events->organArrival.interArrivalTime[B] = getOrganArrival(B, START);
-    events->organArrival.interArrivalTime[AB] = getOrganArrival(AB, START);
+    events->organ_arrival.interArrivalTime[O] = getOrganArrival(O, START);
+    events->organ_arrival.interArrivalTime[A] = getOrganArrival(A, START);
+    events->organ_arrival.interArrivalTime[B] = getOrganArrival(B, START);
+    events->organ_arrival.interArrivalTime[AB] = getOrganArrival(AB, START);
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patientArrival.interArrivalTime[i][j] = getPatientArrival(i, j, START);
+            events->patient_arrival.interArrivalTime[i][j] = getPatientArrival(i, j, START);
         }
     }
 
-    events->organsLoss.reneging_time[O] = INFINITY;
-    events->organsLoss.reneging_time[A] = INFINITY;
-    events->organsLoss.reneging_time[B] = INFINITY;
-    events->organsLoss.reneging_time[AB] = INFINITY;
+    events->organs_loss.reneging_time[O] = INFINITY;
+    events->organs_loss.reneging_time[A] = INFINITY;
+    events->organs_loss.reneging_time[B] = INFINITY;
+    events->organs_loss.reneging_time[AB] = INFINITY;
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patientsLoss.reneging_time[i][j] = INFINITY;
-            events->patientsLoss.death_time[i][j] = INFINITY;
+            events->patients_loss.reneging_time[i][j] = INFINITY;
+            events->patients_loss.death_time[i][j] = INFINITY;
         }
     }
 }

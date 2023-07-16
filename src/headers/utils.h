@@ -13,6 +13,7 @@
 #include "sim.h"
 #include "init.h"
 #include "rgf.h"
+#include "stats.h"
 #include "../../lib/rngs.h"
 #include "../../lib/rvms.h"
 #include "../../lib/rvgs.h"
@@ -27,13 +28,6 @@
         fprintf(stderr, "Malloc failed.\n"); \
         exit(-1); \
     }
-
-#define CLEANUP(size, list) \
-    do{                     \
-        for(int i=0; i<size; ++i){\
-            free(list[i]);\
-        }               \
-    }while(0);
 
 #define GET_LAST_NODE(head, prev) \
     prev = head;                              \
@@ -75,8 +69,9 @@
 
 //-----------------------------------------------------------------------------
 
-void save_results(stats *);
-void print_results(stats*);
-void gather_results(stats *, event_list *);
+void saveResultsCsv(stats *statistics);
+void saveResultsTxt(stats *statistics);
+void printResults(stats *statistics);
+void cleanUp(event_list *events);
 
 #endif //PMCSN_PROJECT_UTILS_H

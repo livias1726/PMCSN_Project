@@ -1,70 +1,51 @@
 #include "headers/utils.h"
 
-void compute_output_stats(int i, stats* mean, stats* variance, stats* out_stats, stats* conf_mean){
-    double aux = (i-1)/(double)i;
-/* TODO: separate computations if the improvement affects params
-#ifndef IMPROVEMENT
-    ...
+void saveResultsCsv(stats* statistics){
+    FILE *f;
+    char path[MAX_LEN];
+#ifdef ABO_ID
+    snprintf(path, MAX_LEN, "output/res_%s.csv", "id");
 #else
-    ...
+    snprintf(path, MAX_LEN, "output/res_%s.csv", "comp");
 #endif
- */
-
-/*
-    // compute the mean for each param and each node considered
-    mean->param_node += GET_MEAN(out_stats->param_node, mean->param_node, i);
-
-    // compute the variance for each param and each node considered
-    variance->param_node += GET_VAR(out_stats->param_node, mean->param_node, aux);
-
-    // compute the confidence interval for each param and each node considered
-    double criticalValue = idfStudent(i-1,1-0.025); //alpha = 0.05
-    conf_mean->param_node = GET_CONF(variance->param_node, i, criticalValue);
-*/
-}
-
-void save_output_stats(int i, stats *mean, stats* conf_mean, FILE *stats_file){
-/* TODO: separate computations if the improvement affects params
-#ifndef IMPROVEMENT
-    ...
-#else
-    ...
-#endif
- */
-
-/*
-    if (i == 1){
-        fprintf(stats_file, "%d,%f,%f\n", i, mean->param_node, 0.0);
-    } else {
-        fprintf(stats_file, "%d,%f,%f\n", i, mean->param_node, conf_mean->param_node);
+    if((f = fopen(path, "w")) == NULL) {
+        fprintf(stderr, "Cannot open output file");
+        exit(EXIT_FAILURE);
     }
-*/
-}
 
-void gather_results(stats* statistics, event_list *events){
-    patient_waiting_list waiting_list = events->patientArrival;
-    organ_bank bank = events->organArrival;
-    transplant transplant_c = events->transplantArrival;
-    organs_expired organs_expired = events->organsLoss;
-    patients_lost patients_lost = events->patientsLoss;
+    int i,j;
 
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        statistics->numOrgans[i] = bank.queues[i]->number;
-        statistics->numOrganArrivals[i] = bank.numOrganArrivals[i];
-        statistics->numOrganOutdatings[i] = organs_expired.number[i];
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            statistics->numPatients[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
-            statistics->numPatientArrivals[i][j] = waiting_list.numPatientArrivals[i][j];
-            statistics->numDeaths[i][j] = patients_lost.number_dead[i][j];
-            statistics->numReneges[i][j] = patients_lost.number_renege[i][j];
+    // Patients
+    char *header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,Average waiting times\n";
+    fprintf(f, "%s", header);
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            fprintf(f, "%s,%s,%f,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j],
+                    statistics->numPatientArrivals[i][j], statistics->numDeaths[i][j], statistics->numReneges[i][j],
+                    statistics->numPatients[i][j], statistics->meanGlobalWaitingTimePerQueue[i][j]);
         }
     }
+    fprintf(f, "%s", "\n");
 
-    statistics->numTransplants[0] = transplant_c.completed_transplants;
-    statistics->numTransplants[1] = transplant_c.rejected_transplants;
+    // Organs
+    header = "Blood type,Organs arrived,Organs outdated,Organs in queue\n";
+    fprintf(f, "%s", header);
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        fprintf(f, "%s,%f,%f,%f\n", bt_to_str[i], statistics->numOrganArrivals[i], statistics->numOrganOutdatings[i],
+                statistics->numOrgans[i]);
+    }
+    fprintf(f, "%s", "\n");
+
+    // Transplant
+    fprintf(f, "%s", ",Number of transplant\n");
+    fprintf(f, "%s,%f\n", "Successful", statistics->numTransplants[0]);
+    fprintf(f, "%s,%f\n", "Rejected", statistics->numTransplants[1]);
+    fprintf(f, "%s", "\n");
+
+    fclose(f);
 }
 
-void save_results(stats* statistics){
+void saveResultsTxt(stats* statistics){
     FILE *f;
     char path[MAX_LEN];
 #ifdef ABO_ID
@@ -85,10 +66,12 @@ void save_results(stats* statistics){
     print_transplants_res("Transplants:\n", statistics->numTransplants, f)
     print_by_blood_type("Organs in queue:\n", statistics->numOrgans, f)
     print_by_all("Patients in queue:\n", statistics->numPatients, f)
+    print_by_all("Average waiting times:\n", statistics->meanGlobalWaitingTimePerQueue, f)
+
+    fclose(f);
 }
 
-
-void print_results(stats* statistics){
+void printResults(stats* statistics){
     printf("\nResults:\n");
 
     print_by_all("\tPatients arrived:\n", statistics->numPatientArrivals, stdout)
@@ -101,19 +84,29 @@ void print_results(stats* statistics){
     print_by_all("\tPatients in queue:\n", statistics->numPatients, stdout)
 }
 
-void print_output_stats(stats* mean, stats* variance, stats* out_stats){
+void cleanUp(event_list* events){
+    patient_waiting_list *waiting_list = &events->patient_arrival;
+    patient_queue_blood_type **bt_queues = waiting_list->blood_type_queues;
+    organ_bank *bank = &events->organ_arrival;
 
-  //  double criticalValue = idfStudent(NUM_ITER-1,1-0.025); //alpha = 0.05
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        free(bank->queues[i]->queue); //TODO: while there are organs in queue, free organ
+        free(bank->queues[i]);
 
-    printf("OUTPUT:\n");
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            free(bt_queues[i]->priority_queue[j]->queue); //TODO: while there are patients in queue, free patient
+            free(bt_queues[i]->priority_queue[j]);
+        }
 
-/* TODO: separate printing if the improvement affects params
-#ifndef IMPROVEMENT
-    ...
-#else
-    ...
-#endif
- */
+        free(bt_queues[i]);
+    }
 
-  //  printf("\t<Param> <Node>: %lf +_ %lf \n", mean->param_node, GET_CONF(variance->param_node, NUM_ITER, criticalValue));
+    transplant *trans_queue = &events->transplant_arrival;
+    free(trans_queue->transplanted_patients); //TODO: while there are patients in queue, free patient
+
+    activation *inactive_queue = &events->activation_arrival;
+    free(inactive_queue->inactive_patients->patient); //TODO: while there are patients in queue, free patient
+    free(inactive_queue->inactive_patients);
+
+    //TODO: free the other structured into events
 }
