@@ -8,6 +8,14 @@
 #define GET_MEAN(a, b, i) ((a-b)/i)
 #define GET_VAR(a, b, aux) (aux * pow((a - b),2))
 #define GET_CONF(a, i, cv) ((cv * sqrt(a / i))/sqrt(i-1))
+/**
+ * Struct of the time averaged statistics for each center
+ * */
+typedef struct area {
+    double node;            // time integrated number in the node
+    double queue;           // time integrated number in the queue
+    double service;         // time integrated number in service
+} area;
 
 /**
  * Report of the system statistics given an allocation policy
@@ -22,6 +30,12 @@ typedef struct statistics{
     double numOrganOutdatings[NUM_BLOOD_TYPES];                     // number of organ outdatings
     double numOrgans[NUM_BLOOD_TYPES];                              // number of organs still in the bank
     double numTransplants[2];                                       // number of transplants (successful and rejected)
+
+    // time integrated statistics for each center
+    area* area_waiting_list;                          // time integrated statistics for the waiting list center
+    area* area_activation;                           // time integrated statistics for the activation center
+    area* area_bank;                                 // time integrated statistics for the organ bank center
+    area* area_transplant;                           // time integrated statistics for the transplant center
 
     // time                                          // avg sim_time waiting for a transplant
     double meanGlobalWaitingTimePerQueue[NUM_BLOOD_TYPES][NUM_PRIORITIES];  // avg sim_time waiting for a transplant in each queue

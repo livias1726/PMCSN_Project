@@ -242,6 +242,11 @@ stats * initializeStatistics(){
         }
     }
 
+    statistics->area_waiting_list = malloc(sizeof(area));
+    statistics->area_activation = malloc(sizeof(area));
+    statistics->area_bank = malloc(sizeof(area));
+    statistics->area_transplant = malloc(sizeof(area));
+
     statistics->numTransplants[0] = statistics->numTransplants[1] = 0;
 
     return statistics;

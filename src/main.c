@@ -30,19 +30,18 @@ int main(){
 
     event_list events = initializeEventList();
     sim_time simTime = initializeTime();
+    stats *statistics = initializeStatistics();
     initializeEventTime(&events);
 
     // --------------------------------------------- Simulation ------------------------------------------------------
 
 #ifdef FINITE_HORIZON
-    finiteSim(&events, &simTime);
+    finiteSim(&events, &simTime, statistics);
 #else
     /* TODO */
 #endif
 
     // ----------------------------------------------------- Results --------------------------------------------------
-
-    stats *statistics = initializeStatistics();
     gatherResults(statistics, &events);
     computeStats(statistics);
 
