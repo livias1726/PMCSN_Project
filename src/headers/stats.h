@@ -32,10 +32,10 @@ typedef struct statistics{
     double numTransplants[2];                                       // number of transplants (successful and rejected)
 
     // time integrated statistics for each center
-    area* area_waiting_list;                          // time integrated statistics for the waiting list center
-    area* area_activation;                           // time integrated statistics for the activation center
-    area* area_bank;                                 // time integrated statistics for the organ bank center
-    area* area_transplant;                           // time integrated statistics for the transplant center
+    area* area_waiting_list[NUM_BLOOD_TYPES][NUM_PRIORITIES];                           // time integrated statistics for the waiting list center
+    area* area_activation;                                                              // time integrated statistics for the activation center
+    area* area_bank[NUM_BLOOD_TYPES];                                                   // time integrated statistics for the organ bank center
+    area* area_transplant;                                                              // time integrated statistics for the transplant center
 
     // time                                          // avg sim_time waiting for a transplant
     double meanGlobalWaitingTimePerQueue[NUM_BLOOD_TYPES][NUM_PRIORITIES];  // avg sim_time waiting for a transplant in each queue

@@ -242,10 +242,14 @@ stats * initializeStatistics(){
         }
     }
 
-    statistics->area_waiting_list = malloc(sizeof(area));
-    statistics->area_activation = malloc(sizeof(area));
-    statistics->area_bank = malloc(sizeof(area));
     statistics->area_transplant = malloc(sizeof(area));
+    statistics->area_activation = malloc(sizeof(area));
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        statistics->area_bank[i] = malloc(sizeof(area));
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            statistics->area_waiting_list[i][j] = malloc(sizeof(area));
+        }
+    }
 
     statistics->numTransplants[0] = statistics->numTransplants[1] = 0;
 

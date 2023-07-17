@@ -146,22 +146,28 @@ void finiteSim(event_list *events, sim_time *t, stats *stats) {
 
 void computeTimeAveragedStats(event_list *events, sim_time *t, stats *stats) {
     /* Waiting list */
-    printf("Waiting list: \n");
-    printf("\t\taverage # in the node...%f\n", stats->area_waiting_list->node/t->current);
-    printf("\t\taverage # in the queue...%f\n", stats->area_waiting_list->queue/t->current);
-    printf("\t\tutilization...%f\n", stats->area_waiting_list->service/t->current);
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            printf("Waiting list - BLOOD TYPE %d - PRIORITY %d: \n", i, j);
+            printf("\t\taverage # in the node...%f\n", stats->area_waiting_list[i][j]->node/t->current);
+            printf("\t\taverage # in the queue...%f\n", stats->area_waiting_list[i][j]->queue/t->current);
+            printf("\t\tutilization...%f\n", stats->area_waiting_list[i][j]->service/t->current);
+        }
+    }
+
+    /* Organ bank */
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        printf("Organ bank - BLOOD TYPE %d: \n", i);
+        printf("\t\taverage # in the node...%f\n", stats->area_bank[i]->node/t->current);
+        printf("\t\taverage # in the queue...%f\n", stats->area_bank[i]->queue/t->current);
+        printf("\t\tutilization...%f\n", stats->area_bank[i]->service/t->current);
+    }
 
     /* Activation center */
     printf("Activation center: \n");
     printf("\t\taverage # in the node...%f\n", stats->area_activation->node/t->current);
     printf("\t\taverage # in the queue...%f\n", stats->area_activation->queue/t->current);
     printf("\t\tutilization...%f\n", stats->area_activation->service/t->current);
-
-    /* Organ bank */
-    printf("Organ bank: \n");
-    printf("\t\taverage # in the node...%f\n", stats->area_bank->node/t->current);
-    printf("\t\taverage # in the queue...%f\n", stats->area_bank->queue/t->current);
-    printf("\t\tutilization...%f\n", stats->area_bank->service/t->current);
 
     /* Transplant center */
     printf("Transplant center: \n");
@@ -171,16 +177,31 @@ void computeTimeAveragedStats(event_list *events, sim_time *t, stats *stats) {
 }
 
 void updateIntegralsStats(event_list *events, sim_time *t, stats *statistics) {
-    double number_wl = events->patient_arrival.total_number;
     double number_active = events->activation_arrival.total_number;
-    double number_organ = events->organ_arrival.total_number;
     double number_trans = events->transplant_arrival.total_number;
+    double number_wl, number_bank;
 
+    //TODO: maybe add other loss centers?
     /* Update waiting list integrals */
-    if (number_wl > 0) {
-        statistics->area_waiting_list->node += (t->next - t->current) * number_wl;
-        statistics->area_waiting_list->queue += (t->next - t->current) * (number_wl-1); // FIXME: substitute -1 with a variable that counts the number of blood types ready to match
-        statistics->area_waiting_list->service += (t->next - t->current);
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
+            if (number_wl > 0) {
+                statistics->area_waiting_list[i][j]->node += (t->next - t->current) * number_wl;
+                statistics->area_waiting_list[i][j]->queue += (t->next - t->current) * (number_wl-1);
+                statistics->area_waiting_list[i][j]->service += (t->next - t->current);
+            }
+        }
+    }
+
+    /* Update organ bank integrals */
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        number_bank = events->organ_arrival.queues[i]->number;
+        if (number_bank > 0) {
+            statistics->area_bank[i]->node += (t->next - t->current) * number_bank;
+            statistics->area_bank[i]->queue += (t->next - t->current) * (number_bank-1);
+            statistics->area_bank[i]->service += (t->next - t->current);
+        }
     }
 
     /* Update activation center integrals */
@@ -190,17 +211,10 @@ void updateIntegralsStats(event_list *events, sim_time *t, stats *statistics) {
         statistics->area_activation->service += (t->next - t->current);
     }
 
-    /* Update organ bank integrals */
-    if (number_organ > 0) {
-        statistics->area_bank->node += (t->next - t->current) * number_organ;
-        statistics->area_bank->queue += (t->next - t->current) * (number_organ-1); // FIXME: substitute -1 with a variable that counts the number of blood types ready to match
-        statistics->area_bank->service += (t->next - t->current);
-    }
-
     /* Update transplant center integrals */
     if (number_trans > 0) {
         statistics->area_transplant->node += (t->next - t->current) * number_trans;
-        statistics->area_transplant->queue += (t->next - t->current) * (number_trans-1);
+        statistics->area_transplant->queue += (t->next - t->current) * (number_trans-number_trans);
         statistics->area_transplant->service += (t->next - t->current);
     }
 }
