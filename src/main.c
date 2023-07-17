@@ -47,7 +47,7 @@ int main(){
     computeStats(statistics);
 
 #ifdef AUDIT
-    print_results(statistics);
+    printResults(statistics);
 #else
     saveResultsCsv(statistics);
 #endif
