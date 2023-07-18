@@ -3,11 +3,6 @@
 
 #include "events.h"
 
-// ------------------- MACROS ---------------------------
-//TODO: uvs.c should perform all these
-#define GET_MEAN(a, b, i) ((a-b)/i)
-#define GET_VAR(a, b, aux) (aux * pow((a - b),2))
-#define GET_CONF(a, i, cv) ((cv * sqrt(a / i))/sqrt(i-1))
 /**
  * Struct of the time averaged statistics for each center
  * */
@@ -17,40 +12,69 @@ typedef struct area {
     double service;         // time integrated number in service
 } area;
 
+// time integrated statistics for each center
+typedef struct time_integrated_stats{
+    area* area_waiting_list[NUM_BLOOD_TYPES][NUM_PRIORITIES];   // time integrated statistics for the waiting list center
+    area* area_bank[NUM_BLOOD_TYPES];                           // time integrated statistics for the organ bank center
+    area* area_activation;                                      // time integrated statistics for the activation center
+    area* area_transplant;                                      // time integrated statistics for the transplant center
+
+    double current_time;                                        // last registered time
+} time_integrated_stats;
+
+typedef struct waiting_list_stats{
+    double num_patient_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];      // total number of patients arrived to the system
+    double num_patient_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];        // number of death occurred in each waiting list
+    double num_patient_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];       // number of reneges occurred in each waiting list
+    double num_patients_in_queue[NUM_BLOOD_TYPES][NUM_PRIORITIES];     // number of patients still in waiting list
+    double avg_interarrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_wait[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_delay[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_service[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_in_node[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_in_queue[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double utilization[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+} waiting_list_stats;
+
+typedef struct organ_bank_stats{
+    double num_organ_arrivals[NUM_BLOOD_TYPES];            // total number of organs arrived to the system
+    double num_organ_outdatings[NUM_BLOOD_TYPES];          // number of organ outdatings
+    double num_organs_in_queue[NUM_BLOOD_TYPES];           // number of organs still in the bank
+    double avg_interarrival_time[NUM_BLOOD_TYPES];
+    double avg_wait[NUM_BLOOD_TYPES];
+    double avg_delay[NUM_BLOOD_TYPES];
+    double avg_service[NUM_BLOOD_TYPES];
+    double avg_in_node[NUM_BLOOD_TYPES];
+    double avg_in_queue[NUM_BLOOD_TYPES];
+    double utilization[NUM_BLOOD_TYPES];
+} organ_bank_stats;
+
+typedef struct transplant_stats{
+    double num_transplants[2];      // number of performed transplants (successful and rejected)
+    double avg_in_node;
+    double avg_in_queue;
+    double utilization;
+} transplant_stats;
+
+typedef struct activation_stats{
+    double avg_in_node;
+    double avg_in_queue;
+    double utilization;
+} activation_stats;
+
 /**
  * Report of the system statistics given an allocation policy
  * */
 typedef struct statistics{
-    // population
-    double numOrganArrivals[NUM_BLOOD_TYPES];                       // total number of organs arrived to the system
-    double numPatientArrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];     // total number of patients arrived to the system
-    double numDeaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];              // number of death occurred in each waiting list
-    double numReneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];             // number of reneges occurred in each waiting list
-    double numPatients[NUM_BLOOD_TYPES][NUM_PRIORITIES];            // number of patients still in waiting list
-    double numOrganOutdatings[NUM_BLOOD_TYPES];                     // number of organ outdatings
-    double numOrgans[NUM_BLOOD_TYPES];                              // number of organs still in the bank
-    double numTransplants[2];                                       // number of transplants (successful and rejected)
-
-    // time integrated statistics for each center
-    area* area_waiting_list[NUM_BLOOD_TYPES][NUM_PRIORITIES];                           // time integrated statistics for the waiting list center
-    area* area_activation;                                                              // time integrated statistics for the activation center
-    area* area_bank[NUM_BLOOD_TYPES];                                                   // time integrated statistics for the organ bank center
-    area* area_transplant;                                                              // time integrated statistics for the transplant center
-
-    // time                                          // avg sim_time waiting for a transplant
-    double meanGlobalWaitingTimePerQueue[NUM_BLOOD_TYPES][NUM_PRIORITIES];  // avg sim_time waiting for a transplant in each queue
-    double patientsInterarrivalTime[NUM_BLOOD_TYPES][NUM_PRIORITIES];   // avg patients interarrival sim_time
-    double organsInterarrivalTime[NUM_BLOOD_TYPES];                     // avg organs interarrival sim_time
-
-    /* NOT YET USED
-    double avgWaitingPatients[NUM_PATIENT_QUEUES];          // avg number of patients in each waiting list
-    double avgActivationDelay;                              // avg delay for temporarily inactive patients
-    double utilization;                                     // utilization of the center
-     */
+    waiting_list_stats* wl_stats;
+    organ_bank_stats* ob_stats;
+    transplant_stats* trans_stats;
+    activation_stats* act_stats;
 } stats;
 
 // ------------------- PROTOTYPES ----------------
-void computeStats(stats *statistics);
 void gatherResults(stats *statistics, event_list *events);
+void computeTimeAveragedStats(time_integrated_stats *stats);
+void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats);
 
 #endif //PMCSN_PROJECT_STATS_H

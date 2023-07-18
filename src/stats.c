@@ -1,22 +1,95 @@
 #include "headers/utils.h"
 
-/**
- * Processes the gathered data to retrieve the system's statistics
- * */
-void computeStats(stats* statistics){
-    // compute mean for the global waiting times
-    double tot_by_queue[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            // get the number of patients per queue that have left the system
-            tot_by_queue[i][j] = statistics->numPatientArrivals[i][j] - statistics->numPatients[i][j];
-            statistics->meanGlobalWaitingTimePerQueue[i][j] /= tot_by_queue[i][j];
+#define PRINT_TI_STATS(area, time) \
+    printf("\t\taverage # in the node...%f\n", area->node/time); \
+    printf("\t\taverage # in the queue...%f\n", area->queue/time); \
+    printf("\t\tutilization...%f\n", area->service/time);
+
+void computeTimeAveragedStats(time_integrated_stats *stats) {
+    double curr = stats->current_time;
+    area *curr_area;
+    int i,j;
+
+    // Waiting list
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            curr_area = stats->area_waiting_list[i][j];
+            printf("Waiting list - BLOOD TYPE %s - PRIORITY %s: \n", bt_to_str[i], pr_to_str[j]);
+            PRINT_TI_STATS(curr_area, curr)
         }
     }
+
+    // Organ bank
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        curr_area = stats->area_bank[i];
+        printf("Organ bank - BLOOD TYPE %s: \n", bt_to_str[i]);
+        PRINT_TI_STATS(curr_area, curr)
+    }
+
+    // Activation center
+    curr_area = stats->area_activation;
+    printf("Activation center: \n");
+    PRINT_TI_STATS(curr_area, curr)
+
+    // Transplant center
+    curr_area = stats->area_transplant;
+    printf("Transplant center: \n");
+    PRINT_TI_STATS(curr_area, curr)
+}
+
+void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
+    double curr = ti_stats->current_time;
+    double population;
+    area * curr_area;
+
+    waiting_list_stats* wl_stats = stats->wl_stats;
+    organ_bank_stats* ob_stats = stats->ob_stats;
+    transplant_stats* trans_stats = stats->trans_stats;
+    activation_stats* act_stats = stats->act_stats;
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        // Organ bank
+        curr_area = ti_stats->area_bank[i];
+        population = ob_stats->num_organ_arrivals[i];
+
+        ob_stats->avg_interarrival_time[i] = curr / population; //FIXME: use t.last
+        ob_stats->avg_wait[i] = curr_area->node / population;
+        ob_stats->avg_delay[i] = curr_area->queue / population;
+        ob_stats->avg_service[i] = curr_area->service / population;
+        ob_stats->avg_in_node[i] = curr_area->node / curr;
+        ob_stats->avg_in_queue[i] = curr_area->queue / curr;
+        ob_stats->utilization[i] = curr_area->service / curr;
+
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            // Waiting list
+            curr_area = ti_stats->area_waiting_list[i][j];
+            population = wl_stats->num_patient_arrivals[i][j]; //FIXME: check if this needs to be without loss and in queue
+
+            wl_stats->avg_interarrival_time[i][j] = curr / population; //FIXME: use t.last
+            wl_stats->avg_wait[i][j] = curr_area->node / population;
+            wl_stats->avg_delay[i][j] = curr_area->queue / population;
+            wl_stats->avg_service[i][j] = curr_area->service / population;
+            wl_stats->avg_in_node[i][j] = curr_area->node / curr;
+            wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
+            wl_stats->utilization[i][j] = curr_area->service / curr;
+        }
+    }
+
+    // Activation center
+    curr_area = ti_stats->area_activation;
+    act_stats->avg_in_node = curr_area->node / curr;
+    act_stats->avg_in_queue = curr_area->queue / curr;
+    act_stats->utilization = curr_area->service / curr;
+
+    // Transplant center
+    curr_area = ti_stats->area_transplant;
+    trans_stats->avg_in_node = curr_area->node / curr;
+    trans_stats->avg_in_queue = curr_area->queue / curr;
+    trans_stats->utilization = curr_area->service / curr;
 }
 
 /**
- * Retrieves the data to be processed taken during the simulation
+ * Retrieves the data taken during the simulation
  * */
 void gatherResults(stats* statistics, event_list *events){
     patient_waiting_list waiting_list = events->patient_arrival;
@@ -26,22 +99,18 @@ void gatherResults(stats* statistics, event_list *events){
     patients_lost patients_lost = events->patients_loss;
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        statistics->numOrgans[i] = bank.queues[i]->number;
-        statistics->numOrganArrivals[i] = bank.numOrganArrivals[i];
-        statistics->numOrganOutdatings[i] = organs_expired.number[i];
-        statistics->organsInterarrivalTime[i] = bank.interArrivalTime[i];
+        statistics->ob_stats->num_organs_in_queue[i] = bank.queues[i]->number;
+        statistics->ob_stats->num_organ_arrivals[i] = bank.num_arrivals[i];
+        statistics->ob_stats->num_organ_outdatings[i] = organs_expired.number[i];
 
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            statistics->numPatients[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
-            statistics->numPatientArrivals[i][j] = waiting_list.numPatientArrivals[i][j];
-            statistics->numDeaths[i][j] = patients_lost.number_dead[i][j];
-            statistics->numReneges[i][j] = patients_lost.number_renege[i][j];
-            statistics->patientsInterarrivalTime[i][j] = waiting_list.interArrivalTime[i][j];
-
-            statistics->meanGlobalWaitingTimePerQueue[i][j] = waiting_list.globalWaitingTimes[i][j];
+            statistics->wl_stats->num_patients_in_queue[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
+            statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
+            statistics->wl_stats->num_patient_deaths[i][j] = patients_lost.number_dead[i][j];
+            statistics->wl_stats->num_patient_reneges[i][j] = patients_lost.number_renege[i][j];
         }
     }
 
-    statistics->numTransplants[0] = transplant_c.completed_transplants;
-    statistics->numTransplants[1] = transplant_c.rejected_transplants;
+    statistics->trans_stats->num_transplants[success] = transplant_c.completed_transplants;
+    statistics->trans_stats->num_transplants[reject] = transplant_c.rejected_transplants;
 }

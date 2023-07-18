@@ -52,7 +52,7 @@
     }
 
 #define print_transplants_res(header, list, ch) \
-    fprintf(ch, "%s\t\tSuccessful: %f\n\t\tRejected: %f\n", header, list[0], list[1]);
+    fprintf(ch, "%s\t\tSuccessful: %f\n\t\tRejected: %f\n", header, list[success], list[reject]);
 
 #define print_by_blood_type(header, list, ch) \
     fprintf(ch, "%s\t\tO: %f\n\t\tA: %f\n\t\tB: %f\n\t\tAB: %f\n", header, list[O], list[A], list[B], list[AB]);
@@ -70,8 +70,7 @@
 //-----------------------------------------------------------------------------
 
 void saveResultsCsv(stats *statistics);
-void saveResultsTxt(stats *statistics);
-void printResults(stats *statistics);
+void printResults(stats *statistics, FILE* ch);
 void cleanUp(event_list *events);
 
 #endif //PMCSN_PROJECT_UTILS_H

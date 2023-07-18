@@ -1,29 +1,27 @@
 #include "headers/utils.h"
 
-void updateIntegralsStats(event_list *events, sim_time *t, stats *statistics);
-
-void computeTimeAveragedStats(event_list *events, sim_time *t, stats *stats);
+void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats);
 
 double getMinTime(event_list *events) {
     int len = 46;
 
     double timesToCompare[len];
-    timesToCompare[0] = events->organ_arrival.interArrivalTime[O];
-    timesToCompare[1] = events->organ_arrival.interArrivalTime[A];
-    timesToCompare[2] = events->organ_arrival.interArrivalTime[B];
-    timesToCompare[3] = events->organ_arrival.interArrivalTime[AB];
-    timesToCompare[4] = events->patient_arrival.interArrivalTime[O][critical];
-    timesToCompare[5] = events->patient_arrival.interArrivalTime[O][normal];
-    timesToCompare[6] = events->patient_arrival.interArrivalTime[O][low];
-    timesToCompare[7] = events->patient_arrival.interArrivalTime[A][critical];
-    timesToCompare[8] = events->patient_arrival.interArrivalTime[A][normal];
-    timesToCompare[9] = events->patient_arrival.interArrivalTime[A][low];
-    timesToCompare[10] = events->patient_arrival.interArrivalTime[B][critical];
-    timesToCompare[11] = events->patient_arrival.interArrivalTime[B][normal];
-    timesToCompare[12] = events->patient_arrival.interArrivalTime[B][low];
-    timesToCompare[13] = events->patient_arrival.interArrivalTime[AB][critical];
-    timesToCompare[14] = events->patient_arrival.interArrivalTime[AB][normal];
-    timesToCompare[15] = events->patient_arrival.interArrivalTime[AB][low];
+    timesToCompare[0] = events->organ_arrival.inter_arrival_time[O];
+    timesToCompare[1] = events->organ_arrival.inter_arrival_time[A];
+    timesToCompare[2] = events->organ_arrival.inter_arrival_time[B];
+    timesToCompare[3] = events->organ_arrival.inter_arrival_time[AB];
+    timesToCompare[4] = events->patient_arrival.inter_arrival_time[O][critical];
+    timesToCompare[5] = events->patient_arrival.inter_arrival_time[O][normal];
+    timesToCompare[6] = events->patient_arrival.inter_arrival_time[O][low];
+    timesToCompare[7] = events->patient_arrival.inter_arrival_time[A][critical];
+    timesToCompare[8] = events->patient_arrival.inter_arrival_time[A][normal];
+    timesToCompare[9] = events->patient_arrival.inter_arrival_time[A][low];
+    timesToCompare[10] = events->patient_arrival.inter_arrival_time[B][critical];
+    timesToCompare[11] = events->patient_arrival.inter_arrival_time[B][normal];
+    timesToCompare[12] = events->patient_arrival.inter_arrival_time[B][low];
+    timesToCompare[13] = events->patient_arrival.inter_arrival_time[AB][critical];
+    timesToCompare[14] = events->patient_arrival.inter_arrival_time[AB][normal];
+    timesToCompare[15] = events->patient_arrival.inter_arrival_time[AB][low];
     timesToCompare[16] = events->organs_loss.reneging_time[O];
     timesToCompare[17] = events->organs_loss.reneging_time[A];
     timesToCompare[18] = events->organs_loss.reneging_time[B];
@@ -89,28 +87,28 @@ double getMinActivation(in_activation *inactive) {
     return min;
 }
 
-void finiteSim(event_list *events, sim_time *t, stats *stats) {
+void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
     /* Choose next event selecting minimum time */
     t->current = 0;
     while (t->current < STOP) {
         t->next = getMinTime(events);		                //Next event time
-        updateIntegralsStats(events, t, stats);             // Update integrals stats
+        updateIntegralsStats(events, t, ti_stats);             // Update integrals stats
         t->current = t->next;                               //Clock update
 
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-            if (t->current == events->organ_arrival.interArrivalTime[i]) {
+            if (t->current == events->organ_arrival.inter_arrival_time[i]) {
                 handleOrganArrival(events, t, i);
                 break;
             } else if (t->current == events->organs_loss.reneging_time[i]) {
                 handleOrganRenege(events, t, i);
                 break;
-            } else if (t->current == events->patient_arrival.interArrivalTime[i][critical]) {
+            } else if (t->current == events->patient_arrival.inter_arrival_time[i][critical]) {
                 handlePatientArrival(events, t, i, critical);
                 break;
-            } else if (t->current == events->patient_arrival.interArrivalTime[i][normal]) {
+            } else if (t->current == events->patient_arrival.inter_arrival_time[i][normal]) {
                 handlePatientArrival(events, t, i, normal);
                 break;
-            } else if (t->current == events->patient_arrival.interArrivalTime[i][low]) {
+            } else if (t->current == events->patient_arrival.inter_arrival_time[i][low]) {
                 handlePatientArrival(events, t, i, low);
                 break;
             } else if (t->current == events->patients_loss.reneging_time[i][critical]) {
@@ -141,80 +139,53 @@ void finiteSim(event_list *events, sim_time *t, stats *stats) {
         }
     }
 
-    computeTimeAveragedStats(events, t, stats);
+    ti_stats->current_time = t->current;
+#ifdef AUDIT
+    computeTimeAveragedStats(stats, t->current);
+#endif
 }
 
-void computeTimeAveragedStats(event_list *events, sim_time *t, stats *stats) {
-    /* Waiting list */
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            printf("Waiting list - BLOOD TYPE %d - PRIORITY %d: \n", i, j);
-            printf("\t\taverage # in the node...%f\n", stats->area_waiting_list[i][j]->node/t->current);
-            printf("\t\taverage # in the queue...%f\n", stats->area_waiting_list[i][j]->queue/t->current);
-            printf("\t\tutilization...%f\n", stats->area_waiting_list[i][j]->service/t->current);
-        }
-    }
-
-    /* Organ bank */
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        printf("Organ bank - BLOOD TYPE %d: \n", i);
-        printf("\t\taverage # in the node...%f\n", stats->area_bank[i]->node/t->current);
-        printf("\t\taverage # in the queue...%f\n", stats->area_bank[i]->queue/t->current);
-        printf("\t\tutilization...%f\n", stats->area_bank[i]->service/t->current);
-    }
-
-    /* Activation center */
-    printf("Activation center: \n");
-    printf("\t\taverage # in the node...%f\n", stats->area_activation->node/t->current);
-    printf("\t\taverage # in the queue...%f\n", stats->area_activation->queue/t->current);
-    printf("\t\tutilization...%f\n", stats->area_activation->service/t->current);
-
-    /* Transplant center */
-    printf("Transplant center: \n");
-    printf("\t\taverage # in the node...%f\n", stats->area_transplant->node/t->current);
-    printf("\t\taverage # in the queue...%f\n", stats->area_transplant->queue/t->current);
-    printf("\t\tutilization...%f\n", stats->area_transplant->service/t->current);
-}
-
-void updateIntegralsStats(event_list *events, sim_time *t, stats *statistics) {
+void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
     double number_active = events->activation_arrival.total_number;
     double number_trans = events->transplant_arrival.total_number;
     double number_wl, number_bank;
 
-    //TODO: maybe add other loss centers?
-    /* Update waiting list integrals */
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
-            if (number_wl > 0) {
-                statistics->area_waiting_list[i][j]->node += (t->next - t->current) * number_wl;
-                statistics->area_waiting_list[i][j]->queue += (t->next - t->current) * (number_wl-1);
-                statistics->area_waiting_list[i][j]->service += (t->next - t->current);
-            }
-        }
-    }
+    int i,j;
 
-    /* Update organ bank integrals */
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+    //TODO: maybe add other loss centers?
+
+    /* Update waiting list integrals */
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+
+        /* Update organ bank integrals */
         number_bank = events->organ_arrival.queues[i]->number;
         if (number_bank > 0) {
-            statistics->area_bank[i]->node += (t->next - t->current) * number_bank;
-            statistics->area_bank[i]->queue += (t->next - t->current) * (number_bank-1);
-            statistics->area_bank[i]->service += (t->next - t->current);
+            ti_stats->area_bank[i]->node += (t->next - t->current) * number_bank;
+            ti_stats->area_bank[i]->queue += (t->next - t->current) * (number_bank - 1);
+            ti_stats->area_bank[i]->service += (t->next - t->current);
+        }
+
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
+            if (number_wl > 0) {
+                ti_stats->area_waiting_list[i][j]->node += (t->next - t->current) * number_wl;
+                ti_stats->area_waiting_list[i][j]->queue += (t->next - t->current) * (number_wl - 1);
+                ti_stats->area_waiting_list[i][j]->service += (t->next - t->current);
+            }
         }
     }
 
     /* Update activation center integrals */
     if (number_active > 0) {
-        statistics->area_activation->node += (t->next - t->current) * number_active;
-        statistics->area_activation->queue += (t->next - t->current) * (number_active-number_active);
-        statistics->area_activation->service += (t->next - t->current);
+        ti_stats->area_activation->node += (t->next - t->current) * number_active;
+        ti_stats->area_activation->queue += (t->next - t->current) * (number_active - number_active);
+        ti_stats->area_activation->service += (t->next - t->current);
     }
 
     /* Update transplant center integrals */
     if (number_trans > 0) {
-        statistics->area_transplant->node += (t->next - t->current) * number_trans;
-        statistics->area_transplant->queue += (t->next - t->current) * (number_trans-number_trans);
-        statistics->area_transplant->service += (t->next - t->current);
+        ti_stats->area_transplant->node += (t->next - t->current) * number_trans;
+        ti_stats->area_transplant->queue += (t->next - t->current) * (number_trans - number_trans);
+        ti_stats->area_transplant->service += (t->next - t->current);
     }
 }

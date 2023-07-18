@@ -47,11 +47,11 @@ void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, orga
 void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType) {
 
     /* Generate next arrival time of an organ */
-    events->organ_arrival.interArrivalTime[bloodType] = getOrganArrival(bloodType, t->current);
+    events->organ_arrival.inter_arrival_time[bloodType] = getOrganArrival(bloodType, t->current);
     t->last[0] = t->current;
 
     /* increment arrivals */
-    events->organ_arrival.numOrganArrivals[bloodType]++;
+    events->organ_arrival.num_arrivals[bloodType]++;
 
     /* Init new organ and check for matching */
     organ *o = newOrgan(bloodType);
@@ -85,7 +85,7 @@ void addPatientToQueue(event_list *events, sim_time *t, patient_queue_priority *
     if (!queueBloodType->patient_available) queueBloodType->patient_available = true;
 
     /* increment arrivals */
-    events->patient_arrival.numPatientArrivals[p->bt][p->priority]++;
+    events->patient_arrival.num_arrivals[p->bt][p->priority]++;
 
     /* set patient arrival time*/
     p->start_time = t->current;
@@ -168,7 +168,7 @@ void addToActivationCenter(event_list *events, sim_time *t, patient *p) {
 void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType, PRIORITY priority) {
 
     // Generate next arrival time of a patient
-    events->patient_arrival.interArrivalTime[bloodType][priority] = getPatientArrival(bloodType, priority, t->current);
+    events->patient_arrival.inter_arrival_time[bloodType][priority] = getPatientArrival(bloodType, priority, t->current);
     t->last[0] = t->current;
 
     /* New patient */
@@ -203,7 +203,8 @@ void updateActivationOffsets(in_activation *inactive) {
 }
 
 /**
- * TODO
+ * This event triggers the addition of an inactive patient (waiting in the activation center) to the waiting list
+ * to wait for a transplant.
  * */
 void handlePatientActivation(event_list *events, sim_time *t) {
     in_activation *inactive = events->activation_arrival.inactive_patients;
@@ -335,9 +336,8 @@ patient * removePatient(int idx, patient_queue_priority **pQueue, patient_queue_
     REMOVE_MID_NODE(idx, current, prev, next)
     current->next = NULL;
     decrementPatients((*pQueue), pQueueBT, pList);
-    current->end_time = end_time;
 
-    pList->globalWaitingTimes[current->bt][current->priority] += (end_time - current->start_time);
+    pList->waiting_times[current->bt][current->priority] += (end_time - current->start_time);
 
     return current;
 }

@@ -16,72 +16,96 @@ void saveResultsCsv(stats* statistics){
     int i,j;
 
     // Patients
-    char *header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,Average waiting times\n";
+    char *header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,"
+                   "WL Avg inter-arrival times,WL Avg wait,WL Avg delay,WL Avg service time,"
+                   "WL Avg # in the node,WL Avg # in the queue,WL utilization\n";
     fprintf(f, "%s", header);
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (j = 0; j < NUM_PRIORITIES; ++j) {
-            fprintf(f, "%s,%s,%f,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j],
-                    statistics->numPatientArrivals[i][j], statistics->numDeaths[i][j], statistics->numReneges[i][j],
-                    statistics->numPatients[i][j], statistics->meanGlobalWaitingTimePerQueue[i][j]);
+            fprintf(f, "%s,%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j],
+                    statistics->wl_stats->num_patient_arrivals[i][j], statistics->wl_stats->num_patient_deaths[i][j],
+                    statistics->wl_stats->num_patient_reneges[i][j],statistics->wl_stats->num_patients_in_queue[i][j],
+                    statistics->wl_stats->avg_interarrival_time[i][j], statistics->wl_stats->avg_wait[i][j],
+                    statistics->wl_stats->avg_delay[i][j], statistics->wl_stats->avg_service[i][j],
+                    statistics->wl_stats->avg_in_node[i][j], statistics->wl_stats->avg_in_queue[i][j],
+                    statistics->wl_stats->utilization[i][j]);
         }
     }
     fprintf(f, "%s", "\n");
 
     // Organs
-    header = "Blood type,Organs arrived,Organs outdated,Organs in queue\n";
+    header = "Blood type,Organs arrived,Organs outdated,Organs in queue,"
+             "OB Avg inter-arrival times,OB Avg wait,OB Avg delay,OB Avg service time,"
+             "OB Avg # in the node,OB Avg # in the queue,OB utilization\n";
     fprintf(f, "%s", header);
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        fprintf(f, "%s,%f,%f,%f\n", bt_to_str[i], statistics->numOrganArrivals[i], statistics->numOrganOutdatings[i],
-                statistics->numOrgans[i]);
+        fprintf(f, "%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i],
+                statistics->ob_stats->num_organ_arrivals[i], statistics->ob_stats->num_organ_outdatings[i],
+                statistics->ob_stats->num_organs_in_queue[i], statistics->ob_stats->avg_interarrival_time[i],
+                statistics->ob_stats->avg_wait[i], statistics->ob_stats->avg_delay[i],
+                statistics->ob_stats->avg_service[i], statistics->ob_stats->avg_in_node[i],
+                statistics->ob_stats->avg_in_queue[i], statistics->ob_stats->utilization[i]);
     }
+    fprintf(f, "%s", "\n");
+
+    // Activation center
+    header = "ACT Avg # in the node,ACT Avg # in the queue,ACT utilization\n";
+    fprintf(f, "%s", header);
+    fprintf(f, "%f,%f,%f\n", statistics->act_stats->avg_in_node, statistics->act_stats->avg_in_queue,
+            statistics->act_stats->utilization);
+
     fprintf(f, "%s", "\n");
 
     // Transplant
-    fprintf(f, "%s", ",Number of transplant\n");
-    fprintf(f, "%s,%f\n", "Successful", statistics->numTransplants[0]);
-    fprintf(f, "%s,%f\n", "Rejected", statistics->numTransplants[1]);
-    fprintf(f, "%s", "\n");
+    header = "Successful transplants,Rejected transplants,TX Avg # in the node,TX Avg # in the queue,TX utilization\n";
+    fprintf(f, "%s", header);
+    fprintf(f, "%f,%f,%f,%f,%f\n", statistics->trans_stats->num_transplants[success],
+            statistics->trans_stats->num_transplants[reject], statistics->trans_stats->avg_in_node,
+            statistics->trans_stats->avg_in_queue, statistics->trans_stats->utilization);
 
     fclose(f);
 }
 
-void saveResultsTxt(stats* statistics){
-    FILE *f;
-    char path[MAX_LEN];
-#ifdef ABO_ID
-    snprintf(path, MAX_LEN, "output/res_%s.txt", "id");
-#else
-    snprintf(path, MAX_LEN, "output/res_%s.txt", "comp");
-#endif
-    if((f = fopen(path, "w")) == NULL) {
-        fprintf(stderr, "Cannot open output file");
-        exit(EXIT_FAILURE);
-    }
+void printResults(stats* statistics, FILE* ch){
+    // waiting list
+    print_by_all("Patients arrived:\n", statistics->wl_stats->num_patient_arrivals, ch)
+    print_by_all("Patients dead:\n", statistics->wl_stats->num_patient_deaths, ch)
+    print_by_all("Patients reneged:\n", statistics->wl_stats->num_patient_reneges, ch)
+    print_by_all("Patients in queue:\n", statistics->wl_stats->num_patients_in_queue, ch)
+    fprintf(stdout, "%s", "\tWaiting list time integrated statistics:\n");
+    print_by_all("\tAverage inter-arrival time:\n", statistics->wl_stats->avg_interarrival_time, ch)
+    print_by_all("\tAverage wait:\n", statistics->wl_stats->avg_wait, ch)
+    print_by_all("\tAverage delay:\n", statistics->wl_stats->avg_delay, ch)
+    print_by_all("\tAverage service time:\n", statistics->wl_stats->avg_service, stdout)
+    print_by_all("\tAverage # in the node:\n", statistics->wl_stats->avg_in_node, ch)
+    print_by_all("\tAverage # in the queue:\n", statistics->wl_stats->avg_in_queue, ch)
+    print_by_all("\tUtilization:\n", statistics->wl_stats->utilization, ch)
 
-    print_by_all("Patients arrived:\n", statistics->numPatientArrivals, f)
-    print_by_all("Patients dead:\n", statistics->numDeaths, f)
-    print_by_all("Patients reneged:\n", statistics->numReneges, f)
-    print_by_blood_type("Organs arrived:\n", statistics->numOrganArrivals, f)
-    print_by_blood_type("Organs outdated:\n", statistics->numOrganOutdatings, f)
-    print_transplants_res("Transplants:\n", statistics->numTransplants, f)
-    print_by_blood_type("Organs in queue:\n", statistics->numOrgans, f)
-    print_by_all("Patients in queue:\n", statistics->numPatients, f)
-    print_by_all("Average waiting times:\n", statistics->meanGlobalWaitingTimePerQueue, f)
+    // organ bank
+    print_by_blood_type("Organs arrived:\n", statistics->ob_stats->num_organ_arrivals, stdout)
+    print_by_blood_type("Organs outdated:\n", statistics->ob_stats->num_organ_outdatings, stdout)
+    print_by_blood_type("Organs in queue:\n", statistics->ob_stats->num_organs_in_queue, stdout)
+    fprintf(stdout, "%s", "Organ bank time integrated statistics:\n");
+    print_by_blood_type("\tAverage inter-arrival time:\n", statistics->ob_stats->avg_interarrival_time, ch)
+    print_by_blood_type("\tAverage wait:\n", statistics->ob_stats->avg_wait, ch)
+    print_by_blood_type("\tAverage delay:\n", statistics->ob_stats->avg_delay, ch)
+    print_by_blood_type("\tAverage service time:\n", statistics->ob_stats->avg_service, stdout)
+    print_by_blood_type("\tAverage # in the node:\n", statistics->ob_stats->avg_in_node, ch)
+    print_by_blood_type("\tAverage # in the queue:\n", statistics->ob_stats->avg_in_queue, ch)
+    print_by_blood_type("\tUtilization:\n", statistics->ob_stats->utilization, ch)
 
-    fclose(f);
-}
+    // Activation center
+    fprintf(stdout, "%s", "\tActivation center time integrated statistics:\n");
+    fprintf(stdout,"\t\tAverage # in the node: %f\n", statistics->act_stats->avg_in_node);
+    fprintf(stdout,"\t\tAverage # in the queue:  %f\n", statistics->act_stats->avg_in_queue);
+    fprintf(stdout,"\t\tUtilization:  %f\n", statistics->act_stats->utilization);
 
-void printResults(stats* statistics){
-    printf("\nResults:\n");
-
-    print_by_all("\tPatients arrived:\n", statistics->numPatientArrivals, stdout)
-    print_by_all("\tPatients dead:\n", statistics->numDeaths, stdout)
-    print_by_all("\tPatients reneged:\n", statistics->numReneges, stdout)
-    print_by_blood_type("\tOrgans arrived:\n", statistics->numOrganArrivals, stdout)
-    print_by_blood_type("\tOrgans outdated:\n", statistics->numOrganOutdatings, stdout)
-    print_transplants_res("\tTransplants:\n", statistics->numTransplants, stdout)
-    print_by_blood_type("\tOrgans in queue:\n", statistics->numOrgans, stdout)
-    print_by_all("\tPatients in queue:\n", statistics->numPatients, stdout)
+    // Transplant center
+    print_transplants_res("\tTransplants:\n", statistics->trans_stats->num_transplants, stdout)
+    fprintf(stdout, "%s", "\tTransplant center time integrated statistics:\n");
+    fprintf(stdout,"\t\tAverage # in the node: %f\n", statistics->trans_stats->avg_in_node);
+    fprintf(stdout,"\t\tAverage # in the queue:  %f\n", statistics->trans_stats->avg_in_queue);
+    fprintf(stdout,"\t\tUtilization:  %f\n", statistics->trans_stats->utilization);
 }
 
 void cleanUp(event_list* events){

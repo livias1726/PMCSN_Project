@@ -28,22 +28,27 @@ int main(){
 
     // -------------------------------------------- Initialization ---------------------------------------------------
 
+    PlantSeeds(123456789);
+
     event_list events = initializeEventList();
-    sim_time simTime = initializeTime();
-    stats *statistics = initializeStatistics();
     initializeEventTime(&events);
+
+    sim_time sim_time = initializeTime();
+    time_integrated_stats *ti_stats = initializeTimeStatistics();
 
     // --------------------------------------------- Simulation ------------------------------------------------------
 
 #ifdef FINITE_HORIZON
-    finiteSim(&events, &simTime, statistics);
+    finiteSim(&events, &sim_time, ti_stats);
 #else
     /* TODO */
 #endif
 
     // ----------------------------------------------------- Results --------------------------------------------------
+    stats *statistics = initializeStatistics();
+
     gatherResults(statistics, &events);
-    computeStats(statistics);
+    computeTimeAveragedStats2(statistics, ti_stats);
 
 #ifdef AUDIT
     printResults(statistics);
