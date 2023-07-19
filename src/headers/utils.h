@@ -71,6 +71,8 @@
 
 void saveResultsCsv(stats *statistics);
 void printResults(stats *statistics, FILE* ch);
-void cleanUp(event_list *events);
+void cleanUpEventList(event_list *events);
+void cleanUpStatistics(stats *statistics);
+void cleanUpTimeStatistics(time_integrated_stats *ti_stats);
 
 #endif //PMCSN_PROJECT_UTILS_H

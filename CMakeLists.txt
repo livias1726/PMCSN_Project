@@ -21,5 +21,9 @@ if (AUDIT)
     add_definitions(-DAUDIT=1)
 endif ()
 
+if (REAL)
+    add_definitions(-DREAL=1)
+endif ()
+
 add_executable(PMCSN_Project src/main.c ${SRC_INCLUDE})
 target_link_libraries(PMCSN_Project m)

@@ -84,7 +84,6 @@ organs_expired initializeOrgansExpiredQueue() {
     MALLOC_HANDLER(organsExpired.queue)
     // head init
     organsExpired.queue->next = NULL;
-    organsExpired.queue->starting_age = -1;
 
     organsExpired.number[O] = 0.0;
     organsExpired.number[A] = 0.0;
@@ -158,7 +157,6 @@ patient *newPatient(BLOOD_TYPE bt, PRIORITY pr) {
 organ * newOrgan(BLOOD_TYPE bt) {
     organ *new = malloc(sizeof(organ));
     MALLOC_HANDLER(new)
-    new->starting_age = ((int) rand() % (24-0+1)) + 0;
     new->bt = bt;
     new->next = NULL;
     return new;

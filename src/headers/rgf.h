@@ -19,6 +19,8 @@
 #define LAMBDA_ORG_B 2.579
 #define LAMBDA_ORG_AB 0.736
 
+#ifdef REAL
+
 #define MU_DEATH_PAT_O_CRIT 0.003
 #define MU_DEATH_PAT_O_NORM 2.626
 #define MU_DEATH_PAT_O_LOW 4.157
@@ -45,13 +47,39 @@
 #define MU_RENEGE_PAT_AB_NORM 0.645
 #define MU_RENEGE_PAT_AB_LOW 0.826
 
+#else
+
+#define MU_DEATH_PAT_O_CRIT  19.528
+#define MU_DEATH_PAT_O_NORM  19.528
+#define MU_DEATH_PAT_O_LOW  19.528
+#define MU_DEATH_PAT_A_CRIT  19.528
+#define MU_DEATH_PAT_A_NORM  19.528
+#define MU_DEATH_PAT_A_LOW  19.528
+#define MU_DEATH_PAT_B_CRIT  19.528
+#define MU_DEATH_PAT_B_NORM  19.528
+#define MU_DEATH_PAT_B_LOW  19.528
+#define MU_DEATH_PAT_AB_CRIT  19.528
+#define MU_DEATH_PAT_AB_NORM  19.528
+#define MU_DEATH_PAT_AB_LOW  19.528
+
+#define MU_RENEGE_PAT_O_CRIT  77.723
+#define MU_RENEGE_PAT_O_NORM  77.723
+#define MU_RENEGE_PAT_O_LOW   77.723
+#define MU_RENEGE_PAT_A_CRIT  77.723
+#define MU_RENEGE_PAT_A_NORM  77.723
+#define MU_RENEGE_PAT_A_LOW   77.723
+#define MU_RENEGE_PAT_B_CRIT  77.723
+#define MU_RENEGE_PAT_B_NORM  77.723
+#define MU_RENEGE_PAT_B_LOW   77.723
+#define MU_RENEGE_PAT_AB_CRIT 77.723
+#define MU_RENEGE_PAT_AB_NORM 77.723
+#define MU_RENEGE_PAT_AB_LOW  77.723
+
+#endif
+
 #define MU_ORG 1
 
 #define REJECT_P 0.11
-#define MATCH_O_P 0.46
-#define MATCH_A_P 0.36
-#define MATCH_B_P 0.13
-#define MATCH_AB_P 0.05
 
 #define MIN_ACTIVATION 730.0
 #define MAX_ACTIVATION 1095.0           // 2*365-3*365 giorni di attesa
@@ -67,6 +95,5 @@ double getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival);
 double getActivationCompletion(double arrival);
 double getTransplantCompletion(double arrival);
 double getRejectionProb();
-double getMatchProb();
 
 #endif //PMCSN_PROJECT_RGF_H

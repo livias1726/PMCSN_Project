@@ -58,6 +58,8 @@ int main(){
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
-    cleanUp(&events);
+    cleanUpEventList(&events);
+    //cleanUpTimeStatistics(ti_stats);
+    //cleanUpStatistics(statistics);
 }
 

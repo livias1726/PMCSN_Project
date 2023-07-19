@@ -58,12 +58,11 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
         ob_stats->avg_service[i] = curr_area->service / population;
         ob_stats->avg_in_node[i] = curr_area->node / curr;
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
-        ob_stats->utilization[i] = curr_area->service / curr;
 
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
             // Waiting list
             curr_area = ti_stats->area_waiting_list[i][j];
-            population = wl_stats->num_patient_arrivals[i][j]; //FIXME: check if this needs to be without loss and in queue
+            population = wl_stats->num_patient_arrivals[i][j];
 
             wl_stats->avg_interarrival_time[i][j] = curr / population; //FIXME: use t.last
             wl_stats->avg_wait[i][j] = curr_area->node / population;
@@ -72,20 +71,26 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
             wl_stats->avg_in_node[i][j] = curr_area->node / curr;
             wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
             wl_stats->utilization[i][j] = curr_area->service / curr;
+
+            /*
+            wl_stats->avg_interarrival_time[i][0] += curr / population; //FIXME: use t.last
+            wl_stats->avg_wait[i][0] += curr_area->node / population;
+            wl_stats->avg_delay[i][0] += curr_area->queue / population;
+            wl_stats->avg_service[i][0] += curr_area->service / population;
+            wl_stats->avg_in_node[i][0] += curr_area->node / curr;
+            wl_stats->avg_in_queue[i][0] += curr_area->queue / curr;
+            wl_stats->utilization[i][0] += curr_area->service / curr;
+             */
         }
     }
 
     // Activation center
     curr_area = ti_stats->area_activation;
     act_stats->avg_in_node = curr_area->node / curr;
-    act_stats->avg_in_queue = curr_area->queue / curr;
-    act_stats->utilization = curr_area->service / curr;
 
     // Transplant center
     curr_area = ti_stats->area_transplant;
     trans_stats->avg_in_node = curr_area->node / curr;
-    trans_stats->avg_in_queue = curr_area->queue / curr;
-    trans_stats->utilization = curr_area->service / curr;
 }
 
 /**

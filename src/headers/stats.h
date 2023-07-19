@@ -46,20 +46,15 @@ typedef struct organ_bank_stats{
     double avg_service[NUM_BLOOD_TYPES];
     double avg_in_node[NUM_BLOOD_TYPES];
     double avg_in_queue[NUM_BLOOD_TYPES];
-    double utilization[NUM_BLOOD_TYPES];
 } organ_bank_stats;
 
 typedef struct transplant_stats{
     double num_transplants[2];      // number of performed transplants (successful and rejected)
     double avg_in_node;
-    double avg_in_queue;
-    double utilization;
 } transplant_stats;
 
 typedef struct activation_stats{
     double avg_in_node;
-    double avg_in_queue;
-    double utilization;
 } activation_stats;
 
 /**

@@ -69,12 +69,9 @@ typedef struct patient {
  * ORGAN: a user that is added to the system to serve the requests for a transplant from patients.
  *      Each organ is characterized by:
  *      - A blood type, that determines the matching with a patient according to the allocation policy in use.
- *      - The age of the organ at the moment of addition, to model a non-zero probability that the organ has travelled
- *          between different organ banks geographically distant from one another.
  * */
 typedef struct organ {
     BLOOD_TYPE bt;          /* organ blood type */
-    double starting_age;    /* this is a random number that models the fact that the organ is moved in different states */
     struct organ *next;
 } organ;
 

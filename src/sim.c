@@ -178,14 +178,12 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
     /* Update activation center integrals */
     if (number_active > 0) {
         ti_stats->area_activation->node += (t->next - t->current) * number_active;
-        ti_stats->area_activation->queue += (t->next - t->current) * (number_active - number_active);
-        ti_stats->area_activation->service += (t->next - t->current);
+        ti_stats->area_activation->service += (t->next - t->current) * number_active;
     }
 
     /* Update transplant center integrals */
     if (number_trans > 0) {
         ti_stats->area_transplant->node += (t->next - t->current) * number_trans;
-        ti_stats->area_transplant->queue += (t->next - t->current) * (number_trans - number_trans);
-        ti_stats->area_transplant->service += (t->next - t->current);
+        ti_stats->area_transplant->service += (t->next - t->current) * number_trans;
     }
 }
