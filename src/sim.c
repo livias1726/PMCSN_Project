@@ -141,7 +141,7 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats)
 
     ti_stats->current_time = t->current;
 #ifdef AUDIT
-    computeTimeAveragedStats(stats, t->current);
+    computeTimeAveragedStats(ti_stats);
 #endif
 }
 

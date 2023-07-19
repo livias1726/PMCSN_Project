@@ -51,7 +51,7 @@ int main(){
     computeTimeAveragedStats2(statistics, ti_stats);
 
 #ifdef AUDIT
-    printResults(statistics);
+    printResults(statistics, stdout);
 #else
     saveResultsCsv(statistics);
 #endif
