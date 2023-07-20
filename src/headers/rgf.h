@@ -14,10 +14,15 @@
 #define LAMBDA_PAT_AB_NORM 2.599
 #define LAMBDA_PAT_AB_LOW 1.084
 
-#define LAMBDA_ORG_O 10.350
-#define LAMBDA_ORG_A 8.037
-#define LAMBDA_ORG_B 2.579
-#define LAMBDA_ORG_AB 0.736
+#define LAMBDA_ORG_LIVING_O 9.807
+#define LAMBDA_ORG_LIVING_A 4.228
+#define LAMBDA_ORG_LIVING_B 1.254
+#define LAMBDA_ORG_LIVING_AB 0.2
+
+#define LAMBDA_ORG_DEC_O 10.350
+#define LAMBDA_ORG_DEC_A 8.037
+#define LAMBDA_ORG_DEC_B 2.579
+#define LAMBDA_ORG_DEC_AB 0.738
 
 #ifdef REAL
 
@@ -77,7 +82,7 @@
 
 #endif
 
-#define MU_ORG 1
+#define MU_ORG 1.0
 
 #define REJECT_P 0.11
 
@@ -87,7 +92,8 @@
 #define MIN_TRANSPLANT 12.0
 #define MAX_TRANSPLANT 24.0             // 12-24 giorni di trapianto + monitoraggio
 
-double getOrganArrival(BLOOD_TYPE bt, double arrival);
+double getDecDonorOrganArrival(BLOOD_TYPE bt, double arrival);
+double getLivingDonorOrganArrival(BLOOD_TYPE bt, double arrival);
 double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival);
 double getOrganRenege(BLOOD_TYPE bt, double arrival);
 double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival);

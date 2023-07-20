@@ -3,7 +3,7 @@
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats);
 
 double getMinTime(event_list *events) {
-    int len = 46;
+    int len = 50;
 
     double timesToCompare[len];
     timesToCompare[0] = events->organ_arrival.inter_arrival_time[O];
@@ -52,6 +52,10 @@ double getMinTime(event_list *events) {
     timesToCompare[43] = events->patients_loss.death_time[AB][low];
     timesToCompare[44] = getMinActivation(events->activation_arrival.inactive_patients);
     timesToCompare[45] = getMinTransplant(events->transplant_arrival.transplanted_patients);
+    timesToCompare[46] = events->living_donor_completion[O];
+    timesToCompare[47] = events->living_donor_completion[A];
+    timesToCompare[48] = events->living_donor_completion[B];
+    timesToCompare[49] = events->living_donor_completion[AB];
 
     double min;
     GET_SMALLEST(timesToCompare, len, min)
@@ -97,7 +101,10 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats)
 
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organ_arrival.inter_arrival_time[i]) {
-                handleOrganArrival(events, t, i);
+                handleOrganArrival(events, t, i, 0);
+                break;
+            } else if (t->current == events->living_donor_completion[i]) {
+                handleOrganArrival(events, t, i, 1);
                 break;
             } else if (t->current == events->organs_loss.reneging_time[i]) {
                 handleOrganRenege(events, t, i);

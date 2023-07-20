@@ -46,10 +46,16 @@ void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, orga
  * @param t
  * @param bloodType
  */
-void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType) {
+void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType, bool living) {
 
     /* Generate next arrival time of an organ */
-    events->organ_arrival.inter_arrival_time[bloodType] = getOrganArrival(bloodType, t->current);
+    if (living) {
+        /* living donor organ */
+        events->living_donor_completion[bloodType] = getLivingDonorOrganArrival(bloodType, t->current);
+    } else {
+        /* deceased donor organ */
+        events->organ_arrival.inter_arrival_time[bloodType] = getDecDonorOrganArrival(bloodType, t->current);
+    }
     t->last[0] = t->current;
 
     /* increment arrivals */
@@ -59,7 +65,7 @@ void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType) {
     organ *o = newOrgan(bloodType);
     bool match = handleMatchingFromOrgan(events, t, bloodType, o);
 
-    if (!match){
+    if (!match && !living){
         /* Add new organ to the bank */
         organ_bank *bank = &events->organ_arrival;
         addOrganToQueue(events, t, &bank->queues[bloodType], o);
@@ -103,6 +109,13 @@ void addPatientToQueue(event_list *events, sim_time *t, patient_queue_priority *
 #ifdef AUDIT
         printf("Only one patient in queue - activating patient death and renege with blood type %d and priority %d\n",
                p->bt, p->priority);
+#endif
+    }
+
+    if (queueBloodType->number == 1) {
+        events->living_donor_completion[p->bt] = getLivingDonorOrganArrival(p->bt, t->current);
+#ifdef AUDIT
+        printf("Only one patient in blood type queue - activating living donor arrival with blood type %d\n", p->bt);
 #endif
     }
 }
@@ -374,6 +387,14 @@ void addPatientToLost(event_list *events, sim_time *t, patient *p, patients_lost
         events->patients_loss.reneging_time[p->bt][p->priority] = getPatientRenege(p->bt, p->priority, t->current);
         events->patients_loss.death_time[p->bt][p->priority] = getPatientDeath(p->priority, p->bt, t->current);
     }
+
+    if (wl->blood_type_queues[p->bt]->number == 0) {
+#ifdef AUDIT
+        printf("patient queue with blood type %d is now empty -"
+               "deactivating living donor arrival event\n", p->bt);
+#endif
+        events->living_donor_completion[p->bt] = INFINITY;
+    }
 }
 
 /**
@@ -448,7 +469,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
 }
 
 /**
- * TODO
+ * fixme: aggiusta in base a living donor e deceased donor
  * */
 bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, organ *organ) {
 

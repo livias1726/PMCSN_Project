@@ -18,6 +18,7 @@ typedef struct event_list {
     patient_waiting_list patient_arrival;
     activation activation_arrival;
     organ_bank organ_arrival;
+    double living_donor_completion[NUM_BLOOD_TYPES];
     transplant transplant_arrival;
     organs_expired organs_loss;
     patients_lost patients_loss;
@@ -26,7 +27,7 @@ typedef struct event_list {
 // ------------------------------------ Exported EVENT HANDLERS PROTOTYPES ---------------------------------------------
 
 // ARRIVALS
-void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType);
+void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType, bool living);
 void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE, PRIORITY);
 
 // RENEGES

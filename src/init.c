@@ -196,10 +196,10 @@ sim_time initializeTime() {
 }
 
 void initializeEventTime(event_list* events) {
-    events->organ_arrival.inter_arrival_time[O] = getOrganArrival(O, START);
-    events->organ_arrival.inter_arrival_time[A] = getOrganArrival(A, START);
-    events->organ_arrival.inter_arrival_time[B] = getOrganArrival(B, START);
-    events->organ_arrival.inter_arrival_time[AB] = getOrganArrival(AB, START);
+    events->organ_arrival.inter_arrival_time[O] = getDecDonorOrganArrival(O, START);
+    events->organ_arrival.inter_arrival_time[A] = getDecDonorOrganArrival(A, START);
+    events->organ_arrival.inter_arrival_time[B] = getDecDonorOrganArrival(B, START);
+    events->organ_arrival.inter_arrival_time[AB] = getDecDonorOrganArrival(AB, START);
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
@@ -218,6 +218,11 @@ void initializeEventTime(event_list* events) {
             events->patients_loss.death_time[i][j] = INFINITY;
         }
     }
+
+    events->living_donor_completion[O] = INFINITY;
+    events->living_donor_completion[A] = INFINITY;
+    events->living_donor_completion[B] = INFINITY;
+    events->living_donor_completion[AB] = INFINITY;
 }
 
 stats * initializeStatistics(){

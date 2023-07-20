@@ -19,35 +19,70 @@ double TruncatedNormal(double a, double b) {
     return Normal(t_mean, sqrt(t_var));
 }
 
-double getOrganArrival(BLOOD_TYPE bt, double arrival) {
+double getDecDonorOrganArrival(BLOOD_TYPE bt, double arrival) {
     switch (bt) {
         case O:
             SelectStream(0);
-            if (LAMBDA_ORG_O == 0)
+            if (LAMBDA_ORG_DEC_O == 0)
                 arrival = (double) INFINITY;
             else
-                arrival += Exponential(1 / (LAMBDA_ORG_O));
+                arrival += Exponential(1 / (LAMBDA_ORG_DEC_O));
             return arrival;
         case A:
             SelectStream(1);
-            if (LAMBDA_ORG_A == 0)
+            if (LAMBDA_ORG_DEC_A == 0)
                 arrival = (double) INFINITY;
             else
-                arrival += Exponential(1 / (LAMBDA_ORG_A));
+                arrival += Exponential(1 / (LAMBDA_ORG_DEC_A));
             return arrival;
         case B:
             SelectStream(2);
-            if (LAMBDA_ORG_B == 0)
+            if (LAMBDA_ORG_DEC_B == 0)
                 arrival = (double) INFINITY;
             else
-                arrival += Exponential(1 / (LAMBDA_ORG_B));
+                arrival += Exponential(1 / (LAMBDA_ORG_DEC_B));
             return arrival;
         case AB:
             SelectStream(3);
-            if (LAMBDA_ORG_AB == 0)
+            if (LAMBDA_ORG_DEC_AB == 0)
                 arrival = (double) INFINITY;
             else
-                arrival += Exponential(1 / (LAMBDA_ORG_AB));
+                arrival += Exponential(1 / (LAMBDA_ORG_DEC_AB));
+            return arrival;
+        default:
+            return arrival;
+    }
+}
+
+double getLivingDonorOrganArrival(BLOOD_TYPE bt, double arrival) {
+    switch (bt) {
+        case O:
+            SelectStream(44);
+            if (LAMBDA_ORG_LIVING_O == 0)
+                arrival = (double) INFINITY;
+            else
+                arrival += Exponential(1 / (LAMBDA_ORG_LIVING_O));
+            return arrival;
+        case A:
+            SelectStream(45);
+            if (LAMBDA_ORG_LIVING_A == 0)
+                arrival = (double) INFINITY;
+            else
+                arrival += Exponential(1 / (LAMBDA_ORG_LIVING_A));
+            return arrival;
+        case B:
+            SelectStream(46);
+            if (LAMBDA_ORG_LIVING_B == 0)
+                arrival = (double) INFINITY;
+            else
+                arrival += Exponential(1 / (LAMBDA_ORG_LIVING_B));
+            return arrival;
+        case AB:
+            SelectStream(47);
+            if (LAMBDA_ORG_LIVING_AB == 0)
+                arrival = (double) INFINITY;
+            else
+                arrival += Exponential(1 / (LAMBDA_ORG_LIVING_AB));
             return arrival;
         default:
             return arrival;
@@ -369,9 +404,4 @@ double getTransplantCompletion(double arrival) {
     SelectStream(43);
     arrival += TruncatedNormal(MIN_TRANSPLANT, MAX_TRANSPLANT);
     return arrival;
-}
-
-double getMatchProb() {
-    SelectStream(44);
-    return Random();
 }
