@@ -5,7 +5,7 @@
  */
 
 // Internal MATCHING
-bool handleMatchingFromOrgan(event_list*, sim_time*, BLOOD_TYPE, organ*);
+bool handleMatchingFromOrgan(event_list *, sim_time *, BLOOD_TYPE, organ *, bool living);
 bool handleMatchingFromPatient(event_list*, sim_time*, BLOOD_TYPE, patient*);
 
 
@@ -63,7 +63,7 @@ void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType, b
 
     /* Init new organ and check for matching */
     organ *o = newOrgan(bloodType);
-    bool match = handleMatchingFromOrgan(events, t, bloodType, o);
+    bool match = handleMatchingFromOrgan(events, t, bloodType, o, living);
 
     if (!match && !living){
         /* Add new organ to the bank */
@@ -471,7 +471,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
 /**
  * fixme: aggiusta in base a living donor e deceased donor
  * */
-bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, organ *organ) {
+bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, organ *organ, bool living) {
 
     patient_waiting_list *wl = &events->patient_arrival;
     organ_bank *bank = &events->organ_arrival;
@@ -513,14 +513,17 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
     if (!found) return found;
 #endif
 
-    /* Add newly arrived organ into queue, recover oldest organ and handle matching */
-    addOrganToQueue(events, t, &bank->queues[bt], organ);
-    o = removeOrgan(0, &bank->queues[bt], bank);
+    if (!living) {
+        /* Add newly arrived organ into queue, recover oldest organ and handle matching */
+        addOrganToQueue(events, t, &bank->queues[bt], organ);
+        organ = removeOrgan(0, &bank->queues[bt], bank);
+    }
+
 
     /* get first patient */
     patient *p = removePatient(0, &wl->blood_type_queues[avbPatientBt]->priority_queue[avbPatientPr],
                                wl->blood_type_queues[avbPatientBt], wl, t->current);
-    addMatchedToTransplant(events, t, o, p);
+    addMatchedToTransplant(events, t, organ, p);
 
     return found;
 }

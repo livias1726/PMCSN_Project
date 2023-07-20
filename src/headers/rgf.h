@@ -84,7 +84,11 @@
 
 #define MU_ORG 1.0
 
-#define REJECT_P 0.11
+#ifdef ABO_ID
+#define REJECT_P 0.0
+#else
+#define REJECT_P 0.12
+#endif
 
 #define MIN_ACTIVATION 730.0
 #define MAX_ACTIVATION 1095.0           // 2*365-3*365 giorni di attesa
