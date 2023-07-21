@@ -152,3 +152,11 @@ void cleanUpEventList(event_list* events){
 
     //TODO: free the other structured into events
 }
+
+void cleanUpTimeStatistics(time_integrated_stats *ti_stats) {
+
+}
+
+void cleanUpStatistics(stats *statistics){
+
+}

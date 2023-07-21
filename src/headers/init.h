@@ -12,7 +12,7 @@ organ *newOrgan(BLOOD_TYPE bt);
 in_activation * newInactive(patient* patient, double server_offset);
 in_transplant * newTransplant(matched* matched, double server_offset);
 matched * newMatched(patient p, organ o);
-event_list initializeEventList();
+event_list *initializeEventList();
 sim_time initializeTime();
 stats * initializeStatistics();
 time_integrated_stats * initializeTimeStatistics();
