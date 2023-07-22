@@ -65,13 +65,16 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
             curr_area = ti_stats->area_waiting_list[i][j];
             population = wl_stats->num_patient_arrivals[i][j];
 
-            wl_stats->avg_interarrival_time[i][j] = t->last[patient_arrival] / population; //FIXME: use t.last
+            wl_stats->avg_interarrival_time[i][j] = t->last[patient_arrival] / population;
             wl_stats->avg_wait[i][j] = curr_area->node / population;
             wl_stats->avg_delay[i][j] = curr_area->queue / population;
             wl_stats->avg_service[i][j] = curr_area->service / population;
             wl_stats->avg_in_node[i][j] = curr_area->node / curr;
             wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
             wl_stats->utilization[i][j] = curr_area->service / curr;
+
+            trans_stats->rejection_perc[i][j] = (trans_stats->rejected_transplants[i][j] == 0) ? 0 :
+                    100 * (trans_stats->rejected_transplants[i][j] / (trans_stats->completed_transplants[i][j]+trans_stats->rejected_transplants[i][j]));
         }
     }
 
@@ -104,9 +107,9 @@ void gatherResults(stats* statistics, event_list *events){
             statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
             statistics->wl_stats->num_patient_deaths[i][j] = patients_lost.number_dead[i][j];
             statistics->wl_stats->num_patient_reneges[i][j] = patients_lost.number_renege[i][j];
+
+            statistics->trans_stats->completed_transplants[i][j] = transplant_c.completed_transplants[i][j];
+            statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
         }
     }
-
-    statistics->trans_stats->num_transplants[success] = transplant_c.completed_transplants;
-    statistics->trans_stats->num_transplants[reject] = transplant_c.rejected_transplants;
 }

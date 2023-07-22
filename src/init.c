@@ -58,12 +58,11 @@ transplant_center initializeTransplantCenter() {
     MALLOC_HANDLER(transplantCenter.transplanted_patients)
     transplantCenter.transplanted_patients->next=NULL;
     transplantCenter.total_number = 0.0;
-    transplantCenter.completed_transplants = 0.0;
-    transplantCenter.rejected_transplants = 0.0;
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            transplantCenter.num_transplant[i][j] = 0.0;
+            transplantCenter.completed_transplants[i][j] = 0.0;
+            transplantCenter.rejected_transplants[i][j] = 0.0;
         }
     }
 
@@ -158,7 +157,7 @@ patient *newPatient(BLOOD_TYPE bt, PRIORITY pr) {
     MALLOC_HANDLER(new)
     new->priority = pr;
     new->bt = bt;
-    //new->start_time = -1;
+    new->start_time = -1;
     new->next = NULL;
     return new;
 }

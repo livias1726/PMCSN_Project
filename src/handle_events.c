@@ -99,7 +99,7 @@ void addPatientToQueue(event_list *events, sim_time *t, patient_queue_priority *
     events->patient_arrival.num_arrivals[p->bt][p->priority]++;
 
     /* set patient arrival time*/
-    //p->start_time = t->current;
+    p->start_time = t->current;
 
     /* add new patient */
     GET_LAST_NODE((*pQueuePriority)->queue, curr)
@@ -441,7 +441,6 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     /* Init new match, increment transplant number and add match to transplant queue*/
     matched *m = newMatched(*patient, *organ);
     tc->total_number++;
-    tc->num_transplant[patient->bt][patient->priority]++;
     in_transplant *in_tr = newTransplant(m, tc->total_number);
 
     /* generate and change transplant completion time */
@@ -632,16 +631,17 @@ void handleTransplantCompletion(event_list *events, sim_time *t) {
     updateTransplantOffsets(transplanted);
 
     /* reject transplant with a probability below level and send patient back in queue with high priority */
+    patient *p = &n->matched->patient;
     double prob = getRejectionProb();
     if (prob < REJECT_P) {
-        patient *p = &n->matched->patient;
+        events->transplant_arrival.rejected_transplants[p->bt][p->priority]++;
+
         p->priority = critical;
         addToWaitingList(events, t, p);
 #ifdef AUDIT
         printf("Patient with blood type %d was rejected and and sent back to waiting list with priority %d\n", p->bt, p->priority);
 #endif
-        events->transplant_arrival.rejected_transplants++;
     } else {
-        events->transplant_arrival.completed_transplants++;
+        events->transplant_arrival.completed_transplants[p->bt][p->priority]++;
     }
 }

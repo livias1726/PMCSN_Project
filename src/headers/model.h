@@ -66,7 +66,7 @@ typedef enum donor_type{
 typedef struct patient {
     BLOOD_TYPE bt;          /* patient blood type */
     PRIORITY priority;      /* needed to order patients in list based on the priority */
-    //double start_time;      /* time of waiting list addition */
+    double start_time;      /* time of waiting list addition */
     struct patient *next;   /* pointer to the next patient in queue */
 } patient;
 
@@ -148,6 +148,12 @@ typedef struct organ_bank {
 
 // ----------------------------------------- Transplant --------------------------------------------------------
 
+/**
+ * TRANSPLANT CENTER
+ *      This struct models the transplant center, meaning the list of pairs (patient,organ) subjected to a transplant
+ *      with its outcome.
+ * */
+
 typedef struct in_transplant {
     matched* matched;           /* list of the organs matched with patients */
     double serverOffset;           /* offset to the server */
@@ -155,18 +161,19 @@ typedef struct in_transplant {
     struct in_transplant *next;
 } in_transplant;
 
-/**
- * TRANSPLANT CENTER
- *      This struct models the transplant center, meaning the list of pairs (patient,organ) subjected to a transplant
- *      with its outcome.
- * */
 typedef struct transplant_center {
     in_transplant *transplanted_patients;
     double total_number;                                /* l_{trans} */
-    double completed_transplants;
-    double rejected_transplants;
-    double num_transplant[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 } transplant_center;
+
+/**
+ * ACTIVATION CENTER
+ *      This struct models the activation_center center, meaning the list of patients waiting to be added to the waiting lists.
+ *      Inactive patients have health conditions that don't make them compatible to be subjected to a transplant.
+ *      These patients need to wait an average of 2/3 years to be able to make it to the waiting list.
+ * */
 
 typedef struct in_activation {
     patient* patient;
@@ -175,12 +182,6 @@ typedef struct in_activation {
     struct in_activation *next;
 } in_activation;
 
-/**
- * ACTIVATION CENTER
- *      This struct models the activation_center center, meaning the list of patients waiting to be added to the waiting lists.
- *      Inactive patients have health conditions that don't make them compatible to be subjected to a transplant.
- *      These patients need to wait an average of 2/3 years to be able to make it to the waiting list.
- * */
 typedef struct activation_center {
     in_activation *inactive_patients;   /* list of the inactive patients */
     double total_number;                /* l_{del} */

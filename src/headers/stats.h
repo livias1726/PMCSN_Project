@@ -47,7 +47,9 @@ typedef struct organ_bank_stats{
 } organ_bank_stats;
 
 typedef struct transplant_stats{
-    double num_transplants[2];      // number of performed transplants (successful and rejected)
+    double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double rejection_perc[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_in_node;
 } transplant_stats;
 
