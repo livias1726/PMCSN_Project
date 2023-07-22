@@ -162,7 +162,7 @@ organ * newOrgan(BLOOD_TYPE bt) {
     return new;
 }
 
-event_list initializeEventList() {
+event_list* initializeEventList() {
     patient_waiting_list waiting_list = initializeWaitingList();
     activation activation_c = initializeActivationCenter();
     organ_bank bank = initializeOrganBank();
@@ -170,14 +170,15 @@ event_list initializeEventList() {
     patients_lost patient_loss = initializePatientLostQueue();
     organs_expired organs_loss = initializeOrgansExpiredQueue();
 
-    event_list eventList;
-    eventList.organ_arrival = bank;
-    eventList.patient_arrival = waiting_list;
-    eventList.activation_arrival = activation_c;
-    eventList.transplant_arrival = transplant_c;
-    eventList.organs_loss = organs_loss;
-    eventList.patients_loss = patient_loss;
-    return eventList;
+    event_list *events = malloc(sizeof(event_list));
+    events->organ_arrival = bank;
+    events->patient_arrival = waiting_list;
+    events->activation_arrival = activation_c;
+    events->transplant_arrival = transplant_c;
+    events->organs_loss = organs_loss;
+    events->patients_loss = patient_loss;
+
+    return events;
 }
 
 sim_time initializeTime() {
