@@ -4,13 +4,7 @@ int main(){
 
     // ---------------------------------------------- Intro --------------------------------------------------------
 
-    char *simulation, *model, *policy;
-
-#ifdef FINITE_HORIZON
-    simulation = "Finite";
-#else
-    simulation = "Infinite";
-#endif
+    char *model, *policy;
 
 #ifdef IMPROVEMENT
     model = "Improved";
@@ -24,7 +18,7 @@ int main(){
     #endif
 #endif
 
-    printf("Simulation: %s horizon - %s model (Policy: ABO %s)\n\n", simulation, model, policy);
+    printf("Simulation: Finite horizon - %s model (Policy: ABO %s)\n\n", model, policy);
 
     // -------------------------------------------- Initialization ---------------------------------------------------
 
@@ -40,14 +34,14 @@ int main(){
 
     time_t s, e;
     s = clock();
-#ifdef FINITE_HORIZON
+
     finiteSim(events, &sim_time, ti_stats);
-#else
-    /* TODO */
-#endif
+
     e = clock();
     printf("time: %lld\n", (e-s)/CLOCKS_PER_SEC);
+
     // ----------------------------------------------------- Results --------------------------------------------------
+
     stats *statistics = initializeStatistics();
 
     gatherResults(statistics, events);
