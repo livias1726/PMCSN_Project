@@ -43,6 +43,11 @@ typedef enum transplant_outcome{
     reject
 } OUTCOME;
 
+typedef enum donor_type{
+    deceased,
+    living
+} DONOR_TYPE;
+
 /** --------------------------------------------------- MODEL USERS ---------------------------------------------------
  *  The system must handle 2 types of 'user':
  *      - Patient
@@ -61,7 +66,7 @@ typedef enum transplant_outcome{
 typedef struct patient {
     BLOOD_TYPE bt;          /* patient blood type */
     PRIORITY priority;      /* needed to order patients in list based on the priority */
-    double start_time;      /* time of waiting list addition */
+    //double start_time;      /* time of waiting list addition */
     struct patient *next;   /* pointer to the next patient in queue */
 } patient;
 
@@ -72,6 +77,7 @@ typedef struct patient {
  * */
 typedef struct organ {
     BLOOD_TYPE bt;          /* organ blood type */
+    DONOR_TYPE dt;
     struct organ *next;
 } organ;
 
@@ -117,7 +123,7 @@ typedef struct patient_waiting_list {
     double total_number;                                                /* l_{p} */
     double inter_arrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];           /* t_{a,p,BT} */
     double num_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-    double waiting_times[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    //double waiting_times[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 } patient_waiting_list;
 
 // ----------------------------------------- Organ bank --------------------------------------------------------
@@ -159,30 +165,31 @@ typedef struct transplant_center {
     double total_number;                                /* l_{trans} */
     double completed_transplants;
     double rejected_transplants;
-} transplant;
+    double num_transplant[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+} transplant_center;
 
 typedef struct in_activation {
     patient* patient;
     double serverOffset;           /* offset to the server */
-    double completionTime;      /* time of activation completion - t_{c,del} */
+    double completionTime;      /* time of activation_center completion - t_{c,del} */
     struct in_activation *next;
 } in_activation;
 
 /**
  * ACTIVATION CENTER
- *      This struct models the activation center, meaning the list of patients waiting to be added to the waiting lists.
+ *      This struct models the activation_center center, meaning the list of patients waiting to be added to the waiting lists.
  *      Inactive patients have health conditions that don't make them compatible to be subjected to a transplant.
  *      These patients need to wait an average of 2/3 years to be able to make it to the waiting list.
  * */
 typedef struct activation_center {
     in_activation *inactive_patients;   /* list of the inactive patients */
     double total_number;                /* l_{del} */
-} activation;
+} activation_center;
 
 // ---------------------------------------------------- EXTRA --------------------------------------------------------
 /* loss queues */
 typedef struct patient_lost_queue {
-    patient *queue;
+    //patient *queue; // TODO: may be useless?
     double number_dead[NUM_BLOOD_TYPES][NUM_PRIORITIES];        /* number dead type bt and priority pr - l_{d,p,BT} */
     double number_renege[NUM_BLOOD_TYPES][NUM_PRIORITIES];      /* number reneging type bt and priority pr - l_{r,p,BT} */
     double reneging_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];      /* t_{r,p,BT} */
@@ -190,7 +197,7 @@ typedef struct patient_lost_queue {
 } patients_lost;
 
 typedef struct organs_expired_queue {
-    organ *queue;
+    //organ *queue; // TODO: may be useless?
     double number[NUM_BLOOD_TYPES];             /* number expired type bt */
     double reneging_time[NUM_BLOOD_TYPES];      /* t_{r,o,BT} */
 } organs_expired;

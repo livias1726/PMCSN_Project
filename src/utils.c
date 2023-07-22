@@ -30,17 +30,6 @@ void saveResultsCsv(stats* statistics){
                    "WL Avg # in the node,WL Avg # in the queue,WL utilization\n";
     fprintf(f, "%s", header);
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        /*
-        j=0;
-        fprintf(f, "%s,%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j],
-                statistics->wl_stats->num_patient_arrivals[i][j], statistics->wl_stats->num_patient_deaths[i][j],
-                statistics->wl_stats->num_patient_reneges[i][j],statistics->wl_stats->num_patients_in_queue[i][j],
-                statistics->wl_stats->avg_interarrival_time[i][j], statistics->wl_stats->avg_wait[i][j],
-                statistics->wl_stats->avg_delay[i][j], statistics->wl_stats->avg_service[i][j],
-                statistics->wl_stats->avg_in_node[i][j], statistics->wl_stats->avg_in_queue[i][j],
-                statistics->wl_stats->utilization[i][j]);
-                */
-
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             fprintf(f, "%s,%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j],
                     statistics->wl_stats->num_patient_arrivals[i][j], statistics->wl_stats->num_patient_deaths[i][j],
@@ -50,7 +39,6 @@ void saveResultsCsv(stats* statistics){
                     statistics->wl_stats->avg_in_node[i][j], statistics->wl_stats->avg_in_queue[i][j],
                     statistics->wl_stats->utilization[i][j]);
         }
-
     }
     fprintf(f, "%s", "\n");
 
@@ -70,14 +58,14 @@ void saveResultsCsv(stats* statistics){
     fprintf(f, "%s", "\n");
 
     // Activation center
-    header = "ACT Avg # in the node,ACT utilization\n";
+    header = "ACT Avg # in the node\n";
     fprintf(f, "%s", header);
     fprintf(f, "%f\n", statistics->act_stats->avg_in_node);
 
     fprintf(f, "%s", "\n");
 
     // Transplant
-    header = "Successful transplants,Rejected transplants,TX Avg # in the node,TX utilization\n";
+    header = "Successful transplants,Rejected transplants,TX Avg # in the node\n";
     fprintf(f, "%s", header);
     fprintf(f, "%f,%f,%f\n", statistics->trans_stats->num_transplants[success],
             statistics->trans_stats->num_transplants[reject], statistics->trans_stats->avg_in_node);
@@ -126,8 +114,8 @@ void cleanUpEventList(event_list* events){
     patient_waiting_list *waiting_list = &events->patient_arrival;
     patient_queue_blood_type **bt_queues = waiting_list->blood_type_queues;
     organ_bank *bank = &events->organ_arrival;
-    //activation *;
-    transplant *transplants;
+    //activation_center *;
+    transplant_center *transplants;
     organs_expired organs_loss;
     patients_lost patients_loss;
 
@@ -143,10 +131,10 @@ void cleanUpEventList(event_list* events){
         free(bt_queues[i]);
     }
 
-    transplant *trans_queue = &events->transplant_arrival;
+    transplant_center *trans_queue = &events->transplant_arrival;
     free(trans_queue->transplanted_patients); //TODO: while there are patients in queue, free patient
 
-    activation *inactive_queue = &events->activation_arrival;
+    activation_center *inactive_queue = &events->activation_arrival;
     free(inactive_queue->inactive_patients->patient); //TODO: while there are patients in queue, free patient
     free(inactive_queue->inactive_patients);
 

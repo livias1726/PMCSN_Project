@@ -91,20 +91,43 @@ double getMinActivation(in_activation *inactive) {
     return min;
 }
 
+void setupSystemState(event_list *events) {
+    int i, j;
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        events->organ_arrival.num_arrivals[i] = 0;
+        events->organs_loss.number[i] = 0;
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            events->patient_arrival.num_arrivals[i][j] = 0;
+            //events->patient_arrival.waiting_times[i][j] = 0;
+            events->patients_loss.number_renege[i][j] = 0;
+            events->patients_loss.number_dead[i][j] = 0;
+        }
+    }
+
+    events->transplant_arrival = initializeTransplantCenter();
+}
+
 void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
     /* Choose next event selecting minimum time */
+    bool init_state = true;
     t->current = 0;
     while (t->current < STOP) {
         t->next = getMinTime(events);		                //Next event time
-        updateIntegralsStats(events, t, ti_stats);             // Update integrals stats
+        if (t->current > CHECKPOINT) {
+            updateIntegralsStats(events, t, ti_stats);             // Update integrals stats
+            if (init_state) {
+                setupSystemState(events);
+                init_state = false;
+            }
+        }
         t->current = t->next;                               //Clock update
 
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organ_arrival.inter_arrival_time[i]) {
-                handleOrganArrival(events, t, i, 0);
+                handleOrganArrival(events, t, i, false);
                 break;
             } else if (t->current == events->living_donor_completion[i]) {
-                handleOrganArrival(events, t, i, 1);
+                handleOrganArrival(events, t, i, true);
                 break;
             } else if (t->current == events->organs_loss.reneging_time[i]) {
                 handleOrganRenege(events, t, i);
@@ -145,8 +168,6 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats)
             }
         }
     }
-
-    ti_stats->current_time = t->current;
 #ifdef AUDIT
     computeTimeAveragedStats(ti_stats);
 #endif
@@ -182,7 +203,7 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
         }
     }
 
-    /* Update activation center integrals */
+    /* Update activation_center center integrals */
     if (number_active > 0) {
         ti_stats->area_activation->node += (t->next - t->current) * number_active;
         ti_stats->area_activation->service += (t->next - t->current) * number_active;
