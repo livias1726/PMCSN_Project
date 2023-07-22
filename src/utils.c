@@ -3,7 +3,9 @@
 void saveResultsCsv(stats* statistics){
     FILE *f;
     char path[MAX_LEN];
-    char *model, *policy;
+    char *model, *policy, *header;
+    int i,j;
+
 #ifdef REAL
     model = "real";
 #else
@@ -16,72 +18,61 @@ void saveResultsCsv(stats* statistics){
     policy = "comp";
 #endif
 
-    snprintf(path, MAX_LEN, "output/res_%s_%s.csv", model, policy);
-    if((f = fopen(path, "w")) == NULL) {
-        fprintf(stderr, "Cannot open output file");
-        exit(EXIT_FAILURE);
-    }
-
-    int i,j;
-
     // Patients
-    char *header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,"
-                   "WL Avg inter-arrival times,WL Avg wait,WL Avg delay,WL Avg service time,"
-                   "WL Avg # in the node,WL Avg # in the queue,WL utilization\n";
+    snprintf(path, MAX_LEN, "output/waiting_list_%s_%s.csv", model, policy);
+    OPEN_FILE(f, path)
+    waiting_list_stats *wl_stats = statistics->wl_stats;
+    header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,"
+             "Avg inter-arrival times,Avg wait,Avg delay,Avg service time,Avg # in the node,Avg # in the queue,"
+             "Utilization\n";
     fprintf(f, "%s", header);
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        /*
-        j=0;
-        fprintf(f, "%s,%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j],
-                statistics->wl_stats->num_patient_arrivals[i][j], statistics->wl_stats->num_patient_deaths[i][j],
-                statistics->wl_stats->num_patient_reneges[i][j],statistics->wl_stats->num_patients_in_queue[i][j],
-                statistics->wl_stats->avg_interarrival_time[i][j], statistics->wl_stats->avg_wait[i][j],
-                statistics->wl_stats->avg_delay[i][j], statistics->wl_stats->avg_service[i][j],
-                statistics->wl_stats->avg_in_node[i][j], statistics->wl_stats->avg_in_queue[i][j],
-                statistics->wl_stats->utilization[i][j]);
-                */
-
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             fprintf(f, "%s,%s,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j],
-                    statistics->wl_stats->num_patient_arrivals[i][j], statistics->wl_stats->num_patient_deaths[i][j],
-                    statistics->wl_stats->num_patient_reneges[i][j],statistics->wl_stats->num_patients_in_queue[i][j],
-                    statistics->wl_stats->avg_interarrival_time[i][j], statistics->wl_stats->avg_wait[i][j],
-                    statistics->wl_stats->avg_delay[i][j], statistics->wl_stats->avg_service[i][j],
-                    statistics->wl_stats->avg_in_node[i][j], statistics->wl_stats->avg_in_queue[i][j],
-                    statistics->wl_stats->utilization[i][j]);
+                    wl_stats->num_patient_arrivals[i][j], wl_stats->num_patient_deaths[i][j],
+                    wl_stats->num_patient_reneges[i][j], wl_stats->num_patients_in_queue[i][j],
+                    wl_stats->avg_interarrival_time[i][j], wl_stats->avg_wait[i][j], wl_stats->avg_delay[i][j],
+                    wl_stats->avg_service[i][j], wl_stats->avg_in_node[i][j], wl_stats->avg_in_queue[i][j],
+                    wl_stats->utilization[i][j]);
         }
-
     }
-    fprintf(f, "%s", "\n");
+    fclose(f);
 
     // Organs
-    header = "Blood type,Organs arrived,Organs outdated,Organs in queue,"
-             "OB Avg inter-arrival times,OB Avg wait,OB Avg delay,OB Avg service time,"
-             "OB Avg # in the node,OB Avg # in the queue\n";
+    snprintf(path, MAX_LEN, "output/organs_%s_%s.csv", model, policy);
+    OPEN_FILE(f, path)
+    organ_bank_stats *ob_stats = statistics->ob_stats;
+    header = "Blood type,Organs arrived,Organs outdated,Organs in queue,Avg inter-arrival times,Avg wait,Avg delay,"
+             "Avg service time,Avg # in the node,Avg # in the queue\n";
     fprintf(f, "%s", header);
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         fprintf(f, "%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i],
-                statistics->ob_stats->num_organ_arrivals[i], statistics->ob_stats->num_organ_outdatings[i],
-                statistics->ob_stats->num_organs_in_queue[i], statistics->ob_stats->avg_interarrival_time[i],
-                statistics->ob_stats->avg_wait[i], statistics->ob_stats->avg_delay[i],
-                statistics->ob_stats->avg_service[i], statistics->ob_stats->avg_in_node[i],
-                statistics->ob_stats->avg_in_queue[i]);
+                ob_stats->num_organ_arrivals[i], ob_stats->num_organ_outdatings[i], ob_stats->num_organs_in_queue[i],
+                ob_stats->avg_interarrival_time[i], ob_stats->avg_wait[i], ob_stats->avg_delay[i],
+                ob_stats->avg_service[i], ob_stats->avg_in_node[i], ob_stats->avg_in_queue[i]);
     }
-    fprintf(f, "%s", "\n");
+    fclose(f);
 
     // Activation center
-    header = "ACT Avg # in the node,ACT utilization\n";
+    snprintf(path, MAX_LEN, "output/activation_%s_%s.csv", model, policy);
+    OPEN_FILE(f, path)
+    header = "Avg # in the node\n";
     fprintf(f, "%s", header);
     fprintf(f, "%f\n", statistics->act_stats->avg_in_node);
-
-    fprintf(f, "%s", "\n");
+    fclose(f);
 
     // Transplant
-    header = "Successful transplants,Rejected transplants,TX Avg # in the node,TX utilization\n";
+    snprintf(path, MAX_LEN, "output/transplant_%s_%s.csv", model, policy);
+    OPEN_FILE(f, path)
+    transplant_stats *trans_stats = statistics->trans_stats;
+    header = "Blood type,Priority,Successful transplants,Rejected transplants,Rejection percentage,Avg # in the node\n";
     fprintf(f, "%s", header);
-    fprintf(f, "%f,%f,%f\n", statistics->trans_stats->num_transplants[success],
-            statistics->trans_stats->num_transplants[reject], statistics->trans_stats->avg_in_node);
-
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            fprintf(f, "%s,%s,%f,%f,%f,%f\n", bt_to_str[i], pr_to_str[j], trans_stats->completed_transplants[i][j],
+                    trans_stats->rejected_transplants[i][j], trans_stats->rejection_perc[i][j], trans_stats->avg_in_node);
+        }
+    }
     fclose(f);
 }
 
@@ -117,17 +108,19 @@ void printResults(stats* statistics, FILE* ch){
     fprintf(ch,"\t\tAverage # in the node: %f\n", statistics->act_stats->avg_in_node);
 
     // Transplant center
-    print_transplants_res("\tTransplants:\n", statistics->trans_stats->num_transplants, ch)
+    /*
+    print_transplants_res("\tTransplants:\n", statistics->trans_stats->completed_transplants, ch)
     fprintf(ch, "%s", "\tTransplant center time integrated statistics:\n");
     fprintf(ch,"\t\tAverage # in the node: %f\n", statistics->trans_stats->avg_in_node);
+     */
 }
 
 void cleanUpEventList(event_list* events){
     patient_waiting_list *waiting_list = &events->patient_arrival;
     patient_queue_blood_type **bt_queues = waiting_list->blood_type_queues;
     organ_bank *bank = &events->organ_arrival;
-    //activation *;
-    transplant *transplants;
+    //activation_center *;
+    transplant_center *transplants;
     organs_expired organs_loss;
     patients_lost patients_loss;
 
@@ -143,10 +136,10 @@ void cleanUpEventList(event_list* events){
         free(bt_queues[i]);
     }
 
-    transplant *trans_queue = &events->transplant_arrival;
+    transplant_center *trans_queue = &events->transplant_arrival;
     free(trans_queue->transplanted_patients); //TODO: while there are patients in queue, free patient
 
-    activation *inactive_queue = &events->activation_arrival;
+    activation_center *inactive_queue = &events->activation_arrival;
     free(inactive_queue->inactive_patients->patient); //TODO: while there are patients in queue, free patient
     free(inactive_queue->inactive_patients);
 

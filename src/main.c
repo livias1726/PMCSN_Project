@@ -38,20 +38,20 @@ int main(){
 
     // --------------------------------------------- Simulation ------------------------------------------------------
 
-    init_state *state = malloc(sizeof(init_state));
-    MALLOC_HANDLER(state)
-
+    time_t s, e;
+    s = clock();
 #ifdef FINITE_HORIZON
     finiteSim(events, &sim_time, ti_stats);
 #else
     /* TODO */
 #endif
-
+    e = clock();
+    printf("time: %lld\n", (e-s)/CLOCKS_PER_SEC);
     // ----------------------------------------------------- Results --------------------------------------------------
     stats *statistics = initializeStatistics();
 
     gatherResults(statistics, events);
-    computeTimeAveragedStats2(statistics, ti_stats);
+    computeTimeAveragedStats2(statistics, ti_stats, &sim_time);
 
 #ifdef AUDIT
     printResults(statistics, stdout);

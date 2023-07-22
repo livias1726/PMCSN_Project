@@ -16,10 +16,8 @@ typedef struct area {
 typedef struct time_integrated_stats{
     area* area_waiting_list[NUM_BLOOD_TYPES][NUM_PRIORITIES];   // time integrated statistics for the waiting list center
     area* area_bank[NUM_BLOOD_TYPES];                           // time integrated statistics for the organ bank center
-    area* area_activation;                                      // time integrated statistics for the activation center
+    area* area_activation;                                      // time integrated statistics for the activation_center center
     area* area_transplant;                                      // time integrated statistics for the transplant center
-
-    double current_time;                                        // last registered time
 } time_integrated_stats;
 
 typedef struct waiting_list_stats{
@@ -49,7 +47,9 @@ typedef struct organ_bank_stats{
 } organ_bank_stats;
 
 typedef struct transplant_stats{
-    double num_transplants[2];      // number of performed transplants (successful and rejected)
+    double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double rejection_perc[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_in_node;
 } transplant_stats;
 
@@ -70,6 +70,6 @@ typedef struct statistics{
 // ------------------- PROTOTYPES ----------------
 void gatherResults(stats *statistics, event_list *events);
 void computeTimeAveragedStats(time_integrated_stats *stats);
-void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats);
+void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
 
 #endif //PMCSN_PROJECT_STATS_H

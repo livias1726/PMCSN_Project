@@ -25,7 +25,7 @@ patient_waiting_list initializeWaitingList() {
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->next = NULL;
 
             waitingList.num_arrivals[i][j] = 0.0;
-            waitingList.waiting_times[i][j] = 0.0;
+            //waitingList.waiting_times[i][j] = 0.0;
         }
     }
     waitingList.total_number = 0.0;
@@ -52,19 +52,25 @@ organ_bank initializeOrganBank() {
     return organBank;
 }
 
-transplant initializeTransplantCenter() {
-    transplant transplantCenter;
+transplant_center initializeTransplantCenter() {
+    transplant_center transplantCenter;
     transplantCenter.transplanted_patients = malloc(sizeof(in_transplant));
     MALLOC_HANDLER(transplantCenter.transplanted_patients)
     transplantCenter.transplanted_patients->next=NULL;
     transplantCenter.total_number = 0.0;
-    transplantCenter.completed_transplants = 0.0;
-    transplantCenter.rejected_transplants = 0.0;
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            transplantCenter.completed_transplants[i][j] = 0.0;
+            transplantCenter.rejected_transplants[i][j] = 0.0;
+        }
+    }
+
     return transplantCenter;
 }
 
-activation initializeActivationCenter() {
-    activation activationCenter;
+activation_center initializeActivationCenter() {
+    activation_center activationCenter;
     activationCenter.inactive_patients = malloc(sizeof(in_activation));
     MALLOC_HANDLER(activationCenter.inactive_patients)
     // init head
@@ -80,10 +86,11 @@ activation initializeActivationCenter() {
 
 organs_expired initializeOrgansExpiredQueue() {
     organs_expired organsExpired;
+    /*
     organsExpired.queue = malloc(sizeof(organ));
     MALLOC_HANDLER(organsExpired.queue)
     // head init
-    organsExpired.queue->next = NULL;
+    organsExpired.queue->next = NULL;*/
 
     organsExpired.number[O] = 0.0;
     organsExpired.number[A] = 0.0;
@@ -99,9 +106,10 @@ organs_expired initializeOrgansExpiredQueue() {
 
 patients_lost initializePatientLostQueue() {
     patients_lost patientsLost;
+    /*
     patientsLost.queue = malloc(sizeof(patient));
     MALLOC_HANDLER(patientsLost.queue)
-    patientsLost.queue->next = NULL;
+    patientsLost.queue->next = NULL;*/
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
@@ -154,19 +162,20 @@ patient *newPatient(BLOOD_TYPE bt, PRIORITY pr) {
     return new;
 }
 
-organ * newOrgan(BLOOD_TYPE bt) {
+organ *newOrgan(BLOOD_TYPE bt, DONOR_TYPE dt) {
     organ *new = malloc(sizeof(organ));
     MALLOC_HANDLER(new)
     new->bt = bt;
+    new->dt = dt;
     new->next = NULL;
     return new;
 }
 
 event_list* initializeEventList() {
     patient_waiting_list waiting_list = initializeWaitingList();
-    activation activation_c = initializeActivationCenter();
+    activation_center activation_c = initializeActivationCenter();
     organ_bank bank = initializeOrganBank();
-    transplant transplant_c = initializeTransplantCenter();
+    transplant_center transplant_c = initializeTransplantCenter();
     patients_lost patient_loss = initializePatientLostQueue();
     organs_expired organs_loss = initializeOrgansExpiredQueue();
 

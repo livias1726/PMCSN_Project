@@ -67,6 +67,11 @@
                queues[b][low]); \
     }
 
+#define OPEN_FILE(f, path) \
+    if((f = fopen(path, "w")) == NULL) {                                     \
+        fprintf(stderr, "Cannot open output file");                          \
+        exit(EXIT_FAILURE);                                                  \
+    }
 //-----------------------------------------------------------------------------
 
 void saveResultsCsv(stats *statistics);

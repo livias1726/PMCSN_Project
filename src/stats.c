@@ -4,7 +4,7 @@
     printf("\t\taverage # in the node...%f\n", area->node/time); \
     printf("\t\taverage # in the queue...%f\n", area->queue/time); \
     printf("\t\tutilization...%f\n", area->service/time);
-
+/*
 void computeTimeAveragedStats(time_integrated_stats *stats) {
     double curr = stats->current_time;
     area *curr_area;
@@ -36,9 +36,10 @@ void computeTimeAveragedStats(time_integrated_stats *stats) {
     printf("Transplant center: \n");
     PRINT_TI_STATS(curr_area, curr)
 }
+ */
 
-void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
-    double curr = ti_stats->current_time;
+void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
+    double curr = t->current;
     double population;
     area * curr_area;
 
@@ -52,7 +53,7 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
         curr_area = ti_stats->area_bank[i];
         population = ob_stats->num_organ_arrivals[i];
 
-        ob_stats->avg_interarrival_time[i] = curr / population; //FIXME: use t.last
+        ob_stats->avg_interarrival_time[i] = t->last[organ_arrival] / population;
         ob_stats->avg_wait[i] = curr_area->node / population;
         ob_stats->avg_delay[i] = curr_area->queue / population;
         ob_stats->avg_service[i] = curr_area->service / population;
@@ -64,7 +65,7 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
             curr_area = ti_stats->area_waiting_list[i][j];
             population = wl_stats->num_patient_arrivals[i][j];
 
-            wl_stats->avg_interarrival_time[i][j] = curr / population; //FIXME: use t.last
+            wl_stats->avg_interarrival_time[i][j] = t->last[patient_arrival] / population;
             wl_stats->avg_wait[i][j] = curr_area->node / population;
             wl_stats->avg_delay[i][j] = curr_area->queue / population;
             wl_stats->avg_service[i][j] = curr_area->service / population;
@@ -72,15 +73,8 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
             wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
             wl_stats->utilization[i][j] = curr_area->service / curr;
 
-            /*
-            wl_stats->avg_interarrival_time[i][0] += curr / population; //FIXME: use t.last
-            wl_stats->avg_wait[i][0] += curr_area->node / population;
-            wl_stats->avg_delay[i][0] += curr_area->queue / population;
-            wl_stats->avg_service[i][0] += curr_area->service / population;
-            wl_stats->avg_in_node[i][0] += curr_area->node / curr;
-            wl_stats->avg_in_queue[i][0] += curr_area->queue / curr;
-            wl_stats->utilization[i][0] += curr_area->service / curr;
-             */
+            trans_stats->rejection_perc[i][j] = (trans_stats->rejected_transplants[i][j] == 0) ? 0 :
+                    100 * (trans_stats->rejected_transplants[i][j] / (trans_stats->completed_transplants[i][j]+trans_stats->rejected_transplants[i][j]));
         }
     }
 
@@ -99,7 +93,7 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats) {
 void gatherResults(stats* statistics, event_list *events){
     patient_waiting_list waiting_list = events->patient_arrival;
     organ_bank bank = events->organ_arrival;
-    transplant transplant_c = events->transplant_arrival;
+    transplant_center transplant_c = events->transplant_arrival;
     organs_expired organs_expired = events->organs_loss;
     patients_lost patients_lost = events->patients_loss;
 
@@ -113,9 +107,9 @@ void gatherResults(stats* statistics, event_list *events){
             statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
             statistics->wl_stats->num_patient_deaths[i][j] = patients_lost.number_dead[i][j];
             statistics->wl_stats->num_patient_reneges[i][j] = patients_lost.number_renege[i][j];
+
+            statistics->trans_stats->completed_transplants[i][j] = transplant_c.completed_transplants[i][j];
+            statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
         }
     }
-
-    statistics->trans_stats->num_transplants[success] = transplant_c.completed_transplants;
-    statistics->trans_stats->num_transplants[reject] = transplant_c.rejected_transplants;
 }
