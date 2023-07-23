@@ -1,7 +1,7 @@
 #ifndef PMCSN_PROJECT_SIM_H
 #define PMCSN_PROJECT_SIM_H
 
-#define OBSERVATION 6
+#define OBSERVATION 5
 #define START 0.0                       /* initial sim_time                   */
 
 #ifdef FINITE_HORIZON

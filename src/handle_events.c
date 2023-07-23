@@ -241,6 +241,7 @@ void handlePatientActivation(event_list *events, sim_time *t) {
     curr->next = NULL;
     //free(curr);
     events->activation_arrival.total_number--;
+    events->activation_arrival.activated_number++;
 
     /* update offsets */
     updateActivationOffsets(inactive);
@@ -443,6 +444,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     /* Init new match, increment transplant number and add match to transplant queue*/
     matched *m = newMatched(*patient, *organ);
     tc->total_number++;
+    wl->num_completions[patient->bt][patient->priority]++;
     in_transplant *in_tr = newTransplant(m, tc->total_number);
 
     /* generate and change transplant completion time */
@@ -493,6 +495,7 @@ patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting
                     priority = j;
                     bloodType = b;
                     first = false;
+                    break;
                 } else {
                     curr_val = wl->blood_type_queues[b]->priority_queue[j]->queue->next->start_time;
                     if (curr_val < oldest_st) {
@@ -500,9 +503,8 @@ patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting
                         priority = j;
                         bloodType = b;
                     }
+                    break;
                 }
-            } else {
-                break;
             }
         }
     }
