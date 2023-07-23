@@ -107,20 +107,31 @@ void setupSystemState(event_list *events) {
     events->transplant_arrival = initializeTransplantCenter();
 }
 
-void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
+void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **stat_array) {
     /* Choose next event selecting minimum time */
     bool init_state = true;
+    double checkpoint;
+    int iteration = 0;
     t->current = 0;
+
     while (t->current < STOP) {
-        t->next = getMinTime(events);		                //Next event time
-        if (t->current > CHECKPOINT) {
-            updateIntegralsStats(events, t, ti_stats);             // Update integrals stats
-            if (init_state) {
+        t->next = getMinTime(events);		            // Next event time
+        // check initialization phase
+        if (t->current > INIT) {
+            updateIntegralsStats(events, t, ti_stats);  // Update integrals stats
+
+            if (init_state) { // first iteration after initialization phase
                 setupSystemState(events);
                 init_state = false;
+                checkpoint = t->current + BATCH_SIZE;   // set first batch
+            } else if (t->current > checkpoint) {
+                gatherResults(stat_array[iteration], events);
+                computeTimeAveragedStats2(stat_array[iteration],ti_stats,t);
+                iteration++;
+                checkpoint = t->current + BATCH_SIZE;
             }
         }
-        t->current = t->next;                               //Clock update
+        t->current = t->next;                           // Clock update
 
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organ_arrival.inter_arrival_time[i]) {

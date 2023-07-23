@@ -74,7 +74,8 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
             wl_stats->utilization[i][j] = curr_area->service / curr;
 
             trans_stats->rejection_perc[i][j] = (trans_stats->rejected_transplants[i][j] == 0) ? 0 :
-                    100 * (trans_stats->rejected_transplants[i][j] / (trans_stats->completed_transplants[i][j]+trans_stats->rejected_transplants[i][j]));
+                    100 * (trans_stats->rejected_transplants[i][j] /
+                    (trans_stats->completed_transplants[i][j]+trans_stats->rejected_transplants[i][j]));
         }
     }
 
@@ -112,4 +113,69 @@ void gatherResults(stats* statistics, event_list *events){
             statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
         }
     }
+}
+
+/**
+ * Compute the batch means from the statistics of each batch with confidence intervals
+ * */
+stats * computeFinalStatistics(stats **statistics, int num_stats){
+
+    stats *batch_stat = initializeStatistics();
+    int i,j,k;
+
+    // compute mean and variance of the batch means
+    for (j = 0; j < NUM_BLOOD_TYPES; ++j) {
+
+        for (i = 0; i < num_stats; ++i) {
+            batch_stat->ob_stats->avg_interarrival_time[j]  += statistics[i]->ob_stats->avg_interarrival_time[j];
+            batch_stat->ob_stats->avg_wait[j]               += statistics[i]->ob_stats->avg_wait[j];
+            batch_stat->ob_stats->avg_delay[j]              += statistics[i]->ob_stats->avg_delay[j];
+            batch_stat->ob_stats->avg_service[j]            += statistics[i]->ob_stats->avg_service[j];
+            batch_stat->ob_stats->avg_in_node[j]            += statistics[i]->ob_stats->avg_in_node[j];
+            batch_stat->ob_stats->avg_in_queue[j]           += statistics[i]->ob_stats->avg_in_queue[j];
+        }
+
+        batch_stat->ob_stats->avg_interarrival_time[j]  /= num_stats;
+        batch_stat->ob_stats->avg_wait[j]               /= num_stats;
+        batch_stat->ob_stats->avg_delay[j]              /= num_stats;
+        batch_stat->ob_stats->avg_service[j]            /= num_stats;
+        batch_stat->ob_stats->avg_in_node[j]            /= num_stats;
+        batch_stat->ob_stats->avg_in_queue[j]           /= num_stats;
+
+        for (k = 0; k < NUM_PRIORITIES; ++k) {
+
+            for (i = 0; i < num_stats; ++i) {
+                batch_stat->wl_stats->avg_interarrival_time[j][k]   += statistics[i]->wl_stats->avg_interarrival_time[j][k];
+                batch_stat->wl_stats->avg_wait[j][k]                += statistics[i]->wl_stats->avg_wait[j][k];
+                batch_stat->wl_stats->avg_delay[j][k]               += statistics[i]->wl_stats->avg_delay[j][k];
+                batch_stat->wl_stats->avg_service[j][k]             += statistics[i]->wl_stats->avg_service[j][k];
+                batch_stat->wl_stats->avg_in_node[j][k]             += statistics[i]->wl_stats->avg_in_node[j][k];
+                batch_stat->wl_stats->avg_in_queue[j][k]            += statistics[i]->wl_stats->avg_in_queue[j][k];
+                batch_stat->wl_stats->utilization[j][k]             += statistics[i]->wl_stats->utilization[j][k];
+
+                batch_stat->trans_stats->rejection_perc[j][k]       += statistics[i]->trans_stats->rejection_perc[j][k];
+            }
+
+            batch_stat->wl_stats->avg_interarrival_time[j][k]   /= num_stats;
+            batch_stat->wl_stats->avg_wait[j][k]                /= num_stats;
+            batch_stat->wl_stats->avg_delay[j][k]               /= num_stats;
+            batch_stat->wl_stats->avg_service[j][k]             /= num_stats;
+            batch_stat->wl_stats->avg_in_node[j][k]             /= num_stats;
+            batch_stat->wl_stats->avg_in_queue[j][k]            /= num_stats;
+            batch_stat->wl_stats->utilization[j][k]             /= num_stats;
+
+            batch_stat->trans_stats->rejection_perc[j][k]       /= num_stats;
+        }
+    }
+
+    for (i = 0; i < num_stats; ++i) {
+        batch_stat->act_stats->avg_in_node      += statistics[i]->act_stats->avg_in_node;
+        batch_stat->trans_stats->avg_in_node    += statistics[i]->act_stats->avg_in_node;
+    }
+    batch_stat->act_stats->avg_in_node      /= num_stats;
+    batch_stat->trans_stats->avg_in_node    /= num_stats;
+
+    // compute the confidence interval
+
+    return batch_stat;
 }

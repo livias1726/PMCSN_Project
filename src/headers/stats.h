@@ -71,5 +71,6 @@ typedef struct statistics{
 void gatherResults(stats *statistics, event_list *events);
 void computeTimeAveragedStats(time_integrated_stats *stats);
 void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
+stats * computeFinalStatistics(stats **stats, int num_stats);
 
 #endif //PMCSN_PROJECT_STATS_H

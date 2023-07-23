@@ -30,33 +30,41 @@ int main(){
     sim_time sim_time = initializeTime();
     time_integrated_stats *ti_stats = initializeTimeStatistics();
 
+    // statistics for each observation year
+    int i, num_iter = OBSERVATION * (365 / BATCH_SIZE); // measure for each month
+    stats **statistics = malloc(num_iter* sizeof(stats*));
+    for (i = 0; i < num_iter; ++i) {
+        statistics[i] = initializeStatistics();
+    }
+
     // --------------------------------------------- Simulation ------------------------------------------------------
 
     time_t s, e;
     s = clock();
 
-    finiteSim(events, &sim_time, ti_stats);
+    finiteSim(events, &sim_time, ti_stats, statistics);
 
     e = clock();
     printf("time: %lld\n", (e-s)/CLOCKS_PER_SEC);
 
     // ----------------------------------------------------- Results --------------------------------------------------
 
-    stats *statistics = initializeStatistics();
-
-    gatherResults(statistics, events);
-    computeTimeAveragedStats2(statistics, ti_stats, &sim_time);
+    stats * batch = computeFinalStatistics(statistics, num_iter);
 
 #ifdef AUDIT
     printResults(statistics, stdout);
 #else
-    saveResultsCsv(statistics);
+    saveResultsCsv(batch);
 #endif
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
     cleanUpEventList(events);
     cleanUpTimeStatistics(ti_stats);
-    cleanUpStatistics(statistics);
+    for (i = 0; i < num_iter; ++i) {
+        cleanUpStatistics(statistics[i]);
+    }
+    cleanUpStatistics(batch);
+
 }
 
