@@ -25,6 +25,7 @@ patient_waiting_list initializeWaitingList() {
             waitingList.blood_type_queues[i]->priority_queue[j]->queue->next = NULL;
 
             waitingList.num_arrivals[i][j] = 0.0;
+            waitingList.num_completions[i][j] = 0.0;
             //waitingList.waiting_times[i][j] = 0.0;
         }
     }
@@ -81,6 +82,7 @@ activation_center initializeActivationCenter() {
     activationCenter.inactive_patients->patient->next = NULL;
 
     activationCenter.total_number = 0.0;
+    activationCenter.activated_number = 0.0;
     return activationCenter;
 }
 

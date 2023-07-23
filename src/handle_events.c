@@ -11,6 +11,8 @@ bool handleMatchingFromPatient(event_list*, sim_time*, BLOOD_TYPE, patient*);
 
 // ------------------------------------------ ORGAN ARRIVAL -----------------------------------------------------------
 
+patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting_list *wl);
+
 // Internal usage: adds an organ to the organ queue with a specific blood type
 void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, organ *o) {
 
@@ -239,6 +241,7 @@ void handlePatientActivation(event_list *events, sim_time *t) {
     curr->next = NULL;
     //free(curr);
     events->activation_arrival.total_number--;
+    events->activation_arrival.activated_number++;
 
     /* update offsets */
     updateActivationOffsets(inactive);
@@ -441,6 +444,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     /* Init new match, increment transplant number and add match to transplant queue*/
     matched *m = newMatched(*patient, *organ);
     tc->total_number++;
+    wl->num_completions[patient->bt][patient->priority]++;
     in_transplant *in_tr = newTransplant(m, tc->total_number);
 
     /* generate and change transplant completion time */
@@ -475,11 +479,49 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     }
 }
 
-/**
- * fixme: aggiusta in base a living donor e deceased donor
- * */
+patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting_list *wl) {
+    PRIORITY priority;
+    BLOOD_TYPE bloodType;
+    double oldest_st, curr_val;
+    bool first = true;
+
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            BLOOD_TYPE b = pBt[i];
+            if ((wl->blood_type_queues[b]->priority_queue[j]->number != 0)) {
+
+                if (first) {
+                    oldest_st = wl->blood_type_queues[b]->priority_queue[j]->queue->next->start_time;
+                    priority = j;
+                    bloodType = b;
+                    first = false;
+                    break;
+                } else {
+                    curr_val = wl->blood_type_queues[b]->priority_queue[j]->queue->next->start_time;
+                    if (curr_val < oldest_st) {
+                        oldest_st = curr_val;
+                        priority = j;
+                        bloodType = b;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    if (first) return NULL;
+
+    patient *p = removePatient(0,
+                               &wl->blood_type_queues[bloodType]->priority_queue[priority],
+                               wl->blood_type_queues[bloodType],
+                               wl,
+                               0);
+    return p;
+}
+
 bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, organ *organ, bool living) {
 
+    patient *p;
     patient_waiting_list *wl = &events->patient_arrival;
     organ_bank *bank = &events->organ_arrival;
 
@@ -501,7 +543,7 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
     const BLOOD_TYPE *comp = get_compatibles[bt];
     const int size = get_num_compatibles[bt];
 
-    // Serve the rarest blood types first
+    /*// Serve the rarest blood types first
     int i = 0;
     while (i < NUM_PRIORITIES && !found) {
         for (int j = 0; j < size; ++j) {
@@ -514,6 +556,12 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
             }
         }
         ++i;
+    }*/
+    p = getOldestPatient(comp, size, wl);
+    if (p != NULL) {
+        avbPatientBt = p->bt;
+        avbPatientPr = p->priority;
+        found = true;
     }
 
     if (!found) return found;
@@ -525,10 +573,11 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
         organ = removeOrgan(0, &bank->queues[bt], bank);
     }
 
-
+#ifdef ABO_ID
     /* get first patient */
-    patient *p = removePatient(0, &wl->blood_type_queues[avbPatientBt]->priority_queue[avbPatientPr],
+    p = removePatient(0, &wl->blood_type_queues[avbPatientBt]->priority_queue[avbPatientPr],
                                wl->blood_type_queues[avbPatientBt], wl, t->current);
+#endif
     addMatchedToTransplant(events, t, organ, p);
 
     return found;

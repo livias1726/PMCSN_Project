@@ -123,6 +123,7 @@ typedef struct patient_waiting_list {
     double total_number;                                                /* l_{p} */
     double inter_arrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];           /* t_{a,p,BT} */
     double num_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double num_completions[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     //double waiting_times[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 } patient_waiting_list;
 
@@ -185,6 +186,7 @@ typedef struct in_activation {
 typedef struct activation_center {
     in_activation *inactive_patients;   /* list of the inactive patients */
     double total_number;                /* l_{del} */
+    double activated_number;
 } activation_center;
 
 // ---------------------------------------------------- EXTRA --------------------------------------------------------

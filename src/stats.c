@@ -40,7 +40,7 @@ void computeTimeAveragedStats(time_integrated_stats *stats) {
 
 void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
     double curr = t->current;
-    double population;
+    double population, completion;
     area * curr_area;
 
     waiting_list_stats* wl_stats = stats->wl_stats;
@@ -48,27 +48,35 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
     transplant_stats* trans_stats = stats->trans_stats;
     activation_stats* act_stats = stats->act_stats;
 
+    // Activation center
+    curr_area = ti_stats->area_activation;
+    completion = act_stats->num_activated;
+    act_stats->avg_in_node = curr_area->node / curr;
+    act_stats->avg_delay = curr_area->node / completion;
+
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
         curr_area = ti_stats->area_bank[i];
         population = ob_stats->num_organ_arrivals[i];
 
         ob_stats->avg_interarrival_time[i] = t->last[organ_arrival] / population;
-        ob_stats->avg_wait[i] = curr_area->node / population;
-        ob_stats->avg_delay[i] = curr_area->queue / population;
-        ob_stats->avg_service[i] = curr_area->service / population;
-        ob_stats->avg_in_node[i] = curr_area->node / curr;
+        ob_stats->avg_wait[i] = curr_area->node / population; //fixme remove
+        ob_stats->avg_delay[i] = curr_area->queue / population; //fixme remove
+        ob_stats->avg_service[i] = curr_area->service / population; //fixme remove
+        ob_stats->avg_in_node[i] = curr_area->node / curr; //fixme remove
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            // FIXME: il tempo di attesa dei low deve essere sommato al tempo di attesa in attivazione!!!
             // Waiting list
             curr_area = ti_stats->area_waiting_list[i][j];
             population = wl_stats->num_patient_arrivals[i][j];
+            completion = wl_stats->num_patients_served[i][j];
 
             wl_stats->avg_interarrival_time[i][j] = t->last[patient_arrival] / population;
-            wl_stats->avg_wait[i][j] = curr_area->node / population;
-            wl_stats->avg_delay[i][j] = curr_area->queue / population;
-            wl_stats->avg_service[i][j] = curr_area->service / population;
+            wl_stats->avg_wait[i][j] = curr_area->node / completion;
+            wl_stats->avg_delay[i][j] = curr_area->queue / completion;
+            wl_stats->avg_service[i][j] = curr_area->service / completion;
             wl_stats->avg_in_node[i][j] = curr_area->node / curr;
             wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
             wl_stats->utilization[i][j] = curr_area->service / curr;
@@ -78,10 +86,6 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
                     (trans_stats->completed_transplants[i][j]+trans_stats->rejected_transplants[i][j]));
         }
     }
-
-    // Activation center
-    curr_area = ti_stats->area_activation;
-    act_stats->avg_in_node = curr_area->node / curr;
 
     // Transplant center
     curr_area = ti_stats->area_transplant;
@@ -108,6 +112,7 @@ void gatherResults(stats* statistics, event_list *events){
             statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
             statistics->wl_stats->num_patient_deaths[i][j] = patients_lost.number_dead[i][j];
             statistics->wl_stats->num_patient_reneges[i][j] = patients_lost.number_renege[i][j];
+            statistics->wl_stats->num_patients_served[i][j] = waiting_list.num_completions[i][j];
 
             statistics->trans_stats->completed_transplants[i][j] = transplant_c.completed_transplants[i][j];
             statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
