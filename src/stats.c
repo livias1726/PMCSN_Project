@@ -77,7 +77,7 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
         curr_area = ti_stats->area_bank[i];
         population = ob_stats->num_organ_arrivals[i];
 
-        ob_stats->avg_interarrival_time[i] = t->last[organ_arrival] / population;
+        ob_stats->avg_interarrival_time[i] = (population == 0) ? 0 : t->last[organ_arrival] / population;
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
@@ -87,10 +87,14 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
             population = wl_stats->num_patient_arrivals[i][j];
             completion = wl_stats->num_patients_served[i][j];
 
-            wl_stats->avg_interarrival_time[i][j] = t->last[patient_arrival] / population;
-            wl_stats->avg_wait[i][j] = curr_area->node / completion;
-            wl_stats->avg_delay[i][j] = curr_area->queue / completion;
-            wl_stats->avg_service[i][j] = curr_area->service / completion;
+            wl_stats->avg_interarrival_time[i][j] = (population == 0) ? 0 : t->last[patient_arrival] / population;
+
+            if (completion != 0) {
+                wl_stats->avg_wait[i][j] = curr_area->node / completion;
+                wl_stats->avg_delay[i][j] = curr_area->queue / completion;
+                wl_stats->avg_service[i][j] = curr_area->service / completion;
+            }
+
             wl_stats->avg_in_node[i][j] = curr_area->node / curr;
             wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
             wl_stats->utilization[i][j] = curr_area->service / curr;

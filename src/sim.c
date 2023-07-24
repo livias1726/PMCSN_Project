@@ -223,6 +223,7 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
     double number_active = events->activation_arrival.total_number;
     double number_trans = events->transplant_arrival.total_number;
     double number_wl, number_bank;
+    double diff = t->next - t->current;
 
     int i,j;
 
@@ -233,23 +234,23 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
 
         /* Update organ bank integrals */
         number_bank = events->organ_arrival.queues[i]->number;
-        ti_stats->area_bank[i]->node += (t->next - t->current) * (number_bank+1);
-        ti_stats->area_bank[i]->queue += (t->next - t->current) * (number_bank);
-        ti_stats->area_bank[i]->service += (t->next - t->current);
+        ti_stats->area_bank[i]->node += diff * (number_bank+1);
+        ti_stats->area_bank[i]->queue += diff * (number_bank);
+        ti_stats->area_bank[i]->service += diff;
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
-            ti_stats->area_waiting_list[i][j]->node += (t->next - t->current) * (number_wl+1);
-            ti_stats->area_waiting_list[i][j]->queue += (t->next - t->current) * (number_wl);
-            ti_stats->area_waiting_list[i][j]->service += (t->next - t->current);
+            ti_stats->area_waiting_list[i][j]->node += diff * (number_wl+1);
+            ti_stats->area_waiting_list[i][j]->queue += diff * (number_wl);
+            ti_stats->area_waiting_list[i][j]->service += diff;
         }
     }
 
     /* Update activation_center center integrals */
-    ti_stats->area_activation->node += (t->next - t->current) * number_active;
-    ti_stats->area_activation->service += (t->next - t->current) * number_active;
+    ti_stats->area_activation->node += diff * number_active;
+    ti_stats->area_activation->service += diff * number_active;
 
     /* Update transplant center integrals */
-    ti_stats->area_transplant->node += (t->next - t->current) * number_trans;
-    ti_stats->area_transplant->service += (t->next - t->current) * number_trans;
+    ti_stats->area_transplant->node += diff * number_trans;
+    ti_stats->area_transplant->service += diff * number_trans;
 }
