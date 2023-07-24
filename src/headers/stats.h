@@ -30,10 +30,10 @@ typedef struct area {
 
 // time integrated statistics for each center
 typedef struct time_integrated_stats{
-    area* area_waiting_list[NUM_BLOOD_TYPES][NUM_PRIORITIES];   // time integrated statistics for the waiting list center
-    area* area_bank[NUM_BLOOD_TYPES];                           // time integrated statistics for the organ bank center
-    area* area_activation;                                      // time integrated statistics for the activation_center center
-    area* area_transplant;                                      // time integrated statistics for the transplant center
+    area* area_waiting_list[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    area* area_bank[NUM_BLOOD_TYPES];
+    area* area_activation;
+    area* area_transplant;
 } time_integrated_stats;
 
 typedef struct waiting_list_stats{
@@ -83,7 +83,7 @@ typedef struct transplant_stats{
 } transplant_stats;
 
 typedef struct activation_stats{
-    double num_activated;
+    double num_activated[NUM_BLOOD_TYPES];
     double avg_in_node;
     double avg_delay;
     double std_in_node;

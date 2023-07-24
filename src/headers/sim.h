@@ -1,7 +1,8 @@
 #ifndef PMCSN_PROJECT_SIM_H
 #define PMCSN_PROJECT_SIM_H
 
-#define BATCH_SIZE 30                       // in terms of number of days
+#define SEED 123456789
+#define BATCH_SIZE 30                       // number of days
 #define BASE_OBSERVATION 0                  // must be at least 3 years to unblock inactive patients
 #define INIT (365 * BASE_OBSERVATION)
 #define OBSERVATION 3                       // years of system observation after the initial phase

@@ -65,11 +65,14 @@ void saveResultsCsv(stats* statistics){
     // Activation center
     snprintf(path, MAX_LEN, "output/activation_%s_%s.csv", model, policy);
     OPEN_FILE(f, path)
-    header = "Patients activated,Avg delay,CI delay,Avg # in the node,CI # in the node\n";
+    header = "Blood type,Patients activated,Avg delay,CI delay,Avg # in the node,CI # in the node\n";
     fprintf(f, "%s", header);
-    fprintf(f, "%f,%f,+/-%f,%f,+/-%f\n", statistics->act_stats->num_activated,
-            statistics->act_stats->avg_delay, statistics->act_stats->std_delay,
-            statistics->act_stats->avg_in_node, statistics->act_stats->std_in_node);
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        fprintf(f, "%s,%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
+                statistics->act_stats->num_activated[i],
+                statistics->act_stats->avg_delay, statistics->act_stats->std_delay,
+                statistics->act_stats->avg_in_node, statistics->act_stats->std_in_node);
+    }
     fclose(f);
 
     // Transplant
@@ -89,76 +92,113 @@ void saveResultsCsv(stats* statistics){
     fclose(f);
 }
 
-void printResults(stats* statistics, FILE* ch){
-    // waiting list
-    print_by_all("Patients arrived:\n", statistics->wl_stats->num_patient_arrivals, ch)
-    print_by_all("Patients dead:\n", statistics->wl_stats->num_patient_deaths, ch)
-    print_by_all("Patients reneged:\n", statistics->wl_stats->num_patient_reneges, ch)
-    print_by_all("Patients in queue:\n", statistics->wl_stats->num_patients_in_queue, ch)
-    fprintf(stdout, "%s", "\tWaiting list time integrated statistics:\n");
-    print_by_all("\tAverage inter-arrival time:\n", statistics->wl_stats->avg_interarrival_time, ch)
-    print_by_all("\tAverage wait:\n", statistics->wl_stats->avg_wait, ch)
-    print_by_all("\tAverage delay:\n", statistics->wl_stats->avg_delay, ch)
-    print_by_all("\tAverage service time:\n", statistics->wl_stats->avg_service, ch)
-    print_by_all("\tAverage # in the node:\n", statistics->wl_stats->avg_in_node, ch)
-    print_by_all("\tAverage # in the queue:\n", statistics->wl_stats->avg_in_queue, ch)
-    print_by_all("\tUtilization:\n", statistics->wl_stats->utilization, ch)
+void cleanUpOrganBank(organ_bank *bank) {
+    organ *current; // head
+    organ *next; // first node
 
-    // organ bank
-    print_by_blood_type("Organs arrived:\n", statistics->ob_stats->num_organ_arrivals, ch)
-    print_by_blood_type("Organs outdated:\n", statistics->ob_stats->num_organ_outdatings, ch)
-    print_by_blood_type("Organs in queue:\n", statistics->ob_stats->num_organs_in_queue, ch)
-    fprintf(stdout, "%s", "Organ bank time integrated statistics:\n");
-    print_by_blood_type("\tAverage inter-arrival time:\n", statistics->ob_stats->avg_interarrival_time, ch)
-    print_by_blood_type("\tAverage # in the queue:\n", statistics->ob_stats->avg_in_queue, ch)
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        current = bank->queues[i]->queue; // head
+        next = current->next; // first node
 
-    // Activation center
-    fprintf(ch, "%s", "\tActivation center time integrated statistics:\n");
-    fprintf(ch,"\t\tAverage # in the node: %f\n", statistics->act_stats->avg_in_node);
+        while(next != NULL){
+            current = next;
+            next = next->next;
 
-    // Transplant center
-    /*
-    print_transplants_res("\tTransplants:\n", statistics->trans_stats->completed_transplants, ch)
-    fprintf(ch, "%s", "\tTransplant center time integrated statistics:\n");
-    fprintf(ch,"\t\tAverage # in the node: %f\n", statistics->trans_stats->avg_in_node);
-     */
+            free(current);
+        }
+
+        free(bank->queues[i]->queue);
+        free(bank->queues[i]);
+    }
+}
+
+void cleanUpWaitingList(patient_waiting_list *wt_list) {
+    patient *current; // head
+    patient *next; // first node
+    int i,j;
+
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            current = wt_list->blood_type_queues[i]->priority_queue[j]->queue;
+            next = current->next;
+
+            while(next != NULL){
+                current = next;
+                next = next->next;
+
+                free(current);
+            }
+
+            free(wt_list->blood_type_queues[i]->priority_queue[j]->queue);
+            free(wt_list->blood_type_queues[i]->priority_queue[j]);
+        }
+        free(wt_list->blood_type_queues[i]);
+    }
+}
+
+void cleanUpActivationCenter(activation_center *act_center) {
+    in_activation *current = act_center->inactive_patients; // head
+    in_activation *next = current->next; // first node
+
+    while(next != NULL){
+        current = next;
+        next = next->next;
+
+        free(current->patient);
+        free(current);
+    }
+
+    free(act_center->inactive_patients);
+}
+
+void cleanUpTransplantCenter(transplant_center *trans_center) {
+    in_transplant *current = trans_center->transplanted_patients; // head
+    in_transplant *next = current->next; // first node
+
+    while(next != NULL){
+        current = next;
+        next = next->next;
+
+        free(current->matched);
+        free(current);
+    }
+
+    free(trans_center->transplanted_patients); // free head
 }
 
 void cleanUpEventList(event_list* events){
-    patient_waiting_list *waiting_list = &events->patient_arrival;
-    patient_queue_blood_type **bt_queues = waiting_list->blood_type_queues;
-    organ_bank *bank = &events->organ_arrival;
-    //activation_center *;
-    transplant_center *transplants;
-    organs_expired organs_loss;
-    patients_lost patients_loss;
 
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        free(bank->queues[i]->queue); //TODO: while there are organs in queue, free organ
-        free(bank->queues[i]);
+    cleanUpOrganBank(&events->organ_arrival);
+    cleanUpWaitingList(&events->patient_arrival);
+    cleanUpActivationCenter(&events->activation_arrival);
+    cleanUpTransplantCenter(&events->transplant_arrival);
 
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            free(bt_queues[i]->priority_queue[j]->queue); //TODO: while there are patients in queue, free patient
-            free(bt_queues[i]->priority_queue[j]);
-        }
-
-        free(bt_queues[i]);
-    }
-
-    transplant_center *trans_queue = &events->transplant_arrival;
-    free(trans_queue->transplanted_patients); //TODO: while there are patients in queue, free patient
-
-    activation_center *inactive_queue = &events->activation_arrival;
-    free(inactive_queue->inactive_patients->patient); //TODO: while there are patients in queue, free patient
-    free(inactive_queue->inactive_patients);
-
-    //TODO: free the other structured into events
+    free(events);
 }
 
 void cleanUpTimeStatistics(time_integrated_stats *ti_stats) {
+    int i,j;
 
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        free(ti_stats->area_bank[i]);
+
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            free(ti_stats->area_waiting_list[i][j]);
+        }
+    }
+
+    free(ti_stats->area_transplant);
+    free(ti_stats->area_activation);
+
+    free(ti_stats);
 }
 
 void cleanUpStatistics(stats *statistics){
 
+    free(statistics->wl_stats);
+    free(statistics->ob_stats);
+    free(statistics->act_stats);
+    free(statistics->trans_stats);
+
+    free(statistics);
 }

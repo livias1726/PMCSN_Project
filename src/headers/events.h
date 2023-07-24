@@ -40,7 +40,7 @@ void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType, b
 void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE, PRIORITY);
 
 // RENEGES
-void handleOrganRenege(event_list *events, sim_time *t, BLOOD_TYPE bloodType);
+void handleOrganRenege(event_list *events, sim_time *t, BLOOD_TYPE bt);
 void handlePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOOD_TYPE bt, PRIORITY pr);
 
 // ACTIVATION

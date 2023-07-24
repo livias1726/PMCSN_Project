@@ -292,7 +292,7 @@ double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
     }
 }
 
-double getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival) {
+double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
     switch (pr) {
         case critical:
             if (bt == O) {

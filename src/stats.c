@@ -70,14 +70,9 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
     organ_bank_stats* ob_stats = stats->ob_stats;
     transplant_stats* trans_stats = stats->trans_stats;
     activation_stats* act_stats = stats->act_stats;
+    int i,j;
 
-    // Activation center
-    curr_area = ti_stats->area_activation;
-    completion = act_stats->num_activated;
-    act_stats->avg_in_node = curr_area->node / curr;
-    act_stats->avg_delay = curr_area->node / completion;
-
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
         curr_area = ti_stats->area_bank[i];
         population = ob_stats->num_organ_arrivals[i];
@@ -85,7 +80,7 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
         ob_stats->avg_interarrival_time[i] = t->last[organ_arrival] / population;
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
             // FIXME: il tempo di attesa dei low deve essere sommato al tempo di attesa in attivazione!!!
             // Waiting list
             curr_area = ti_stats->area_waiting_list[i][j];
@@ -101,6 +96,15 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
             wl_stats->utilization[i][j] = curr_area->service / curr;
         }
     }
+
+    // Activation
+    curr_area = ti_stats->area_activation;
+    completion = 0;
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        completion += act_stats->num_activated[i];
+    }
+    act_stats->avg_in_node = curr_area->node / curr;
+    act_stats->avg_delay = curr_area->node / completion;
 
     // Transplant center
     curr_area = ti_stats->area_transplant;
@@ -133,9 +137,9 @@ void gatherResults(stats* statistics, event_list *events){
             statistics->trans_stats->completed_transplants[i][j] = transplant_c.completed_transplants[i][j];
             statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
         }
-    }
 
-    statistics->act_stats->num_activated = activation.activated_number;
+        statistics->act_stats->num_activated[i] = activation.activated_number[i];
+    }
 }
 
 /**
@@ -144,7 +148,7 @@ void gatherResults(stats* statistics, event_list *events){
  * */
 void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats) {
 
-    int i,j,k;
+    int i,j;
     double sum;
     double u = 1.0 - 0.5 * (1.0 - LOC), t, w;
 

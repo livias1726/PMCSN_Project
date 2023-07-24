@@ -22,7 +22,7 @@ int main(){
 
     // -------------------------------------------- Initialization ---------------------------------------------------
 
-    PlantSeeds(123456789);
+    PlantSeeds(SEED);
 
     event_list *events = initializeEventList();
     initializeEventTime(events);
@@ -33,6 +33,7 @@ int main(){
     // batches for each observation year
     int i, num_iter = OBSERVATION * (365 / BATCH_SIZE); // measure for each month
     stats **batches = malloc(num_iter * sizeof(stats*));
+    MALLOC_HANDLER(batches)
     for (i = 0; i < num_iter; ++i) {
         batches[i] = initializeStatistics();
     }
@@ -54,14 +55,14 @@ int main(){
     computeFinalStatistics(final_stat, batches, num_iter);
 
 #ifdef AUDIT
-    printResults(batches, stdout);
+    //printResults(batches, stdout); //fixme: to remove?
 #else
     saveResultsCsv(final_stat);
 #endif
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
-    cleanUpEventList(events);
+    //cleanUpEventList(events);
     cleanUpTimeStatistics(ti_stats);
     for (i = 0; i < num_iter; ++i) {
         cleanUpStatistics(batches[i]);
