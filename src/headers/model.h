@@ -9,8 +9,7 @@ typedef enum blood_type {
     O,
     A,
     B,
-    AB,
-    nbt
+    AB
 } BLOOD_TYPE;
 
 static const char * const bt_to_str[] = {
@@ -37,11 +36,6 @@ typedef enum loss_reason {
     death,
     renege
 } LOSS_REASON;
-
-typedef enum transplant_outcome{
-    success,
-    reject
-} OUTCOME;
 
 typedef enum donor_type{
     deceased,
