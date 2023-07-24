@@ -36,7 +36,7 @@ typedef struct event_list {
 // ------------------------------------ Exported EVENT HANDLERS PROTOTYPES ---------------------------------------------
 
 // ARRIVALS
-void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType, bool living);
+void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bt, bool living_flag);
 void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE, PRIORITY);
 
 // RENEGES

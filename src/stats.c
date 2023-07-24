@@ -104,7 +104,7 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
         completion += act_stats->num_activated[i];
     }
     act_stats->avg_in_node = curr_area->node / curr;
-    act_stats->avg_delay = curr_area->node / completion;
+    act_stats->avg_delay = (completion == 0) ? 0 : curr_area->node / completion;
 
     // Transplant center
     curr_area = ti_stats->area_transplant;
