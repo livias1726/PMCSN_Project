@@ -250,6 +250,27 @@ stats * initializeStatistics(){
     statistics->act_stats = malloc(sizeof(activation_stats));
     MALLOC_HANDLER(statistics->act_stats)
 
+    int i,j;
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        statistics->ob_stats->std_interarrival_time[i] = 0.0;
+        statistics->ob_stats->std_in_queue[i] = 0.0;
+
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            statistics->wl_stats->std_interarrival_time[i][j] = 0.0;
+            statistics->wl_stats->std_wait[i][j] = 0.0;
+            statistics->wl_stats->std_delay[i][j] = 0.0;
+            statistics->wl_stats->std_service[i][j] = 0.0;
+            statistics->wl_stats->std_in_node[i][j] = 0.0;
+            statistics->wl_stats->std_in_queue[i][j] = 0.0;
+            statistics->wl_stats->std_utilization[i][j] = 0.0;
+        }
+    }
+
+    statistics->act_stats->std_in_node = 0.0;
+    statistics->act_stats->std_delay = 0.0;
+
+    statistics->trans_stats->std_in_node = 0.0;
+
     return statistics;
 }
 

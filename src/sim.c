@@ -98,7 +98,6 @@ void setupSystemState(event_list *events) {
         events->organs_loss.number[i] = 0;
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             events->patient_arrival.num_arrivals[i][j] = 0;
-            //events->patient_arrival.waiting_times[i][j] = 0;
             events->patients_loss.number_renege[i][j] = 0;
             events->patients_loss.number_dead[i][j] = 0;
         }
@@ -107,7 +106,39 @@ void setupSystemState(event_list *events) {
     events->transplant_arrival = initializeTransplantCenter();
 }
 
-void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **stat_array) {
+/**
+ * Welford's one-pass algorithm to compute the mean and the standard deviation for each statistic
+ * */
+void welford(int iter, stats *stat, stats *batch){
+    double diff;
+
+    // Activation center
+    WELFORD(diff, batch->act_stats->avg_in_node,stat->act_stats->avg_in_node,stat->act_stats->std_in_node,iter)
+    WELFORD(diff, batch->act_stats->avg_delay,stat->act_stats->avg_delay,stat->act_stats->std_delay,iter)
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        // Organ bank
+        WELFORD(diff, batch->ob_stats->avg_interarrival_time[i],stat->ob_stats->avg_interarrival_time[i],stat->ob_stats->std_interarrival_time[i],iter)
+        WELFORD(diff, batch->ob_stats->avg_in_queue[i],stat->ob_stats->avg_in_queue[i],stat->ob_stats->std_in_queue[i],iter)
+
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            // Waiting list
+            WELFORD(diff, batch->wl_stats->avg_interarrival_time[i][j], stat->wl_stats->avg_interarrival_time[i][j],stat->wl_stats->std_interarrival_time[i][j], iter)
+            WELFORD(diff, batch->wl_stats->avg_wait[i][j],stat->wl_stats->avg_wait[i][j],stat->wl_stats->std_wait[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_delay[i][j],stat->wl_stats->avg_delay[i][j],stat->wl_stats->std_delay[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_service[i][j],stat->wl_stats->avg_service[i][j],stat->wl_stats->std_service[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_in_node[i][j],stat->wl_stats->avg_in_node[i][j],stat->wl_stats->std_in_node[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_in_queue[i][j],stat->wl_stats->avg_in_queue[i][j],stat->wl_stats->std_in_queue[i][j],iter)
+            WELFORD(diff, batch->wl_stats->utilization[i][j],stat->wl_stats->utilization[i][j],stat->wl_stats->std_utilization[i][j],iter)
+        }
+    }
+
+    // Transplant center
+    WELFORD(diff, batch->trans_stats->avg_in_node,stat->trans_stats->avg_in_node,stat->trans_stats->std_in_node,iter)
+}
+
+void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
+               int *num_iterations) {
     /* Choose next event selecting minimum time */
     bool init_state = true;
     double checkpoint;
@@ -125,8 +156,9 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
                 init_state = false;
                 checkpoint = t->current + BATCH_SIZE;   // set first batch
             } else if (t->current > checkpoint) {
-                gatherResults(stat_array[iteration], events);
-                computeTimeAveragedStats2(stat_array[iteration],ti_stats,t);
+                gatherResults(batches[iteration], events);
+                computeTimeAveragedStats2(batches[iteration], ti_stats, t);
+                welford(iteration+1, final_stat, batches[iteration]);
                 iteration++;
                 checkpoint = t->current + BATCH_SIZE;
             }
@@ -182,6 +214,9 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
 #ifdef AUDIT
     computeTimeAveragedStats(ti_stats);
 #endif
+
+    gatherResults(final_stat, events); // to update the system state at the end of the simulation
+    *num_iterations = iteration;
 }
 
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {

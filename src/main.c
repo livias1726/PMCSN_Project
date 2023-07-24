@@ -30,31 +30,33 @@ int main(){
     sim_time sim_time = initializeTime();
     time_integrated_stats *ti_stats = initializeTimeStatistics();
 
-    // statistics for each observation year
+    // batches for each observation year
     int i, num_iter = OBSERVATION * (365 / BATCH_SIZE); // measure for each month
-    stats **statistics = malloc(num_iter* sizeof(stats*));
+    stats **batches = malloc(num_iter * sizeof(stats*));
     for (i = 0; i < num_iter; ++i) {
-        statistics[i] = initializeStatistics();
+        batches[i] = initializeStatistics();
     }
+
+    stats *final_stat = initializeStatistics();
 
     // --------------------------------------------- Simulation ------------------------------------------------------
 
     time_t s, e;
     s = clock();
 
-    finiteSim(events, &sim_time, ti_stats, statistics);
+    finiteSim(events, &sim_time, ti_stats, batches, final_stat, &num_iter);
 
     e = clock();
     printf("time: %lld\n", (e-s)/CLOCKS_PER_SEC);
 
     // ----------------------------------------------------- Results --------------------------------------------------
 
-    stats * batch = computeFinalStatistics(statistics, num_iter);
+    computeFinalStatistics(final_stat, batches, num_iter);
 
 #ifdef AUDIT
-    printResults(statistics, stdout);
+    printResults(batches, stdout);
 #else
-    saveResultsCsv(batch);
+    saveResultsCsv(final_stat);
 #endif
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
@@ -62,9 +64,9 @@ int main(){
     cleanUpEventList(events);
     cleanUpTimeStatistics(ti_stats);
     for (i = 0; i < num_iter; ++i) {
-        cleanUpStatistics(statistics[i]);
+        cleanUpStatistics(batches[i]);
     }
-    cleanUpStatistics(batch);
+    cleanUpStatistics(final_stat);
 
 }
 

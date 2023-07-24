@@ -1,5 +1,28 @@
 #include "headers/utils.h"
 
+/**
+ * This file contains the implementation for every procedure that handles statistics.
+ *
+ * The statistics managed by the simulations are divided by center, according to its functions:
+ *      - WAITING LISTS
+ *          Avg inter-arrival times,
+ *          Avg wait,
+ *          Avg delay,
+ *          Avg service time,
+ *          Avg # in the node,
+ *          Avg # in the queue,
+ *          Utilization
+ *      - ORGAN BANK
+ *          Avg inter-arrival times,
+ *          Avg # in the queue
+ *      - ACTIVATION
+ *          Avg delay,
+ *          Avg # in the node
+ *      - TRANSPLANT
+ *          Rejection percentage,
+ *          Avg # in the node
+ * */
+
 #define PRINT_TI_STATS(area, time) \
     printf("\t\taverage # in the node...%f\n", area->node/time); \
     printf("\t\taverage # in the queue...%f\n", area->queue/time); \
@@ -60,10 +83,6 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
         population = ob_stats->num_organ_arrivals[i];
 
         ob_stats->avg_interarrival_time[i] = t->last[organ_arrival] / population;
-        ob_stats->avg_wait[i] = curr_area->node / population; //fixme remove
-        ob_stats->avg_delay[i] = curr_area->queue / population; //fixme remove
-        ob_stats->avg_service[i] = curr_area->service / population; //fixme remove
-        ob_stats->avg_in_node[i] = curr_area->node / curr; //fixme remove
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
@@ -80,10 +99,6 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
             wl_stats->avg_in_node[i][j] = curr_area->node / curr;
             wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
             wl_stats->utilization[i][j] = curr_area->service / curr;
-
-            trans_stats->rejection_perc[i][j] = (trans_stats->rejected_transplants[i][j] == 0) ? 0 :
-                    100 * (trans_stats->rejected_transplants[i][j] /
-                    (trans_stats->completed_transplants[i][j]+trans_stats->rejected_transplants[i][j]));
         }
     }
 
@@ -99,6 +114,7 @@ void gatherResults(stats* statistics, event_list *events){
     patient_waiting_list waiting_list = events->patient_arrival;
     organ_bank bank = events->organ_arrival;
     transplant_center transplant_c = events->transplant_arrival;
+    activation_center activation = events->activation_arrival;
     organs_expired organs_expired = events->organs_loss;
     patients_lost patients_lost = events->patients_loss;
 
@@ -118,69 +134,77 @@ void gatherResults(stats* statistics, event_list *events){
             statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
         }
     }
+
+    statistics->act_stats->num_activated = activation.activated_number;
 }
 
 /**
- * Compute the batch means from the statistics of each batch with confidence intervals
+ * Computes the std deviation for each statistic with confidence intervals and retrieves the population values from
+ * the last iteration
  * */
-stats * computeFinalStatistics(stats **statistics, int num_stats){
+void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats) {
 
-    stats *batch_stat = initializeStatistics();
     int i,j,k;
+    double sum;
+    double u = 1.0 - 0.5 * (1.0 - LOC), t, w;
 
-    // compute mean and variance of the batch means
-    for (j = 0; j < NUM_BLOOD_TYPES; ++j) {
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
 
-        for (i = 0; i < num_stats; ++i) {
-            batch_stat->ob_stats->avg_interarrival_time[j]  += statistics[i]->ob_stats->avg_interarrival_time[j];
-            batch_stat->ob_stats->avg_wait[j]               += statistics[i]->ob_stats->avg_wait[j];
-            batch_stat->ob_stats->avg_delay[j]              += statistics[i]->ob_stats->avg_delay[j];
-            batch_stat->ob_stats->avg_service[j]            += statistics[i]->ob_stats->avg_service[j];
-            batch_stat->ob_stats->avg_in_node[j]            += statistics[i]->ob_stats->avg_in_node[j];
-            batch_stat->ob_stats->avg_in_queue[j]           += statistics[i]->ob_stats->avg_in_queue[j];
-        }
+        final_stat->ob_stats->num_organs_in_queue[i] = statistics[num_stats-1]->ob_stats->num_organs_in_queue[i];
+        final_stat->ob_stats->num_organ_arrivals[i] = statistics[num_stats-1]->ob_stats->num_organ_arrivals[i];
+        final_stat->ob_stats->num_organ_outdatings[i] = statistics[num_stats-1]->ob_stats->num_organ_outdatings[i];
 
-        batch_stat->ob_stats->avg_interarrival_time[j]  /= num_stats;
-        batch_stat->ob_stats->avg_wait[j]               /= num_stats;
-        batch_stat->ob_stats->avg_delay[j]              /= num_stats;
-        batch_stat->ob_stats->avg_service[j]            /= num_stats;
-        batch_stat->ob_stats->avg_in_node[j]            /= num_stats;
-        batch_stat->ob_stats->avg_in_queue[j]           /= num_stats;
+        STDEV(sum, final_stat->ob_stats->std_interarrival_time[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->ob_stats->std_interarrival_time[i],num_stats)
 
-        for (k = 0; k < NUM_PRIORITIES; ++k) {
+        STDEV(sum, final_stat->ob_stats->std_in_queue[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->ob_stats->std_in_queue[i],num_stats)
 
-            for (i = 0; i < num_stats; ++i) {
-                batch_stat->wl_stats->avg_interarrival_time[j][k]   += statistics[i]->wl_stats->avg_interarrival_time[j][k];
-                batch_stat->wl_stats->avg_wait[j][k]                += statistics[i]->wl_stats->avg_wait[j][k];
-                batch_stat->wl_stats->avg_delay[j][k]               += statistics[i]->wl_stats->avg_delay[j][k];
-                batch_stat->wl_stats->avg_service[j][k]             += statistics[i]->wl_stats->avg_service[j][k];
-                batch_stat->wl_stats->avg_in_node[j][k]             += statistics[i]->wl_stats->avg_in_node[j][k];
-                batch_stat->wl_stats->avg_in_queue[j][k]            += statistics[i]->wl_stats->avg_in_queue[j][k];
-                batch_stat->wl_stats->utilization[j][k]             += statistics[i]->wl_stats->utilization[j][k];
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
 
-                batch_stat->trans_stats->rejection_perc[j][k]       += statistics[i]->trans_stats->rejection_perc[j][k];
-            }
+            final_stat->wl_stats->num_patients_in_queue[i][j] = statistics[num_stats-1]->wl_stats->num_patients_in_queue[i][j];
+            final_stat->wl_stats->num_patient_arrivals[i][j] = statistics[num_stats-1]->wl_stats->num_patient_arrivals[i][j];
+            final_stat->wl_stats->num_patient_deaths[i][j] = statistics[num_stats-1]->wl_stats->num_patient_deaths[i][j];
+            final_stat->wl_stats->num_patient_reneges[i][j] = statistics[num_stats-1]->wl_stats->num_patient_reneges[i][j];
+            final_stat->wl_stats->num_patients_served[i][j] = statistics[num_stats-1]->wl_stats->num_patients_served[i][j];
 
-            batch_stat->wl_stats->avg_interarrival_time[j][k]   /= num_stats;
-            batch_stat->wl_stats->avg_wait[j][k]                /= num_stats;
-            batch_stat->wl_stats->avg_delay[j][k]               /= num_stats;
-            batch_stat->wl_stats->avg_service[j][k]             /= num_stats;
-            batch_stat->wl_stats->avg_in_node[j][k]             /= num_stats;
-            batch_stat->wl_stats->avg_in_queue[j][k]            /= num_stats;
-            batch_stat->wl_stats->utilization[j][k]             /= num_stats;
+            final_stat->trans_stats->completed_transplants[i][j] = statistics[num_stats-1]->trans_stats->completed_transplants[i][j];
+            final_stat->trans_stats->rejected_transplants[i][j] = statistics[num_stats-1]->trans_stats->rejected_transplants[i][j];
 
-            batch_stat->trans_stats->rejection_perc[j][k]       /= num_stats;
+            STDEV(sum, final_stat->wl_stats->std_interarrival_time[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->wl_stats->std_interarrival_time[i][j],num_stats)
+
+            STDEV(sum, final_stat->wl_stats->std_wait[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->wl_stats->std_wait[i][j],num_stats)
+
+            STDEV(sum, final_stat->wl_stats->std_delay[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->wl_stats->std_delay[i][j],num_stats)
+
+            STDEV(sum, final_stat->wl_stats->std_service[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->wl_stats->std_service[i][j],num_stats)
+
+            STDEV(sum, final_stat->wl_stats->std_in_node[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->wl_stats->std_in_node[i][j],num_stats)
+
+            STDEV(sum, final_stat->wl_stats->std_in_queue[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->wl_stats->std_in_queue[i][j],num_stats)
+
+            STDEV(sum, final_stat->wl_stats->utilization[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->wl_stats->utilization[i][j],num_stats)
+
+            final_stat->trans_stats->rejection_perc[i][j] =
+                    (final_stat->trans_stats->rejected_transplants[i][j] == 0) ? 0 :
+                    100 * (final_stat->trans_stats->rejected_transplants[i][j] /
+                    (final_stat->trans_stats->completed_transplants[i][j]+final_stat->trans_stats->rejected_transplants[i][j]));
         }
     }
 
-    for (i = 0; i < num_stats; ++i) {
-        batch_stat->act_stats->avg_in_node      += statistics[i]->act_stats->avg_in_node;
-        batch_stat->trans_stats->avg_in_node    += statistics[i]->act_stats->avg_in_node;
-    }
-    batch_stat->act_stats->avg_in_node      /= num_stats;
-    batch_stat->trans_stats->avg_in_node    /= num_stats;
+    STDEV(sum, final_stat->act_stats->std_in_node, num_stats)
+    CONFIDENCE(u,t,w,final_stat->act_stats->std_in_node,num_stats)
 
-    // compute the confidence interval
+    STDEV(sum, final_stat->act_stats->std_delay, num_stats)
+    CONFIDENCE(u,t,w,final_stat->act_stats->std_delay,num_stats)
 
-    return batch_stat;
+    STDEV(sum, final_stat->trans_stats->std_in_node, num_stats)
+    CONFIDENCE(u,t,w,final_stat->trans_stats->std_in_node,num_stats)
 }
