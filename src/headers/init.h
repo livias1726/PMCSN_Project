@@ -1,6 +1,7 @@
 #ifndef PMCSN_PROJECT_INIT_H
 #define PMCSN_PROJECT_INIT_H
 
+// -------------------------------------------------- Prototypes -----------------------------------------------------
 patient_waiting_list initializeWaitingList();
 organ_bank initializeOrganBank();
 transplant_center initializeTransplantCenter();

@@ -1,5 +1,5 @@
-Blood type,Organs arrived,Organs outdated,Organs in queue,Avg inter-arrival times,Avg wait,Avg delay,Avg service time,Avg # in the node,Avg # in the queue
-0,22065.000000,0.000000,0.000000,0.099252,0.000000
-A,13426.000000,0.000000,0.000000,0.163117,0.000000
-B,4238.000000,0.000000,0.000000,0.516754,0.000000
-AB,1124.000000,0.000000,0.000000,1.948403,0.000042
+Blood type,Organs arrived,Organs outdated,Organs in queue,Avg inter-arrival times,CI inter-arrival times,Avg # in the queue,CI # in the queue
+0,21759.000000,0.000000,0.000000,0.049699,+/-0.000075,0.000052,+/-0.000027
+A,13310.000000,1.000000,0.000000,0.081612,+/-0.000397,0.002550,+/-0.000664
+B,4084.000000,3.000000,0.000000,0.268405,+/-0.001689,0.001601,+/-0.000182
+AB,977.000000,80.000000,0.000000,1.133273,+/-0.012624,0.099457,+/-0.004493

@@ -9,8 +9,7 @@ typedef enum blood_type {
     O,
     A,
     B,
-    AB,
-    nbt
+    AB
 } BLOOD_TYPE;
 
 static const char * const bt_to_str[] = {
@@ -37,11 +36,6 @@ typedef enum loss_reason {
     death,
     renege
 } LOSS_REASON;
-
-typedef enum transplant_outcome{
-    success,
-    reject
-} OUTCOME;
 
 typedef enum donor_type{
     deceased,
@@ -85,7 +79,6 @@ typedef struct organ {
 typedef struct matched {
     organ organ;
     patient patient;
-    struct matched *next;
 } matched;
 
 /** ---------------------------------------------- CENTERS STRUCTS ----------------------------------------------------
@@ -124,7 +117,6 @@ typedef struct patient_waiting_list {
     double inter_arrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];           /* t_{a,p,BT} */
     double num_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double num_completions[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-    //double waiting_times[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 } patient_waiting_list;
 
 // ----------------------------------------- Organ bank --------------------------------------------------------
@@ -156,14 +148,14 @@ typedef struct organ_bank {
  * */
 
 typedef struct in_transplant {
-    matched* matched;           /* list of the organs matched with patients */
+    matched* matched;           /* pair (organ, patient) */
     double serverOffset;           /* offset to the server */
     double completionTime;      /* time of the transplant completion - t_{c,trans} */
     struct in_transplant *next;
 } in_transplant;
 
 typedef struct transplant_center {
-    in_transplant *transplanted_patients;
+    in_transplant *transplanted_patients;   // list of matches
     double total_number;                                /* l_{trans} */
     double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
@@ -186,7 +178,7 @@ typedef struct in_activation {
 typedef struct activation_center {
     in_activation *inactive_patients;   /* list of the inactive patients */
     double total_number;                /* l_{del} */
-    double activated_number;
+    double activated_number[NUM_BLOOD_TYPES];
 } activation_center;
 
 // ---------------------------------------------------- EXTRA --------------------------------------------------------

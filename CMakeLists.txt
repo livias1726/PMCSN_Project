@@ -5,10 +5,6 @@ set(CMAKE_C_STANDARD 11)
 set(SRC_INCLUDE src/utils.c src/handle_events.c lib/rngs.c lib/rvms.c src/headers/init.h src/init.c
         src/random_gen_functions.c src/headers/rgf.h src/sim.c src/headers/sim.h lib/rvgs.c src/stats.c)
 
-if (FINITE_HORIZON)
-    add_definitions(-DFINITE_HORIZON=1)
-endif()
-
 if (IMPROVEMENT)
     add_definitions(-DIMPROVEMENT=1)
 endif()

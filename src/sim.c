@@ -2,8 +2,6 @@
 
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats);
 
-bool checkAtLeastOneCompletion(event_list *events);
-
 double getMinTime(event_list *events) {
     int len = 50;
 
@@ -100,7 +98,6 @@ void setupSystemState(event_list *events) {
         events->organs_loss.number[i] = 0;
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             events->patient_arrival.num_arrivals[i][j] = 0;
-            //events->patient_arrival.waiting_times[i][j] = 0;
             events->patients_loss.number_renege[i][j] = 0;
             events->patients_loss.number_dead[i][j] = 0;
         }
@@ -109,21 +106,64 @@ void setupSystemState(event_list *events) {
     events->transplant_arrival = initializeTransplantCenter();
 }
 
-void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
+/**
+ * Welford's one-pass algorithm to compute the mean and the standard deviation for each statistic
+ * */
+void welford(int iter, stats *stat, stats *batch){
+    double diff;
+
+    // Activation center
+    WELFORD(diff, batch->act_stats->avg_in_node,stat->act_stats->avg_in_node,stat->act_stats->std_in_node,iter)
+    WELFORD(diff, batch->act_stats->avg_delay,stat->act_stats->avg_delay,stat->act_stats->std_delay,iter)
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        // Organ bank
+        WELFORD(diff, batch->ob_stats->avg_interarrival_time[i],stat->ob_stats->avg_interarrival_time[i],stat->ob_stats->std_interarrival_time[i],iter)
+        WELFORD(diff, batch->ob_stats->avg_in_queue[i],stat->ob_stats->avg_in_queue[i],stat->ob_stats->std_in_queue[i],iter)
+
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            // Waiting list
+            WELFORD(diff, batch->wl_stats->avg_interarrival_time[i][j], stat->wl_stats->avg_interarrival_time[i][j],stat->wl_stats->std_interarrival_time[i][j], iter)
+            WELFORD(diff, batch->wl_stats->avg_wait[i][j],stat->wl_stats->avg_wait[i][j],stat->wl_stats->std_wait[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_delay[i][j],stat->wl_stats->avg_delay[i][j],stat->wl_stats->std_delay[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_service[i][j],stat->wl_stats->avg_service[i][j],stat->wl_stats->std_service[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_in_node[i][j],stat->wl_stats->avg_in_node[i][j],stat->wl_stats->std_in_node[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_in_queue[i][j],stat->wl_stats->avg_in_queue[i][j],stat->wl_stats->std_in_queue[i][j],iter)
+            WELFORD(diff, batch->wl_stats->utilization[i][j],stat->wl_stats->utilization[i][j],stat->wl_stats->std_utilization[i][j],iter)
+        }
+    }
+
+    // Transplant center
+    WELFORD(diff, batch->trans_stats->avg_in_node,stat->trans_stats->avg_in_node,stat->trans_stats->std_in_node,iter)
+}
+
+void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
+               int *num_iterations) {
     /* Choose next event selecting minimum time */
     bool init_state = true;
+    double checkpoint;
+    int iteration = 0;
     t->current = 0;
 
     while (t->current < STOP) {
-        t->next = getMinTime(events);		                        //Next event time
-        if (t->current > CHECKPOINT) {
-            updateIntegralsStats(events, t, ti_stats);             // Update integrals stats
-            if (init_state) {
+        t->next = getMinTime(events);		            // Next event time
+        // check initialization phase
+        if (t->current > INIT) {
+            updateIntegralsStats(events, t, ti_stats);  // Update integrals stats
+
+            if (init_state) { // first iteration after initialization phase
                 setupSystemState(events);
                 init_state = false;
+                checkpoint = t->current + BATCH_SIZE;   // set first batch
+            } else if (t->current > checkpoint) {
+                gatherResults(batches[iteration], events);
+                computeTimeAveragedStats2(batches[iteration], ti_stats, t);
+                welford(iteration+1, final_stat, batches[iteration]);
+                iteration++;
+                checkpoint = t->current + BATCH_SIZE;
             }
         }
-        t->current = t->next;                               //Clock update
+        t->current = t->next;                           // Clock update
 
         for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organ_arrival.inter_arrival_time[i]) {
@@ -174,12 +214,16 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats)
 #ifdef AUDIT
     computeTimeAveragedStats(ti_stats);
 #endif
+
+    gatherResults(final_stat, events); // to update the system state at the end of the simulation
+    *num_iterations = iteration;
 }
 
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
     double number_active = events->activation_arrival.total_number;
     double number_trans = events->transplant_arrival.total_number;
     double number_wl, number_bank;
+    double diff = t->next - t->current;
 
     int i,j;
 
@@ -190,23 +234,23 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
 
         /* Update organ bank integrals */
         number_bank = events->organ_arrival.queues[i]->number;
-        ti_stats->area_bank[i]->node += (t->next - t->current) * (number_bank+1);
-        ti_stats->area_bank[i]->queue += (t->next - t->current) * (number_bank);
-        ti_stats->area_bank[i]->service += (t->next - t->current);
+        ti_stats->area_bank[i]->node += diff * (number_bank+1);
+        ti_stats->area_bank[i]->queue += diff * (number_bank);
+        ti_stats->area_bank[i]->service += diff;
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
-            ti_stats->area_waiting_list[i][j]->node += (t->next - t->current) * (number_wl+1);
-            ti_stats->area_waiting_list[i][j]->queue += (t->next - t->current) * (number_wl);
-            ti_stats->area_waiting_list[i][j]->service += (t->next - t->current);
+            ti_stats->area_waiting_list[i][j]->node += diff * (number_wl+1);
+            ti_stats->area_waiting_list[i][j]->queue += diff * (number_wl);
+            ti_stats->area_waiting_list[i][j]->service += diff;
         }
     }
 
     /* Update activation_center center integrals */
-    ti_stats->area_activation->node += (t->next - t->current) * number_active;
-    ti_stats->area_activation->service += (t->next - t->current) * number_active;
+    ti_stats->area_activation->node += diff * number_active;
+    ti_stats->area_activation->service += diff * number_active;
 
     /* Update transplant center integrals */
-    ti_stats->area_transplant->node += (t->next - t->current) * number_trans;
-    ti_stats->area_transplant->service += (t->next - t->current) * number_trans;
+    ti_stats->area_transplant->node += diff * number_trans;
+    ti_stats->area_transplant->service += diff * number_trans;
 }

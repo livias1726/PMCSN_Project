@@ -101,7 +101,7 @@ double getLivingDonorOrganArrival(BLOOD_TYPE bt, double arrival);
 double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival);
 double getOrganRenege(BLOOD_TYPE bt, double arrival);
 double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival);
-double getPatientDeath(PRIORITY pr, BLOOD_TYPE bt, double arrival);
+double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival);
 double getActivationCompletion(double arrival);
 double getTransplantCompletion(double arrival);
 double getRejectionProb();

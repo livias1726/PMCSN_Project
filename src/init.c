@@ -1,142 +1,134 @@
 #include "headers/utils.h"
 
-// Functions to initialize structs where to recover statistics for each center of the model
+/**
+ * Functions to initialize structs during execution
+ */
+
+
 patient_waiting_list initializeWaitingList() {
-    patient_waiting_list waitingList;
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        waitingList.blood_type_queues[i] = malloc(sizeof(patient_queue_blood_type));
-        MALLOC_HANDLER(waitingList.blood_type_queues[i])
+    patient_waiting_list waiting_list = {0};
+    patient_queue_blood_type *bt_queue;
+    patient_queue_priority *pr_queue;
 
-        waitingList.blood_type_queues[i]->bt = i;
-        waitingList.blood_type_queues[i]->number = 0.0;
+    int i,j;
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        waiting_list.blood_type_queues[i] = calloc(1, sizeof(patient_queue_blood_type));
+        MALLOC_HANDLER(waiting_list.blood_type_queues[i])
 
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            waitingList.blood_type_queues[i]->priority_queue[j] = malloc(sizeof(patient_queue_priority));
-            MALLOC_HANDLER(waitingList.blood_type_queues[i]->priority_queue[j])
+        bt_queue = waiting_list.blood_type_queues[i];
+        bt_queue->bt = i;
 
-            waitingList.blood_type_queues[i]->priority_queue[j]->number = 0.0;
-            waitingList.blood_type_queues[i]->priority_queue[j]->priority = j;
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            bt_queue->priority_queue[j] = calloc(1,sizeof(patient_queue_priority));
+            MALLOC_HANDLER(bt_queue->priority_queue[j])
+            pr_queue = bt_queue->priority_queue[j];
 
-            waitingList.blood_type_queues[i]->priority_queue[j]->queue = malloc(sizeof(patient));
-            MALLOC_HANDLER(waitingList.blood_type_queues[i]->priority_queue[j]->queue)
-            waitingList.blood_type_queues[i]->priority_queue[j]->queue->bt = i;
+            pr_queue->priority = j;
 
-            waitingList.blood_type_queues[i]->priority_queue[j]->queue->priority = none;
-            waitingList.blood_type_queues[i]->priority_queue[j]->queue->next = NULL;
-
-            waitingList.num_arrivals[i][j] = 0.0;
-            waitingList.num_completions[i][j] = 0.0;
-            //waitingList.waiting_times[i][j] = 0.0;
+            pr_queue->queue = calloc(1,sizeof(patient));
+            MALLOC_HANDLER(pr_queue->queue)
+            pr_queue->queue->bt = i;
+            pr_queue->queue->priority = none;
         }
     }
-    waitingList.total_number = 0.0;
-    return waitingList;
+
+    return waiting_list;
 }
 
 organ_bank initializeOrganBank() {
-    organ_bank organBank;
+    organ_bank organ_bank = {0};
+
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        organBank.queues[i] = malloc(sizeof(organ_queue));
-        MALLOC_HANDLER(organBank.queues[i])
-        organBank.queues[i]->bt = i;
-        organBank.queues[i]->number = 0.0;
+        organ_bank.queues[i] = calloc(1, sizeof(organ_queue));
+        MALLOC_HANDLER(organ_bank.queues[i])
+        organ_bank.queues[i]->bt = i;
 
-        organBank.queues[i]->queue = malloc(sizeof(organ));
-        MALLOC_HANDLER(organBank.queues[i]->queue)
-        organBank.queues[i]->queue->bt = i;
-        organBank.queues[i]->queue->next = NULL;
-
-        organBank.num_arrivals[i] = 0.0;
+        organ_bank.queues[i]->queue = calloc(1, sizeof(organ));
+        MALLOC_HANDLER(organ_bank.queues[i]->queue)
+        organ_bank.queues[i]->queue->bt = i;
     }
 
-    organBank.total_number = 0.0;
-    return organBank;
+    return organ_bank;
 }
 
 transplant_center initializeTransplantCenter() {
-    transplant_center transplantCenter;
-    transplantCenter.transplanted_patients = malloc(sizeof(in_transplant));
-    MALLOC_HANDLER(transplantCenter.transplanted_patients)
-    transplantCenter.transplanted_patients->next=NULL;
-    transplantCenter.total_number = 0.0;
 
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            transplantCenter.completed_transplants[i][j] = 0.0;
-            transplantCenter.rejected_transplants[i][j] = 0.0;
-        }
-    }
+    transplant_center transplant_center = {0};
 
-    return transplantCenter;
+    transplant_center.transplanted_patients = malloc(sizeof(in_transplant));
+    MALLOC_HANDLER(transplant_center.transplanted_patients)
+    transplant_center.transplanted_patients->next = NULL;
+
+    return transplant_center;
 }
 
 activation_center initializeActivationCenter() {
-    activation_center activationCenter;
-    activationCenter.inactive_patients = malloc(sizeof(in_activation));
-    MALLOC_HANDLER(activationCenter.inactive_patients)
-    // init head
-    activationCenter.inactive_patients->next = NULL;
-    // init patients head
-    activationCenter.inactive_patients->patient = malloc(sizeof(patient));
-    MALLOC_HANDLER(activationCenter.inactive_patients->patient)
-    activationCenter.inactive_patients->patient->next = NULL;
 
-    activationCenter.total_number = 0.0;
-    activationCenter.activated_number = 0.0;
-    return activationCenter;
+    activation_center activation_center = {0};
+
+    activation_center.inactive_patients = malloc(sizeof(in_activation));
+    MALLOC_HANDLER(activation_center.inactive_patients)
+    activation_center.inactive_patients->next = NULL;
+
+    return activation_center;
 }
 
 organs_expired initializeOrgansExpiredQueue() {
-    organs_expired organsExpired;
+    organs_expired organs_expired;
+
     /*
-    organsExpired.queue = malloc(sizeof(organ));
-    MALLOC_HANDLER(organsExpired.queue)
+    organs_expired.queue = malloc(sizeof(organ));
+    MALLOC_HANDLER(organs_expired.queue)
     // head init
-    organsExpired.queue->next = NULL;*/
+    organs_expired.queue->next = NULL;
+     */
 
-    organsExpired.number[O] = 0.0;
-    organsExpired.number[A] = 0.0;
-    organsExpired.number[B] = 0.0;
-    organsExpired.number[AB] = 0.0;
-    organsExpired.reneging_time[O] = -1;
-    organsExpired.reneging_time[A] = -1;
-    organsExpired.reneging_time[B] = -1;
-    organsExpired.reneging_time[AB] = -1;
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        organs_expired.number[i] = 0.0;
+        organs_expired.reneging_time[i] = -1;
+    }
 
-    return organsExpired;
+    return organs_expired;
 }
 
 patients_lost initializePatientLostQueue() {
-    patients_lost patientsLost;
-    /*
-    patientsLost.queue = malloc(sizeof(patient));
-    MALLOC_HANDLER(patientsLost.queue)
-    patientsLost.queue->next = NULL;*/
+    patients_lost patients_lost;
 
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            patientsLost.number_dead[i][j] = 0.0;
-            patientsLost.death_time[i][j] = -1;
-            patientsLost.number_renege[i][j] = 0.0;
-            patientsLost.reneging_time[i][j] = -1;
+    /*
+    patients_lost.queue = malloc(sizeof(patient));
+    MALLOC_HANDLER(patients_lost.queue)
+    patients_lost.queue->next = NULL;
+     */
+
+    int i,j;
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            patients_lost.number_dead[i][j] = 0.0;
+            patients_lost.death_time[i][j] = -1;
+            patients_lost.number_renege[i][j] = 0.0;
+            patients_lost.reneging_time[i][j] = -1;
         }
     }
-    return patientsLost;
+
+    return patients_lost;
 }
 
 matched * newMatched(patient p, organ o){
+
     matched *m = malloc(sizeof(matched));
     MALLOC_HANDLER(m)
+
     m->patient = p;
     m->organ = o;
-    m->next = NULL;
 
     return m;
 }
 
 in_transplant * newTransplant(matched *m, double so){
+
     in_transplant *in_tr = malloc(sizeof(in_transplant));
     MALLOC_HANDLER(in_tr)
+
     in_tr->matched = m;
     in_tr->next = NULL;
     in_tr->serverOffset = so;
@@ -145,8 +137,10 @@ in_transplant * newTransplant(matched *m, double so){
 }
 
 in_activation * newInactive(patient *patient, double server_offset){
+
     in_activation *inactive = malloc(sizeof(in_activation));
     MALLOC_HANDLER(inactive)
+
     inactive->patient = patient;
     inactive->next = NULL;
     inactive->serverOffset = server_offset;
@@ -155,39 +149,41 @@ in_activation * newInactive(patient *patient, double server_offset){
 }
 
 patient *newPatient(BLOOD_TYPE bt, PRIORITY pr) {
+
     patient *new = malloc(sizeof(patient));
     MALLOC_HANDLER(new)
+
     new->priority = pr;
     new->bt = bt;
     new->start_time = -1;
     new->next = NULL;
+
     return new;
 }
 
 organ *newOrgan(BLOOD_TYPE bt, DONOR_TYPE dt) {
+
     organ *new = malloc(sizeof(organ));
     MALLOC_HANDLER(new)
+
     new->bt = bt;
     new->dt = dt;
     new->next = NULL;
+
     return new;
 }
 
 event_list* initializeEventList() {
-    patient_waiting_list waiting_list = initializeWaitingList();
-    activation_center activation_c = initializeActivationCenter();
-    organ_bank bank = initializeOrganBank();
-    transplant_center transplant_c = initializeTransplantCenter();
-    patients_lost patient_loss = initializePatientLostQueue();
-    organs_expired organs_loss = initializeOrgansExpiredQueue();
 
     event_list *events = malloc(sizeof(event_list));
-    events->organ_arrival = bank;
-    events->patient_arrival = waiting_list;
-    events->activation_arrival = activation_c;
-    events->transplant_arrival = transplant_c;
-    events->organs_loss = organs_loss;
-    events->patients_loss = patient_loss;
+    MALLOC_HANDLER(events)
+
+    events->organ_arrival = initializeOrganBank();
+    events->patient_arrival = initializeWaitingList();
+    events->activation_arrival = initializeActivationCenter();
+    events->transplant_arrival = initializeTransplantCenter();
+    events->organs_loss = initializeOrgansExpiredQueue();
+    events->patients_loss = initializePatientLostQueue();
 
     return events;
 }
@@ -197,57 +193,47 @@ sim_time initializeTime() {
     t.current = 0.0;
     t.next = 0.0;
 
-    //loop unroll
-    t.last[0] = 0.0;
-    t.last[1] = 0.0;
-    t.last[2] = 0.0;
-    t.last[3] = 0.0;
-    t.last[4] = 0.0;
+    for (int i = 0; i < NUM_EVENTS; ++i) {
+        t.last[i] = -1;
+    }
 
     return t;
 }
 
 void initializeEventTime(event_list* events) {
-    events->organ_arrival.inter_arrival_time[O] = getDecDonorOrganArrival(O, START);
-    events->organ_arrival.inter_arrival_time[A] = getDecDonorOrganArrival(A, START);
-    events->organ_arrival.inter_arrival_time[B] = getDecDonorOrganArrival(B, START);
-    events->organ_arrival.inter_arrival_time[AB] = getDecDonorOrganArrival(AB, START);
+    int i,j;
 
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+
+        events->organ_arrival.inter_arrival_time[i] = getDecDonorOrganArrival(i, START);
+        events->organs_loss.reneging_time[i] = INFINITY;
+        events->living_donor_completion[i] = INFINITY;
+
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+
             events->patient_arrival.inter_arrival_time[i][j] = getPatientArrival(i, j, START);
-        }
-    }
-
-    events->organs_loss.reneging_time[O] = INFINITY;
-    events->organs_loss.reneging_time[A] = INFINITY;
-    events->organs_loss.reneging_time[B] = INFINITY;
-    events->organs_loss.reneging_time[AB] = INFINITY;
-
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
             events->patients_loss.reneging_time[i][j] = INFINITY;
             events->patients_loss.death_time[i][j] = INFINITY;
+
         }
     }
-
-    events->living_donor_completion[O] = INFINITY;
-    events->living_donor_completion[A] = INFINITY;
-    events->living_donor_completion[B] = INFINITY;
-    events->living_donor_completion[AB] = INFINITY;
 }
 
 stats * initializeStatistics(){
 
     stats *statistics = malloc(sizeof(stats));
     MALLOC_HANDLER(statistics)
-    statistics->wl_stats = malloc(sizeof(waiting_list_stats));
+
+    statistics->wl_stats = calloc(1,sizeof(waiting_list_stats));
     MALLOC_HANDLER(statistics->wl_stats)
-    statistics->ob_stats = malloc(sizeof(organ_bank_stats));
+
+    statistics->ob_stats = calloc(1,sizeof(organ_bank_stats));
     MALLOC_HANDLER(statistics->ob_stats)
-    statistics->trans_stats = malloc(sizeof(transplant_stats));
+
+    statistics->trans_stats = calloc(1,sizeof(transplant_stats));
     MALLOC_HANDLER(statistics->trans_stats)
-    statistics->act_stats = malloc(sizeof(activation_stats));
+
+    statistics->act_stats = calloc(1,sizeof(activation_stats));
     MALLOC_HANDLER(statistics->act_stats)
 
     return statistics;
@@ -258,33 +244,23 @@ time_integrated_stats * initializeTimeStatistics(){
     time_integrated_stats *statistics = malloc(sizeof(time_integrated_stats));
     MALLOC_HANDLER(statistics)
 
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        statistics->area_bank[i] = malloc(sizeof(area));
-        MALLOC_HANDLER(statistics->area_bank[i])
-        statistics->area_bank[i]->node = 0;
-        statistics->area_bank[i]->queue = 0;
-        statistics->area_bank[i]->service = 0;
+    int i,j;
 
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            statistics->area_waiting_list[i][j] = malloc(sizeof(area));
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        statistics->area_bank[i] = calloc(1, sizeof(area));
+        MALLOC_HANDLER(statistics->area_bank[i])
+
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            statistics->area_waiting_list[i][j] = calloc(1, sizeof(area));
             MALLOC_HANDLER(statistics->area_waiting_list[i][j])
-            statistics->area_waiting_list[i][j]->node = 0;
-            statistics->area_waiting_list[i][j]->queue = 0;
-            statistics->area_waiting_list[i][j]->service = 0;
         }
     }
 
-    statistics->area_transplant = malloc(sizeof(area));
+    statistics->area_transplant = calloc(1, sizeof(area));
     MALLOC_HANDLER(statistics->area_transplant)
-    statistics->area_transplant->node = 0;
-    statistics->area_transplant->queue = 0;
-    statistics->area_transplant->service = 0;
 
-    statistics->area_activation = malloc(sizeof(area));
+    statistics->area_activation = calloc(1, sizeof(area));
     MALLOC_HANDLER(statistics->area_activation)
-    statistics->area_activation->node = 0;
-    statistics->area_activation->queue = 0;
-    statistics->area_activation->service = 0;
 
     return statistics;
 }

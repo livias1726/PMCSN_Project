@@ -4,13 +4,7 @@ int main(){
 
     // ---------------------------------------------- Intro --------------------------------------------------------
 
-    char *simulation, *model, *policy;
-
-#ifdef FINITE_HORIZON
-    simulation = "Finite";
-#else
-    simulation = "Infinite";
-#endif
+    char *model, *policy;
 
 #ifdef IMPROVEMENT
     model = "Improved";
@@ -24,11 +18,11 @@ int main(){
     #endif
 #endif
 
-    printf("Simulation: %s horizon - %s model (Policy: ABO %s)\n\n", simulation, model, policy);
+    printf("Simulation: Finite horizon - %s model (Policy: ABO %s)\n\n", model, policy);
 
     // -------------------------------------------- Initialization ---------------------------------------------------
 
-    PlantSeeds(123456789);
+    PlantSeeds(SEED);
 
     event_list *events = initializeEventList();
     initializeEventTime(events);
@@ -36,33 +30,44 @@ int main(){
     sim_time sim_time = initializeTime();
     time_integrated_stats *ti_stats = initializeTimeStatistics();
 
+    // batches for each observation year
+    int i, num_iter = OBSERVATION * (365 / BATCH_SIZE); // measure for each month
+    stats **batches = malloc(num_iter * sizeof(stats*));
+    MALLOC_HANDLER(batches)
+    for (i = 0; i < num_iter; ++i) {
+        batches[i] = initializeStatistics();
+    }
+
+    stats *final_stat = initializeStatistics();
+
     // --------------------------------------------- Simulation ------------------------------------------------------
 
     time_t s, e;
     s = clock();
-#ifdef FINITE_HORIZON
-    finiteSim(events, &sim_time, ti_stats);
-#else
-    /* TODO */
-#endif
+
+    finiteSim(events, &sim_time, ti_stats, batches, final_stat, &num_iter);
+
     e = clock();
     printf("time: %lld\n", (e-s)/CLOCKS_PER_SEC);
-    // ----------------------------------------------------- Results --------------------------------------------------
-    stats *statistics = initializeStatistics();
 
-    gatherResults(statistics, events);
-    computeTimeAveragedStats2(statistics, ti_stats, &sim_time);
+    // ----------------------------------------------------- Results --------------------------------------------------
+
+    computeFinalStatistics(final_stat, batches, num_iter);
 
 #ifdef AUDIT
-    printResults(statistics, stdout);
+    //printResults(batches, stdout); //fixme: to remove?
 #else
-    saveResultsCsv(statistics);
+    saveResultsCsv(final_stat);
 #endif
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
-    cleanUpEventList(events);
+    //cleanUpEventList(events);
     cleanUpTimeStatistics(ti_stats);
-    cleanUpStatistics(statistics);
+    for (i = 0; i < num_iter; ++i) {
+        cleanUpStatistics(batches[i]);
+    }
+    cleanUpStatistics(final_stat);
+
 }
 
