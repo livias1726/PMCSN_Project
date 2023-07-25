@@ -72,6 +72,15 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
     activation_stats* act_stats = stats->act_stats;
     int i,j;
 
+    // Activation
+    curr_area = ti_stats->area_activation;
+    completion = 0;
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        completion += act_stats->num_activated[i];
+    }
+    act_stats->avg_in_node = curr_area->node / curr;
+    act_stats->avg_delay = (completion == 0) ? 0 : curr_area->node / completion;
+
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
         curr_area = ti_stats->area_bank[i];
@@ -100,15 +109,6 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
             wl_stats->utilization[i][j] = curr_area->service / curr;
         }
     }
-
-    // Activation
-    curr_area = ti_stats->area_activation;
-    completion = 0;
-    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        completion += act_stats->num_activated[i];
-    }
-    act_stats->avg_in_node = curr_area->node / curr;
-    act_stats->avg_delay = (completion == 0) ? 0 : curr_area->node / completion;
 
     // Transplant center
     curr_area = ti_stats->area_transplant;
