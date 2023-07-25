@@ -60,10 +60,10 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
         population = ob_stats->num_organ_arrivals[i];
 
         ob_stats->avg_interarrival_time[i] = t->last[organ_arrival] / population;
-        ob_stats->avg_wait[i] = curr_area->node / population; //fixme remove
-        ob_stats->avg_delay[i] = curr_area->queue / population; //fixme remove
-        ob_stats->avg_service[i] = curr_area->service / population; //fixme remove
-        ob_stats->avg_in_node[i] = curr_area->node / curr; //fixme remove
+        //ob_stats->avg_wait[i] = curr_area->node / population; //fixme remove
+        //ob_stats->avg_delay[i] = curr_area->queue / population; //fixme remove
+        //ob_stats->avg_service[i] = curr_area->service / population; //fixme remove
+        //ob_stats->avg_in_node[i] = curr_area->node / curr; //fixme remove
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
         for (int j = 0; j < NUM_PRIORITIES; ++j) {

@@ -10,7 +10,7 @@
 /**
  * Returns a constant array of compatible blood types with the one in input ordered by rarest first
  * */
-static const BLOOD_TYPE* const get_compatibles[] = {
+static BLOOD_TYPE* const get_compatibles[] = {
         [O] = (BLOOD_TYPE[]){AB, B, A, O},
         [A] = (BLOOD_TYPE[]){AB, A},
         [B] = (BLOOD_TYPE[]){AB, B},
@@ -23,5 +23,4 @@ static const int get_num_compatibles[] = {
         [B] = 2,
         [AB] = 1
 };
-
 #endif //PMCSN_PROJECT_ALLOCATION_H

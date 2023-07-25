@@ -2,6 +2,8 @@
 
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats);
 
+bool checkAtLeastOneCompletion(event_list *events);
+
 double getMinTime(event_list *events) {
     int len = 50;
 
@@ -111,8 +113,9 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats)
     /* Choose next event selecting minimum time */
     bool init_state = true;
     t->current = 0;
+
     while (t->current < STOP) {
-        t->next = getMinTime(events);		                //Next event time
+        t->next = getMinTime(events);		                        //Next event time
         if (t->current > CHECKPOINT) {
             updateIntegralsStats(events, t, ti_stats);             // Update integrals stats
             if (init_state) {

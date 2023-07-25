@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <stdbool.h>
 #include <time.h>
@@ -79,5 +80,6 @@ void printResults(stats *statistics, FILE* ch);
 void cleanUpEventList(event_list *events);
 void cleanUpStatistics(stats *statistics);
 void cleanUpTimeStatistics(time_integrated_stats *ti_stats);
+void shuffle(BLOOD_TYPE* , size_t);
 
 #endif //PMCSN_PROJECT_UTILS_H

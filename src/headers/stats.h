@@ -40,10 +40,10 @@ typedef struct organ_bank_stats{
     double num_organ_outdatings[NUM_BLOOD_TYPES];          // number of organ outdatings
     double num_organs_in_queue[NUM_BLOOD_TYPES];           // number of organs still in the bank
     double avg_interarrival_time[NUM_BLOOD_TYPES];
-    double avg_wait[NUM_BLOOD_TYPES];
-    double avg_delay[NUM_BLOOD_TYPES];
-    double avg_service[NUM_BLOOD_TYPES];
-    double avg_in_node[NUM_BLOOD_TYPES];
+    //double avg_wait[NUM_BLOOD_TYPES];
+    //double avg_delay[NUM_BLOOD_TYPES];
+    //double avg_service[NUM_BLOOD_TYPES];
+    //double avg_in_node[NUM_BLOOD_TYPES];
     double avg_in_queue[NUM_BLOOD_TYPES];
 } organ_bank_stats;
 

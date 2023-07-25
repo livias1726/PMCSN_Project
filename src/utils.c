@@ -46,10 +46,9 @@ void saveResultsCsv(stats* statistics){
              "Avg service time,Avg # in the node,Avg # in the queue\n";
     fprintf(f, "%s", header);
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        fprintf(f, "%s,%f,%f,%f,%f,%f,%f,%f,%f,%f\n", bt_to_str[i],
+        fprintf(f, "%s,%f,%f,%f,%f,%f\n", bt_to_str[i],
                 ob_stats->num_organ_arrivals[i], ob_stats->num_organ_outdatings[i], ob_stats->num_organs_in_queue[i],
-                ob_stats->avg_interarrival_time[i], ob_stats->avg_wait[i], ob_stats->avg_delay[i],
-                ob_stats->avg_service[i], ob_stats->avg_in_node[i], ob_stats->avg_in_queue[i]);
+                ob_stats->avg_interarrival_time[i], ob_stats->avg_in_queue[i]);
     }
     fclose(f);
 
@@ -97,10 +96,6 @@ void printResults(stats* statistics, FILE* ch){
     print_by_blood_type("Organs in queue:\n", statistics->ob_stats->num_organs_in_queue, ch)
     fprintf(stdout, "%s", "Organ bank time integrated statistics:\n");
     print_by_blood_type("\tAverage inter-arrival time:\n", statistics->ob_stats->avg_interarrival_time, ch)
-    print_by_blood_type("\tAverage wait:\n", statistics->ob_stats->avg_wait, ch)
-    print_by_blood_type("\tAverage delay:\n", statistics->ob_stats->avg_delay, ch)
-    print_by_blood_type("\tAverage service time:\n", statistics->ob_stats->avg_service, ch)
-    print_by_blood_type("\tAverage # in the node:\n", statistics->ob_stats->avg_in_node, ch)
     print_by_blood_type("\tAverage # in the queue:\n", statistics->ob_stats->avg_in_queue, ch)
 
     // Activation center
@@ -152,4 +147,19 @@ void cleanUpTimeStatistics(time_integrated_stats *ti_stats) {
 
 void cleanUpStatistics(stats *statistics){
 
+}
+
+void shuffle(BLOOD_TYPE *array, size_t n)
+{
+    if (n > 1)
+    {
+        size_t i;
+        for (i = 0; i < n - 1; i++)
+        {
+            size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
+            BLOOD_TYPE t = array[j];
+            array[j] = array[i];
+            array[i] = t;
+        }
+    }
 }

@@ -11,7 +11,7 @@ bool handleMatchingFromPatient(event_list*, sim_time*, BLOOD_TYPE, patient*);
 
 // ------------------------------------------ ORGAN ARRIVAL -----------------------------------------------------------
 
-patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting_list *wl);
+patient *getOldestPatient(const BLOOD_TYPE *pBt, int size, patient_waiting_list *wl);
 
 // Internal usage: adds an organ to the organ queue with a specific blood type
 void addOrganToQueue(event_list *events, sim_time *t, organ_queue **pQueue, organ *o) {
@@ -192,12 +192,16 @@ void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE bloodType,
     /* New patient */
     patient* p = newPatient(bloodType, priority);
 
+#ifdef ACTIVATION
     /* Check if the patient has priority low - it means that has to get activated first! */
     if (priority == low) {
         addToActivationCenter(events, t, p);
     } else {
         addToWaitingList(events, t, p);
     }
+#else
+    addToWaitingList(events, t, p);
+#endif
 }
 
 // -------------------------------------------------- ACTIVATION----------------------------------------------------
@@ -540,7 +544,7 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
         }
     }
 #else
-    const BLOOD_TYPE *comp = get_compatibles[bt];
+    BLOOD_TYPE *comp = get_compatibles[bt];
     const int size = get_num_compatibles[bt];
 
     /*// Serve the rarest blood types first
@@ -557,6 +561,7 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
         }
         ++i;
     }*/
+    shuffle(comp, size);
     p = getOldestPatient(comp, size, wl);
     if (p != NULL) {
         avbPatientBt = p->bt;
@@ -685,7 +690,7 @@ void handleTransplantCompletion(event_list *events, sim_time *t) {
     if (prob < REJECT_P) {
         events->transplant_arrival.rejected_transplants[p->bt][p->priority]++;
 
-        p->priority = critical;
+        //TODO: forse da levare che sballa tutto?  p->priority = critical;
         addToWaitingList(events, t, p);
 #ifdef AUDIT
         printf("Patient with blood type %d was rejected and and sent back to waiting list with priority %d\n", p->bt, p->priority);

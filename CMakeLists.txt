@@ -25,5 +25,9 @@ if (REAL)
     add_definitions(-DREAL=1)
 endif ()
 
+if (ACTIVATION)
+    add_definitions(-DACTIVATION=1)
+endif ()
+
 add_executable(PMCSN_Project src/main.c ${SRC_INCLUDE})
 target_link_libraries(PMCSN_Project m)
