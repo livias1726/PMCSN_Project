@@ -96,6 +96,25 @@
 #define MIN_TRANSPLANT 12.0
 #define MAX_TRANSPLANT 24.0             // 12-24 giorni di trapianto + monitoraggio
 
+// Transplant probability : P(Bt AND Pr)
+#define TRANSPLANT_PROB (double[]){0.0004, 0.4147, 0.0333, 0.0002, 0.3280, 0.0317, 0.0002, 0.1257, 0.0100, 0.00004, 0.0452, 0.0033}
+
+/*
+#define TRANSPLANT_O_CRIT 0.0004
+#define TRANSPLANT_O_NORM 0.4147
+#define TRANSPLANT_O_LOW 0.0333
+#define TRANSPLANT_A_CRIT 0.0002
+#define TRANSPLANT_A_NORM 0.3280
+#define TRANSPLANT_A_LOW 0.0317
+#define TRANSPLANT_B_CRIT 0.0002
+#define TRANSPLANT_B_NORM 0.1257
+#define TRANSPLANT_B_LOW 0.0100
+#define TRANSPLANT_AB_CRIT 0.0000
+#define TRANSPLANT_AB_NORM 0.0452
+#define TRANSPLANT_AB_LOW 0.0033
+ */
+
+
 double getDecDonorOrganArrival(BLOOD_TYPE bt, double arrival);
 double getLivingDonorOrganArrival(BLOOD_TYPE bt, double arrival);
 double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival);
@@ -105,5 +124,6 @@ double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival);
 double getActivationCompletion(double arrival);
 double getTransplantCompletion(double arrival);
 double getRejectionProb();
+double getTransplantProb(BLOOD_TYPE bt, PRIORITY pr);
 
 #endif //PMCSN_PROJECT_RGF_H

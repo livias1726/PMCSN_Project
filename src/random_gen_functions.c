@@ -405,3 +405,12 @@ double getTransplantCompletion(double arrival) {
     arrival += TruncatedNormal(MIN_TRANSPLANT, MAX_TRANSPLANT);
     return arrival;
 }
+
+double getTransplantProb(BLOOD_TYPE bt, PRIORITY pr) {
+    int x = (bt * NUM_PRIORITIES) + pr;
+
+    int stream = 44;
+    SelectStream(stream + x);
+
+    return Random();
+}

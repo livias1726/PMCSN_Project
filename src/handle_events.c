@@ -348,7 +348,15 @@ patient * removePatient(int idx, patient_queue_priority *pp_queue, patient_queue
     patient *current = pp_queue->queue;
     patient *next = current->next;
 
-    REMOVE_MID_NODE(idx, current, prev, next)
+    //REMOVE_MID_NODE(idx, current, prev, next)
+    int i = 0;
+    while (i < idx+1 && next != NULL) {
+        prev = current;
+        current = next;
+        next = current->next;
+        i++;
+    }
+    prev->next = next;
     current->next = NULL;
 
     decrementPatients(pp_queue, bt_queue, wl);
@@ -527,15 +535,18 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
 
     organ_bank *bank = &events->organ_arrival;
 
+    PRIORITY pr;
+    BLOOD_TYPE patient_bt;
+
 #ifdef ABO_ID
-    PRIORITY patient_pr = none;
-    patient_queue_blood_type *pbt_queue = wl->blood_type_queues[bt];
+    patient_bt = bt;
+    patient_queue_blood_type *pbt_queue = wl->blood_type_queues[patient_bt];
 
     if (pbt_queue->number == 0) return false; // no patient in list for a ABO_identical transplant
 
     for (int i = 0; i < NUM_PRIORITIES; ++i) {
         if (pbt_queue->priority_queue[i]->number != 0) {
-            patient_pr = i;
+            pr = i;
             break;
         }
     }
@@ -548,8 +559,18 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
     if (p == NULL) {
         return false;
     }
+
+    pr = p->priority;
+    patient_bt = p->bt;
 #endif
 
+    // check for complete compatibility
+#ifdef TRANSPLANT_FILTER
+    double prob = getTransplantProb(patient_bt, pr);
+    if (prob < TRANSPLANT_PROB[VALUE(patient_bt,pr,NUM_PRIORITIES)]) return false;
+#endif
+
+    // if the organ is not from a living donor (which has a specific receiver), get the oldest one
     if (!living) {
         if (bank->queues[bt]->number > 0) {
             /* Add newly arrived organ into queue, recover the oldest organ and handle matching */
@@ -607,7 +628,13 @@ bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, p
         }
     }
 #endif
-    if (!found) return found;
+    if (!found) return found; // if there is no compatible organ available, return with no match
+
+    // check for transplant probability with the parameters obtained in blood type matching
+#ifdef TRANSPLANT_FILTER
+    double prob = getTransplantProb(bt, priority_placement);
+    if (prob < TRANSPLANT_PROB[VALUE(bt,priority_placement,NUM_PRIORITIES)]) return false;
+#endif
 
     if (priority_placement != pr) {
         // serve new selected patient and add original patient in queue

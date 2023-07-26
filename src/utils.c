@@ -3,7 +3,7 @@
 void saveResultsCsv(stats* statistics){
     FILE *f;
     char path[MAX_LEN];
-    char *model, *policy, *activation, *header;
+    char *model, *policy, *activation, *tp, *header;
     int i,j;
 
 #ifdef REAL
@@ -24,8 +24,14 @@ void saveResultsCsv(stats* statistics){
     activation = "no_activation";
 #endif
 
+#ifdef TRANSPLANT_FILTER
+    tp = "filtered";
+#else
+    tp = "unfiltered";
+#endif
+
     // Patients
-    snprintf(path, MAX_LEN, "output/waiting_list_%s_%s_%s.csv", model, activation, policy);
+    snprintf(path, MAX_LEN, "output/waiting_list_%s_%s_%s_%s.csv", model, activation, tp, policy);
     OPEN_FILE(f, path)
     waiting_list_stats *wl_stats = statistics->wl_stats;
     header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,"
@@ -52,7 +58,7 @@ void saveResultsCsv(stats* statistics){
     fclose(f);
 
     // Organs
-    snprintf(path, MAX_LEN, "output/organs_%s_%s_%s.csv", model, activation, policy);
+    snprintf(path, MAX_LEN, "output/organs_%s_%s_%s_%s.csv", model, activation, tp, policy);
     OPEN_FILE(f, path)
     organ_bank_stats *ob_stats = statistics->ob_stats;
     header = "Blood type,Organs arrived,Organs outdated,Organs in queue,"
@@ -69,7 +75,7 @@ void saveResultsCsv(stats* statistics){
     fclose(f);
 
     // Activation center
-    snprintf(path, MAX_LEN, "output/activation_%s_%s_%s.csv", model, activation, policy);
+    snprintf(path, MAX_LEN, "output/activation_%s_%s_%s_%s.csv", model, activation, tp, policy);
     OPEN_FILE(f, path)
     header = "Blood type,Patients activated,Avg delay,CI delay,Avg # in the node,CI # in the node\n";
     fprintf(f, "%s", header);
@@ -82,7 +88,7 @@ void saveResultsCsv(stats* statistics){
     fclose(f);
 
     // Transplant
-    snprintf(path, MAX_LEN, "output/transplant_%s_%s_%s.csv", model, activation, policy);
+    snprintf(path, MAX_LEN, "output/transplant_%s_%s_%s_%s.csv", model, activation, tp, policy);
     OPEN_FILE(f, path)
     transplant_stats *trans_stats = statistics->trans_stats;
     header = "Blood type,Priority,Successful transplants,Rejected transplants,Rejection percentage,"

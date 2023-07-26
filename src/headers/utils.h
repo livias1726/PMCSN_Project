@@ -54,6 +54,9 @@
         fprintf(stderr, "Cannot open output file");                          \
         exit(EXIT_FAILURE);                                                  \
     }
+
+#define VALUE(i,j,col) ((i * col) + j)
+
 //-----------------------------------------------------------------------------
 
 void saveResultsCsv(stats *statistics);
