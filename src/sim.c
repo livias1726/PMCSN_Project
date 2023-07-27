@@ -211,9 +211,6 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
             }
         }
     }
-#ifdef AUDIT
-    computeTimeAveragedStats(ti_stats);
-#endif
 
     gatherResults(final_stat, events); // to update the system state at the end of the simulation
     *num_iterations = iteration;

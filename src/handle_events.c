@@ -348,14 +348,7 @@ patient * removePatient(int idx, patient_queue_priority *pp_queue, patient_queue
     patient *current = pp_queue->queue;
     patient *next = current->next;
 
-    //REMOVE_MID_NODE(idx, current, prev, next)
-    int i = 0;
-    while (i < idx+1 && next != NULL) {
-        prev = current;
-        current = next;
-        next = current->next;
-        i++;
-    }
+    REMOVE_MID_NODE(idx, current, prev, next)
     prev->next = next;
     current->next = NULL;
 
@@ -433,7 +426,7 @@ void handlePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOO
     if (p != NULL) {
         addPatientToLost(events, t, p, lost, reason);
 #ifdef AUDIT
-        printf("A patient has left the queue with priority %d with reason %d\n", (*pp_queue)->priority, reason);
+        printf("A patient has left the queue with priority %d with reason %d\n", pp_queue->priority, reason);
 #endif
     }
 }
@@ -472,7 +465,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
         events->patients_loss.death_time[p_bt][pr] = INFINITY;
 #ifdef AUDIT
         printf("patient queue with blood type %d and priority %d is now empty - deactivating death and renege event\n",
-               patient->p_bt, patient->priority);
+               patient->bt, patient->priority);
 #endif
     } else {
         events->patients_loss.reneging_time[p_bt][pr] = getPatientRenege(p_bt, pr, t->current);
@@ -483,7 +476,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     if (!bank->queues[o_bt]->organ_available) {
 #ifdef AUDIT
         printf("organ queue with blood type %d is now empty -"
-               "deactivating renege event\n", organ->p_bt);
+               "deactivating renege event\n", organ->bt);
 #endif
         events->organs_loss.reneging_time[o_bt] = INFINITY;
     } else {
@@ -523,8 +516,11 @@ patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting
 
     if (first) return NULL;
 
-    patient *p = removePatient(0,wl->blood_type_queues[bloodType]->priority_queue[priority],
-                               wl->blood_type_queues[bloodType], wl);
+    /*patient *p = removePatient(0,wl->blood_type_queues[bloodType]->priority_queue[priority],
+                               wl->blood_type_queues[bloodType], wl);*/
+
+    patient *p = wl->blood_type_queues[bloodType]->priority_queue[priority]->queue->next;
+
     return p;
 }
 
@@ -569,6 +565,9 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
     double prob = getTransplantProb(patient_bt, pr);
     if (prob < TRANSPLANT_PROB[VALUE(patient_bt,pr,NUM_PRIORITIES)]) return false;
 #endif
+
+    removePatient(0,wl->blood_type_queues[patient_bt]->priority_queue[pr],
+                  wl->blood_type_queues[patient_bt], wl);
 
     // if the organ is not from a living donor (which has a specific receiver), get the oldest one
     if (!living) {
