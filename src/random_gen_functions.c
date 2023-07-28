@@ -57,28 +57,28 @@ double getDecDonorOrganArrival(BLOOD_TYPE bt, double arrival) {
 double getLivingDonorOrganArrival(BLOOD_TYPE bt, double arrival) {
     switch (bt) {
         case O:
-            SelectStream(44);
+            SelectStream(4);
             if (LAMBDA_ORG_LIVING_O == 0)
                 arrival = (double) INFINITY;
             else
                 arrival += Exponential(1 / (LAMBDA_ORG_LIVING_O));
             return arrival;
         case A:
-            SelectStream(45);
+            SelectStream(5);
             if (LAMBDA_ORG_LIVING_A == 0)
                 arrival = (double) INFINITY;
             else
                 arrival += Exponential(1 / (LAMBDA_ORG_LIVING_A));
             return arrival;
         case B:
-            SelectStream(46);
+            SelectStream(6);
             if (LAMBDA_ORG_LIVING_B == 0)
                 arrival = (double) INFINITY;
             else
                 arrival += Exponential(1 / (LAMBDA_ORG_LIVING_B));
             return arrival;
         case AB:
-            SelectStream(47);
+            SelectStream(7);
             if (LAMBDA_ORG_LIVING_AB == 0)
                 arrival = (double) INFINITY;
             else
@@ -93,28 +93,28 @@ double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
     switch (pr) {
         case critical:
             if (bt == O) {
-                SelectStream(4);
+                SelectStream(8);
                 if (LAMBDA_PAT_O_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_O_CRIT));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(5);
+                SelectStream(9);
                 if (LAMBDA_PAT_A_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_A_CRIT));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(6);
+                SelectStream(10);
                 if (LAMBDA_PAT_B_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_B_CRIT));
                 return arrival;
             } else {
-                SelectStream(7);
+                SelectStream(11);
                 if (LAMBDA_PAT_AB_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
@@ -123,28 +123,28 @@ double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
             }
         case normal:
             if (bt == O) {
-                SelectStream(8);
+                SelectStream(12);
                 if (LAMBDA_PAT_O_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_O_NORM));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(9);
+                SelectStream(13);
                 if (LAMBDA_PAT_A_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_A_NORM));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(10);
+                SelectStream(14);
                 if (LAMBDA_PAT_B_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_B_NORM));
                 return arrival;
             } else {
-                SelectStream(11);
+                SelectStream(15);
                 if (LAMBDA_PAT_AB_NORM == 0)
                     arrival = (double) INFINITY;
                 else
@@ -153,28 +153,28 @@ double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
             }
         case low:
             if (bt == O) {
-                SelectStream(12);
+                SelectStream(16);
                 if (LAMBDA_PAT_O_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_O_LOW));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(13);
+                SelectStream(17);
                 if (LAMBDA_PAT_A_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_A_LOW));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(14);
+                SelectStream(18);
                 if (LAMBDA_PAT_B_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(LAMBDA_PAT_B_LOW));
                 return arrival;
             } else {
-                SelectStream(15);
+                SelectStream(19);
                 if (LAMBDA_PAT_AB_LOW == 0)
                     arrival = (double) INFINITY;
                 else
@@ -187,7 +187,7 @@ double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
 }
 
 double getOrganRenege(BLOOD_TYPE bt, double arrival) {
-    SelectStream(16);
+    SelectStream(20);
     if (MU_ORG == 0)
         arrival = (double) INFINITY;
     else
@@ -199,28 +199,28 @@ double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
     switch (pr) {
         case critical:
             if (bt == O) {
-                SelectStream(17);
+                SelectStream(21);
                 if (MU_RENEGE_PAT_O_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_O_CRIT));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(18);
+                SelectStream(22);
                 if (MU_RENEGE_PAT_A_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_A_CRIT));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(19);
+                SelectStream(23);
                 if (MU_RENEGE_PAT_B_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_B_CRIT));
                 return arrival;
             } else {
-                SelectStream(20);
+                SelectStream(24);
                 if (MU_RENEGE_PAT_AB_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
@@ -229,28 +229,28 @@ double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
             }
         case normal:
             if (bt == O) {
-                SelectStream(21);
+                SelectStream(25);
                 if (MU_RENEGE_PAT_O_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_O_NORM));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(22);
+                SelectStream(26);
                 if (MU_RENEGE_PAT_A_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_A_NORM));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(23);
+                SelectStream(27);
                 if (MU_RENEGE_PAT_B_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_B_NORM));
                 return arrival;
             } else {
-                SelectStream(24);
+                SelectStream(28);
                 if (MU_RENEGE_PAT_AB_NORM == 0)
                     arrival = (double) INFINITY;
                 else
@@ -259,28 +259,28 @@ double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
             }
         case low:
             if (bt == O) {
-                SelectStream(25);
+                SelectStream(29);
                 if (MU_RENEGE_PAT_O_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_O_LOW));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(26);
+                SelectStream(30);
                 if (MU_RENEGE_PAT_A_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_A_LOW));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(27);
+                SelectStream(31);
                 if (MU_RENEGE_PAT_B_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_RENEGE_PAT_B_LOW));
                 return arrival;
             } else {
-                SelectStream(28);
+                SelectStream(32);
                 if (MU_RENEGE_PAT_AB_LOW == 0)
                     arrival = (double) INFINITY;
                 else
@@ -296,28 +296,28 @@ double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
     switch (pr) {
         case critical:
             if (bt == O) {
-                SelectStream(29);
+                SelectStream(33);
                 if (MU_DEATH_PAT_O_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_O_CRIT));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(30);
+                SelectStream(34);
                 if (MU_DEATH_PAT_A_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_A_CRIT));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(31);
+                SelectStream(35);
                 if (MU_DEATH_PAT_B_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_B_CRIT));
                 return arrival;
             } else {
-                SelectStream(32);
+                SelectStream(36);
                 if (MU_DEATH_PAT_AB_CRIT == 0)
                     arrival = (double) INFINITY;
                 else
@@ -326,28 +326,28 @@ double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
             }
         case normal:
             if (bt == O) {
-                SelectStream(33);
+                SelectStream(37);
                 if (MU_DEATH_PAT_O_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_O_NORM));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(34);
+                SelectStream(38);
                 if (MU_DEATH_PAT_A_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_A_NORM));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(35);
+                SelectStream(39);
                 if (MU_DEATH_PAT_B_NORM == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_B_NORM));
                 return arrival;
             } else {
-                SelectStream(36);
+                SelectStream(40);
                 if (MU_DEATH_PAT_AB_NORM == 0)
                     arrival = (double) INFINITY;
                 else
@@ -356,28 +356,28 @@ double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
             }
         case low:
             if (bt == O) {
-                SelectStream(37);
+                SelectStream(41);
                 if (MU_DEATH_PAT_O_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_O_LOW));
                 return arrival;
             } else if (bt == A) {
-                SelectStream(38);
+                SelectStream(42);
                 if (MU_DEATH_PAT_A_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_A_LOW));
                 return arrival;
             } else if (bt == B) {
-                SelectStream(39);
+                SelectStream(43);
                 if (MU_DEATH_PAT_B_LOW == 0)
                     arrival = (double) INFINITY;
                 else
                     arrival += Exponential(1/(MU_DEATH_PAT_B_LOW));
                 return arrival;
             } else {
-                SelectStream(40);
+                SelectStream(44);
                 if (MU_DEATH_PAT_AB_LOW == 0)
                     arrival = (double) INFINITY;
                 else
@@ -390,18 +390,18 @@ double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival) {
 }
 
 double getRejectionProb() {
-    SelectStream(41);
+    SelectStream(45);
     return Random();
 }
 
 double getActivationCompletion(double arrival) {
-    SelectStream(42);
+    SelectStream(46);
     arrival += TruncatedNormal(MIN_ACTIVATION, MAX_ACTIVATION);
     return arrival;
 }
 
 double getTransplantCompletion(double arrival) {
-    SelectStream(43);
+    SelectStream(47);
     arrival += TruncatedNormal(MIN_TRANSPLANT, MAX_TRANSPLANT);
     return arrival;
 }
@@ -409,7 +409,7 @@ double getTransplantCompletion(double arrival) {
 double getTransplantProb(BLOOD_TYPE bt, PRIORITY pr) {
     int x = (bt * NUM_PRIORITIES) + pr;
 
-    int stream = 44;
+    int stream = 48;
     SelectStream(stream + x);
 
     return Random();
