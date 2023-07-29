@@ -32,7 +32,6 @@ typedef struct area {
 typedef struct time_integrated_stats{
     area* area_waiting_list[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     area* area_bank[NUM_BLOOD_TYPES];
-    area* area_activation;
     area* area_transplant;
 } time_integrated_stats;
 
@@ -76,19 +75,10 @@ typedef struct organ_bank_stats{
 typedef struct transplant_stats{
     double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-
     double rejection_perc[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_in_node;
     double std_in_node;
 } transplant_stats;
-
-typedef struct activation_stats{
-    double num_activated[NUM_BLOOD_TYPES];
-    double avg_in_node;
-    double avg_delay;
-    double std_in_node;
-    double std_delay;
-} activation_stats;
 
 /**
  * Report of the system statistics given an allocation policy
@@ -97,13 +87,11 @@ typedef struct statistics{
     waiting_list_stats* wl_stats;
     organ_bank_stats* ob_stats;
     transplant_stats* trans_stats;
-    activation_stats* act_stats;
 } stats;
 
 // ------------------- PROTOTYPES ----------------
 void gatherResults(stats *statistics, event_list *events);
-void computeTimeAveragedStats(time_integrated_stats *stats);
-void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
+void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
 void computeFinalStatistics(stats *final_stat, stats **batches, int num_stats);
 
 #endif //PMCSN_PROJECT_STATS_H

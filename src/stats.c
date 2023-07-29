@@ -2,32 +2,13 @@
 
 /**
  * This file contains the implementation for every procedure that handles statistics.
- *
- * The statistics managed by the simulations are divided by center, according to its functions:
- *      - WAITING LISTS
- *          Avg inter-arrival times,
- *          Avg wait,
- *          Avg delay,
- *          Avg service time,
- *          Avg # in the node,
- *          Avg # in the queue,
- *          Utilization
- *      - ORGAN BANK
- *          Avg inter-arrival times,
- *          Avg # in the queue
- *      - ACTIVATION
- *          Avg delay,
- *          Avg # in the node
- *      - TRANSPLANT
- *          Rejection percentage,
- *          Avg # in the node
  * */
-
+/*
 #define PRINT_TI_STATS(area, time) \
     printf("\t\taverage # in the node...%f\n", area->node/time); \
     printf("\t\taverage # in the queue...%f\n", area->queue/time); \
     printf("\t\tutilization...%f\n", area->service/time);
-/*
+
 void computeTimeAveragedStats(time_integrated_stats *stats) {
     double curr = stats->current_time;
     area *curr_area;
@@ -61,7 +42,7 @@ void computeTimeAveragedStats(time_integrated_stats *stats) {
 }
  */
 
-void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
+void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
     double curr = t->current;
     double population, completion;
     area * curr_area;
@@ -69,17 +50,7 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
     waiting_list_stats* wl_stats = stats->wl_stats;
     organ_bank_stats* ob_stats = stats->ob_stats;
     transplant_stats* trans_stats = stats->trans_stats;
-    activation_stats* act_stats = stats->act_stats;
     int i,j;
-
-    // Activation
-    curr_area = ti_stats->area_activation;
-    completion = 0;
-    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        completion += act_stats->num_activated[i];
-    }
-    act_stats->avg_in_node = curr_area->node / curr;
-    act_stats->avg_delay = (completion == 0) ? 0 : curr_area->node / completion;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
@@ -90,7 +61,6 @@ void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, si
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
-            // FIXME: il tempo di attesa dei low deve essere sommato al tempo di attesa in attivazione!!!
             // Waiting list
             curr_area = ti_stats->area_waiting_list[i][j];
             population = wl_stats->num_patient_arrivals[i][j];
@@ -122,7 +92,6 @@ void gatherResults(stats* statistics, event_list *events){
     patient_waiting_list waiting_list = events->patient_arrival;
     organ_bank bank = events->organ_arrival;
     transplant_center transplant_c = events->transplant_arrival;
-    activation_center activation = events->activation_arrival;
     organs_expired organs_expired = events->organs_loss;
     patients_lost patients_lost = events->patients_loss;
 
@@ -141,8 +110,6 @@ void gatherResults(stats* statistics, event_list *events){
             statistics->trans_stats->completed_transplants[i][j] = transplant_c.completed_transplants[i][j];
             statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
         }
-
-        statistics->act_stats->num_activated[i] = activation.activated_number[i];
     }
 }
 
@@ -206,12 +173,6 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
                     (final_stat->trans_stats->completed_transplants[i][j]+final_stat->trans_stats->rejected_transplants[i][j]));
         }
     }
-
-    STDEV(sum, final_stat->act_stats->std_in_node, num_stats)
-    CONFIDENCE(u,t,w,final_stat->act_stats->std_in_node,num_stats)
-
-    STDEV(sum, final_stat->act_stats->std_delay, num_stats)
-    CONFIDENCE(u,t,w,final_stat->act_stats->std_delay,num_stats)
 
     STDEV(sum, final_stat->trans_stats->std_in_node, num_stats)
     CONFIDENCE(u,t,w,final_stat->trans_stats->std_in_node,num_stats)

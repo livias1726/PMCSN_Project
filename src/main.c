@@ -31,7 +31,7 @@ int main(){
     time_integrated_stats *ti_stats = initializeTimeStatistics();
 
     // batches for each observation year
-    int i, num_iter = OBSERVATION * (365 / BATCH_SIZE); // measure for each month
+    int i, num_iter = (OBSERVATION * (365 / BATCH_SIZE)) + 1; // measure for each month
     stats **batches = malloc(num_iter * sizeof(stats*));
     MALLOC_HANDLER(batches)
     for (i = 0; i < num_iter; ++i) {
@@ -54,15 +54,11 @@ int main(){
 
     computeFinalStatistics(final_stat, batches, num_iter);
 
-#ifdef AUDIT
-    //printResults(batches, stdout); //fixme: to remove?
-#else
     saveResultsCsv(final_stat);
-#endif
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
-    //cleanUpEventList(events);
+    //cleanUpEventList(events); // todo
     cleanUpTimeStatistics(ti_stats);
     for (i = 0; i < num_iter; ++i) {
         cleanUpStatistics(batches[i]);
