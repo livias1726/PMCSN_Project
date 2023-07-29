@@ -100,8 +100,8 @@ double getTransplantCompletion(double arrival) {
     return arrival;
 }
 
-double getTransplantProb(BLOOD_TYPE bt, PRIORITY pr) {
-    int x = VALUE(bt, pr, NUM_PRIORITIES), stream = 47;
+double getTransplantProb(BLOOD_TYPE bt) {
+    int x = bt, stream = 47;
 
     SelectStream(stream + x);
 

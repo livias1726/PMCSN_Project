@@ -139,11 +139,6 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
         }
         t->current = t->next;                           // Clock update
 
-        if (t->current == events->transplant_arrival.min_transplant) {
-            handleTransplantCompletion(events, t);
-            continue;
-        }
-
         for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organ_arrival.inter_arrival_time[i]) {
                 handleOrganArrival(events, t, i, deceased);
@@ -180,6 +175,9 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
                 break;
             } else if (t->current == events->patients_loss.death_time[i][inactive]) {
                 handlePatientLoss(events, t, death, i, inactive);
+                break;
+            } else if (t->current == events->transplant_arrival.min_transplant) {
+                handleTransplantCompletion(events, t);
                 break;
             }
         }

@@ -11,7 +11,7 @@ bool handleMatchingFromPatient(event_list*, sim_time*, BLOOD_TYPE, patient*);
 
 // ------------------------------------------ ORGAN ARRIVAL -----------------------------------------------------------
 
-patient *getOldestPatient(const BLOOD_TYPE *pBt, int size, patient_waiting_list *wl);
+patient *getOldestPatient(const BLOOD_TYPE *bt_list, int size, patient_waiting_list *wl);
 
 // Internal usage: adds an organ to the organ queue with a specific blood type
 void addOrganToQueue(event_list *events, sim_time *t, organ_queue *o_queue, organ *o) {
@@ -395,29 +395,30 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
     }
 }
 
-patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting_list *wl) {
+patient *getOldestPatient(const BLOOD_TYPE *bt_list, const int size, patient_waiting_list *wl) {
     PRIORITY priority;
-    BLOOD_TYPE bloodType;
+    BLOOD_TYPE bt, b;
     double oldest_st, curr_val;
     bool first = true;
+    patient_queue_priority *pp_queue;
 
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            BLOOD_TYPE b = pBt[i];
-            if ((wl->blood_type_queues[b]->priority_queue[j]->number != 0)) {
-
+            b = bt_list[i];
+            pp_queue = wl->blood_type_queues[b]->priority_queue[j];
+            if (pp_queue->number != 0) {
                 if (first) {
-                    oldest_st = wl->blood_type_queues[b]->priority_queue[j]->queue->next->start_time;
+                    oldest_st = pp_queue->queue->next->start_time;
                     priority = j;
-                    bloodType = b;
+                    bt = b;
                     first = false;
                     break;
                 } else {
-                    curr_val = wl->blood_type_queues[b]->priority_queue[j]->queue->next->start_time;
+                    curr_val = pp_queue->queue->next->start_time;
                     if (curr_val < oldest_st) {
                         oldest_st = curr_val;
                         priority = j;
-                        bloodType = b;
+                        bt = b;
                     }
                     break;
                 }
@@ -427,7 +428,7 @@ patient *getOldestPatient(const BLOOD_TYPE *pBt, const int size, patient_waiting
 
     if (first) return NULL;
 
-    patient *p = wl->blood_type_queues[bloodType]->priority_queue[priority]->queue->next;
+    patient *p = wl->blood_type_queues[bt]->priority_queue[priority]->queue->next;
 
     return p;
 }
@@ -458,6 +459,9 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
 
     pbt_queue = wl->blood_type_queues[patient_bt];
     pp_queue = pbt_queue->priority_queue[pr];
+
+    /* get first patient */
+    p = removePatient(0, pp_queue,pbt_queue, wl);
 #else
     BLOOD_TYPE *comp = get_compatibles[bt];
     const int size = get_num_compatibles[bt];
@@ -471,16 +475,11 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, BLOOD_TYPE bt, org
 
     pbt_queue = wl->blood_type_queues[patient_bt];
     pp_queue = pbt_queue->priority_queue[pr];
-#endif
 
     // check for complete compatibility
-    double prob = getTransplantProb(patient_bt, pr);
-    if (prob < TRANSPLANT_PROB[VALUE(patient_bt,pr,NUM_PRIORITIES)]) return false;
+    double prob = getTransplantProb(patient_bt);
+    if (prob < TRANSPLANT_PROB[patient_bt]) return false;
 
-#ifdef ABO_ID
-    /* get first patient */
-    p = removePatient(0, pp_queue,pbt_queue, wl);
-#else
     removePatient(0, pp_queue,pbt_queue, wl);
 #endif
 
@@ -536,12 +535,12 @@ bool handleMatchingFromPatient(event_list *events, sim_time *t, BLOOD_TYPE bt, p
             break;
         }
     }
-#endif
-    if (!found) return found; // if there is no compatible organ available, return with no match
 
     // check for transplant probability with the parameters obtained in blood type matching
-    double prob = getTransplantProb(bt, priority_placement);
-    if (prob < TRANSPLANT_PROB[VALUE(bt,priority_placement,NUM_PRIORITIES)]) return false;
+    double prob = getTransplantProb(bt);
+    if (prob < TRANSPLANT_PROB[bt]) found = false;
+#endif
+    if (!found) return found; // if there is no compatible organ available, return with no match
 
     if (priority_placement != pr) {
         // serve new selected patient and add original patient in queue
@@ -599,7 +598,6 @@ void handleTransplantCompletion(event_list *events, sim_time *t) {
 
     if (prob < REJECT_P) {
         events->transplant_arrival.rejected_transplants[bt][pr]++;
-        //TODO: forse da levare che sballa tutto? p->priority = critical;
         addToWaitingList(events, t, p);
 #ifdef AUDIT
         printf("Patient with blood type %s was rejected and and sent back to waiting list with priority %s\n",
