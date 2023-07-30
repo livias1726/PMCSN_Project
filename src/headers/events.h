@@ -35,7 +35,7 @@ typedef struct event_list {
 
 // ARRIVALS
 void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bt, DONOR_TYPE dt);
-void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE, PRIORITY);
+void handlePatientArrival(event_list *events, sim_time *t, BLOOD_TYPE bt, PRIORITY pr);
 
 // RENEGES
 void handleOrganRenege(event_list *events, sim_time *t, BLOOD_TYPE bt);

@@ -103,7 +103,6 @@ typedef struct patient_queue_priority {
 typedef struct patient_queue_blood_type {
     BLOOD_TYPE bt;
     patient_queue_priority *priority_queue[NUM_PRIORITIES];             /* head of the patient priority queues */
-    bool patient_available;                                             /* true = available/not empty, false = unavailable/empty - x_{p,BT} */
     double number;                                                      /* l_{p,BT} */
 } patient_queue_blood_type;
 
