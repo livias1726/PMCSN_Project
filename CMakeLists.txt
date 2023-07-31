@@ -1,5 +1,5 @@
-project(PMCSN_Project)
 cmake_minimum_required(VERSION 3.16)
+project(PMCSN_Project)
 
 set(CMAKE_C_STANDARD 11)
 set(SRC_INCLUDE src/utils.c src/handle_events.c lib/rngs.c lib/rvms.c src/headers/init.h src/init.c
@@ -19,14 +19,6 @@ endif ()
 
 if (REAL)
     add_definitions(-DREAL=1)
-endif ()
-
-if (ACTIVATION)
-    add_definitions(-DACTIVATION=1)
-endif ()
-
-if (TRANSPLANT_FILTER)
-    add_definitions(-DTRANSPLANT_FILTER=1)
 endif ()
 
 add_executable(PMCSN_Project src/main.c ${SRC_INCLUDE})

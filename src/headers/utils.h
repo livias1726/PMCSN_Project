@@ -27,21 +27,21 @@
         exit(-1);         \
     }
 
-#define GET_LAST_NODE(head, prev) \
-    prev = head;                  \
-    while(prev->next != NULL) prev = prev->next;
+#define POP_NODE(head, first) \
+    if (first != NULL) {            \
+        head->next = first->next;   \
+        first->next = NULL;         \
+    }
 
-#define REMOVE_MID_NODE(idx, curr, prev, next) \
-    do{                                        \
-        int i = 0;                             \
-        while (i < idx+1 && next != NULL) {    \
-            prev = curr;                       \
-            curr = next;                       \
-            next = curr->next;                 \
-            i++;                               \
-        }                                      \
-        prev->next = next;                     \
-    }while(0);
+#define REMOVE_MID_NODE(idx, prev, curr, next) \
+    int i = 0;                           \
+    while (i++ < idx && next != NULL) {  \
+        prev = curr;                     \
+        curr = next;                     \
+        next = curr->next;               \
+    }                                    \
+    prev->next = next;                   \
+    curr->next = NULL;
 
 #define GET_SMALLEST(values, len, res) \
     res = values[0];                   \
@@ -57,6 +57,8 @@
 
 #define VALUE(i,j,col) ((i * col) + j)
 
+static long long random_seed = 0UL;
+
 //-----------------------------------------------------------------------------
 
 void saveResultsCsv(stats *statistics);
@@ -64,5 +66,7 @@ void cleanUpEventList(event_list *events);
 void cleanUpStatistics(stats *statistics);
 void cleanUpTimeStatistics(time_integrated_stats *ti_stats);
 void shuffle(BLOOD_TYPE* , size_t);
+void new_srand(long long seed);
+int new_rand(int module);
 
 #endif //PMCSN_PROJECT_UTILS_H
