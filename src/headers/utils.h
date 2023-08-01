@@ -7,17 +7,8 @@
 #include <math.h>
 #include <stdbool.h>
 #include <time.h>
-#include "model.h"
+
 #include "stats.h"
-#include "allocation.h"
-#include "events.h"
-#include "sim.h"
-#include "init.h"
-#include "rgf.h"
-#include "stats.h"
-#include "../../lib/rngs.h"
-#include "../../lib/rvms.h"
-#include "../../lib/rvgs.h"
 
 #define MAX_LEN 1024
 
@@ -27,27 +18,21 @@
         exit(-1);         \
     }
 
-#define GET_LAST_NODE(head, prev) \
-    prev = head;                  \
-    while(prev->next != NULL) prev = prev->next;
-
-#define REMOVE_MID_NODE(idx, curr, prev, next) \
-    do{                                        \
-        int i = 0;                             \
-        while (i < idx+1 && next != NULL) {    \
-            prev = curr;                       \
-            curr = next;                       \
-            next = curr->next;                 \
-            i++;                               \
-        }                                      \
-        prev->next = next;                     \
-    }while(0);
-
-#define GET_SMALLEST(values, len, res) \
-    res = values[0];                   \
-    for(int i = 1; i < len; ++i)  {    \
-        res = (values[i] < res) ? values[i] : res; \
+#define POP_NODE(head, first) \
+    if (first != NULL) {            \
+        head->next = first->next;   \
+        first->next = NULL;         \
     }
+
+#define REMOVE_MID_NODE(idx, prev, curr, next) \
+    int i = 0;                           \
+    while (i++ < idx && next != NULL) {  \
+        prev = curr;                     \
+        curr = next;                     \
+        next = curr->next;               \
+    }                                    \
+    prev->next = next;                   \
+    curr->next = NULL;
 
 #define OPEN_FILE(f, path) \
     if((f = fopen(path, "w")) == NULL) {                                     \
@@ -57,12 +42,29 @@
 
 #define VALUE(i,j,col) ((i * col) + j)
 
+#define GET_MIN(list, size, min) \
+    min = list[0];               \
+    for(int z = 1; z < size; ++z)  { \
+        if (list[z] < min) min = list[z]; \
+    }
+
+#define APPEND_NEW_NODE(head, tail, last, node) \
+    if (last == NULL) {                         \
+        head->next = node;                      \
+    } else {                                    \
+        last->next = node;                      \
+    }                                           \
+    tail = node;
+
+static long long random_seed = 0UL;
+
 //-----------------------------------------------------------------------------
 
 void saveResultsCsv(stats *statistics);
 void cleanUpEventList(event_list *events);
 void cleanUpStatistics(stats *statistics);
 void cleanUpTimeStatistics(time_integrated_stats *ti_stats);
-void shuffle(BLOOD_TYPE* , size_t);
+void new_srand(long long seed);
+int new_rand(int module);
 
 #endif //PMCSN_PROJECT_UTILS_H

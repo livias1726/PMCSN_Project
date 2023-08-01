@@ -1,8 +1,9 @@
 #ifndef PMCSN_PROJECT_MODEL_H
 #define PMCSN_PROJECT_MODEL_H
 
-#define NUM_BLOOD_TYPES 4
-#define NUM_PRIORITIES 3
+#define NUM_BLOOD_TYPES 4       /* O, A, B, AB*/
+#define NUM_PRIORITIES 2        /* critical, normal */
+#define NUM_PATIENT_TYPES 3     /* active_critical, active_normal, inactive */
 
 // ---------------------------------------- MODEL ENUMS ---------------------------------------------------
 typedef enum blood_type {
@@ -22,14 +23,12 @@ static const char * const bt_to_str[] = {
 typedef enum priority {
     critical=0,
     normal,
-    low,
     none
 } PRIORITY;
 
 static const char * const pr_to_str[] = {
     [critical] = "critical",
-    [normal] = "normal",
-    [low] = "low",
+    [normal] = "normal"
 };
 
 typedef enum loss_reason {
@@ -41,6 +40,11 @@ typedef enum donor_type{
     deceased,
     living
 } DONOR_TYPE;
+
+typedef enum patient_type {
+    active,
+    inactive
+} PATIENT_TYPE;
 
 /** --------------------------------------------------- MODEL USERS ---------------------------------------------------
  *  The system must handle 2 types of 'user':
@@ -59,6 +63,7 @@ typedef enum donor_type{
  * */
 typedef struct patient {
     BLOOD_TYPE bt;          /* patient blood type */
+    PATIENT_TYPE type;
     PRIORITY priority;      /* needed to order patients in list based on the priority */
     double start_time;      /* time of waiting list addition */
     struct patient *next;   /* pointer to the next patient in queue */
@@ -94,7 +99,8 @@ typedef struct matched {
 /** This struct models a queue of patients with the same blood type and priority */
 typedef struct patient_queue_priority {
     PRIORITY priority;
-    patient *queue;
+    patient *queue;     // head
+    patient *last;      // tail
     double number;
 } patient_queue_priority;
 
@@ -102,7 +108,6 @@ typedef struct patient_queue_priority {
 typedef struct patient_queue_blood_type {
     BLOOD_TYPE bt;
     patient_queue_priority *priority_queue[NUM_PRIORITIES];             /* head of the patient priority queues */
-    bool patient_available;                                             /* true = available/not empty, false = unavailable/empty - x_{p,BT} */
     double number;                                                      /* l_{p,BT} */
 } patient_queue_blood_type;
 
@@ -123,6 +128,7 @@ typedef struct patient_waiting_list {
 typedef struct organ_queue {
     BLOOD_TYPE bt;
     organ* queue;               /* head of the organ queue */
+    organ* last_organ;
     bool organ_available;       /* true = available, false = unavailable - x_{o,BT} - SPECIFICATION */
     double number;              /* l_{o,BT} */
 } organ_queue;
@@ -139,8 +145,6 @@ typedef struct organ_bank {
     double num_arrivals[NUM_BLOOD_TYPES];
 } organ_bank;
 
-// ----------------------------------------- Transplant --------------------------------------------------------
-
 /**
  * TRANSPLANT CENTER
  *      This struct models the transplant center, meaning the list of pairs (patient,organ) subjected to a transplant
@@ -149,16 +153,17 @@ typedef struct organ_bank {
 
 typedef struct in_transplant {
     matched* matched;           /* pair (organ, patient) */
-    double serverOffset;           /* offset to the server */
-    double completionTime;      /* time of the transplant completion - t_{c,trans} */
+    double completion_time;      /* time of the transplant completion - t_{c,trans} */
     struct in_transplant *next;
 } in_transplant;
 
 typedef struct transplant_center {
     in_transplant *transplanted_patients;   // list of matches
+    in_transplant *last_node;           // reference to the last node in the queue to obtain fast append operations
     double total_number;                                /* l_{trans} */
-    double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-    double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double min_transplant;
+    double num_completions[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double num_rejections[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 } transplant_center;
 
 /**
@@ -170,30 +175,39 @@ typedef struct transplant_center {
 
 typedef struct in_activation {
     patient* patient;
-    double serverOffset;           /* offset to the server */
-    double completionTime;      /* time of activation_center completion - t_{c,del} */
+    double completion_time;      /* time of activation_center completion - t_{c,del} */
     struct in_activation *next;
 } in_activation;
 
+typedef struct activation_queue {
+    BLOOD_TYPE bt;
+    in_activation *head;   /* list of the inactive patients */
+    in_activation *tail;
+    double number;
+    double min_activation;      /* time of activation_center completion - t_{c,del} */
+    struct in_activation *next;
+} activation_queue;
+
 typedef struct activation_center {
-    in_activation *inactive_patients;   /* list of the inactive patients */
-    double total_number;                /* l_{del} */
-    double activated_number[NUM_BLOOD_TYPES];
+    activation_queue *inactive_patients[NUM_BLOOD_TYPES];   /* list of the inactive patients */
+    double total_number;
+    double min_activation;
+    double inter_arrival_time[NUM_BLOOD_TYPES];
+    double num_arrivals;
+    double num_completions;
 } activation_center;
 
 // ---------------------------------------------------- EXTRA --------------------------------------------------------
 /* loss queues */
 typedef struct patient_lost_queue {
-    //patient *queue; // TODO: may be useless?
-    double number_dead[NUM_BLOOD_TYPES][NUM_PRIORITIES];        /* number dead type bt and priority pr - l_{d,p,BT} */
-    double number_renege[NUM_BLOOD_TYPES][NUM_PRIORITIES];      /* number reneging type bt and priority pr - l_{r,p,BT} */
-    double reneging_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];      /* t_{r,p,BT} */
-    double death_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];         /* t_{d,p,BT} */
+    double number_dead[NUM_BLOOD_TYPES][NUM_PATIENT_TYPES];        /* number dead type bt and priority pr - l_{d,p,BT} */
+    double number_renege[NUM_BLOOD_TYPES][NUM_PATIENT_TYPES];      /* number reneging type bt and priority pr - l_{r,p,BT} */
+    double reneging_time[NUM_BLOOD_TYPES][NUM_PATIENT_TYPES];      /* t_{r,p,BT} */
+    double death_time[NUM_BLOOD_TYPES][NUM_PATIENT_TYPES];         /* t_{d,p,BT} */
 } patients_lost;
 
 typedef struct organs_expired_queue {
-    //organ *queue; // TODO: may be useless?
-    double number[NUM_BLOOD_TYPES];             /* number expired type bt */
+    double num_renege[NUM_BLOOD_TYPES];             /* number expired type bt */
     double reneging_time[NUM_BLOOD_TYPES];      /* t_{r,o,BT} */
 } organs_expired;
 

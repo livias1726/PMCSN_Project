@@ -1,129 +1,74 @@
 #ifndef PMCSN_PROJECT_RGF_H
 #define PMCSN_PROJECT_RGF_H
 
-#define LAMBDA_PAT_O_CRIT 0.053
-#define LAMBDA_PAT_O_NORM 33.904
-#define LAMBDA_PAT_O_LOW 13.547
-#define LAMBDA_PAT_A_CRIT 0.027
-#define LAMBDA_PAT_A_NORM 22.676
-#define LAMBDA_PAT_A_LOW 9.327
-#define LAMBDA_PAT_B_CRIT 0.013
-#define LAMBDA_PAT_B_NORM 10.222
-#define LAMBDA_PAT_B_LOW 4.189
-#define LAMBDA_PAT_AB_CRIT 0.004
-#define LAMBDA_PAT_AB_NORM 2.599
-#define LAMBDA_PAT_AB_LOW 1.084
+#include "../../lib/rngs.h"
+#include "../../lib/rvms.h"
+#include "../../lib/rvgs.h"
 
-#define LAMBDA_ORG_LIVING_O 9.807
-#define LAMBDA_ORG_LIVING_A 4.228
-#define LAMBDA_ORG_LIVING_B 1.254
-#define LAMBDA_ORG_LIVING_AB 0.2
+// Patient arrival rate [blood type][priority]
+#define LAMBDA_P (double[]){0.052, 37.68, 12.233, /* O */ \
+                            0.029, 24.666, 8.642, /* A */ \
+                            0.016, 11.501, 3.725, /* B */ \
+                            0.005, 2.880, 1.019 /* AB */ }
 
-#define LAMBDA_ORG_DEC_O 10.350
-#define LAMBDA_ORG_DEC_A 8.037
-#define LAMBDA_ORG_DEC_B 2.579
-#define LAMBDA_ORG_DEC_AB 0.738
+// Organ arrival rate [blood type][donor type]
+#define LAMBDA_O (double[]){12.11, 10.31, /* O */ \
+                            9.40, 4.54,   /* A */ \
+                            2.99, 1.34,   /* B */ \
+                            0.87, 0.22    /* AB */ }
 
-#ifdef REAL
+// Patient death rate [blood type][priority]
+#define MU_DEATH_P (double[]){0.003, 2.504, 3.947, /* O */ \
+                              0.001, 1.221, 2.324, /* A */ \
+                              0.000, 0.776, 1.212, /* B */ \
+                              0.000, 0.105, 0.225 /* AB */ }
 
-#define MU_DEATH_PAT_O_CRIT 0.003
-#define MU_DEATH_PAT_O_NORM 2.626
-#define MU_DEATH_PAT_O_LOW 4.157
-#define MU_DEATH_PAT_A_CRIT 0.004
-#define MU_DEATH_PAT_A_NORM 1.353
-#define MU_DEATH_PAT_A_LOW 2.517
-#define MU_DEATH_PAT_B_CRIT 0.001
-#define MU_DEATH_PAT_B_NORM 0.789
-#define MU_DEATH_PAT_B_LOW 1.288
-#define MU_DEATH_PAT_AB_CRIT 0.000
-#define MU_DEATH_PAT_AB_NORM 0.122
-#define MU_DEATH_PAT_AB_LOW 0.254
+// Patient renege rate [blood type][priority]
+#define MU_RENEGE_P (double[]){0.006, 4.168, 13.043, /* O */ \
+                               0.001, 2.338, 7.623, /* A */ \
+                               0.000, 1.244, 3.999,  /* B */ \
+                               0.001, 0.211, 0.756 /* AB */ }
 
-#define MU_RENEGE_PAT_O_CRIT 0.011
-#define MU_RENEGE_PAT_O_NORM 8.666
-#define MU_RENEGE_PAT_O_LOW 12.336
-#define MU_RENEGE_PAT_A_CRIT 0.005
-#define MU_RENEGE_PAT_A_NORM 6.392
-#define MU_RENEGE_PAT_A_LOW 7.977
-#define MU_RENEGE_PAT_B_CRIT 0.001
-#define MU_RENEGE_PAT_B_NORM 2.642
-#define MU_RENEGE_PAT_B_LOW 3.756
-#define MU_RENEGE_PAT_AB_CRIT 0.001
-#define MU_RENEGE_PAT_AB_NORM 0.645
-#define MU_RENEGE_PAT_AB_LOW 0.826
-
-#else
-
-#define MU_DEATH_PAT_O_CRIT  19.528
-#define MU_DEATH_PAT_O_NORM  19.528
-#define MU_DEATH_PAT_O_LOW  19.528
-#define MU_DEATH_PAT_A_CRIT  19.528
-#define MU_DEATH_PAT_A_NORM  19.528
-#define MU_DEATH_PAT_A_LOW  19.528
-#define MU_DEATH_PAT_B_CRIT  19.528
-#define MU_DEATH_PAT_B_NORM  19.528
-#define MU_DEATH_PAT_B_LOW  19.528
-#define MU_DEATH_PAT_AB_CRIT  19.528
-#define MU_DEATH_PAT_AB_NORM  19.528
-#define MU_DEATH_PAT_AB_LOW  19.528
-
-#define MU_RENEGE_PAT_O_CRIT  77.723
-#define MU_RENEGE_PAT_O_NORM  77.723
-#define MU_RENEGE_PAT_O_LOW   77.723
-#define MU_RENEGE_PAT_A_CRIT  77.723
-#define MU_RENEGE_PAT_A_NORM  77.723
-#define MU_RENEGE_PAT_A_LOW   77.723
-#define MU_RENEGE_PAT_B_CRIT  77.723
-#define MU_RENEGE_PAT_B_NORM  77.723
-#define MU_RENEGE_PAT_B_LOW   77.723
-#define MU_RENEGE_PAT_AB_CRIT 77.723
-#define MU_RENEGE_PAT_AB_NORM 77.723
-#define MU_RENEGE_PAT_AB_LOW  77.723
-
-#endif
-
+// Organ expire rate (1 day)
 #define MU_ORG 1.0
 
-#ifdef ABO_ID
-#define REJECT_P 0.0
+#ifdef IMPROVEMENT
+#define REJECT_P (0.13 + 0.0637)
 #else
-#define REJECT_P 0.12
+    #ifdef ABO_ID
+        #define REJECT_P 0.0
+    #else
+        #define REJECT_P 0.13
+    #endif
 #endif
 
+// 1/2 anni di attesa
 #define MIN_ACTIVATION 730.0
-#define MAX_ACTIVATION 1095.0           // 2*365-3*365 giorni di attesa
+#define MAX_ACTIVATION 1095.0
 
+#ifdef IMPROVEMENT
+#define MIN_TRANSPLANT 46.0
+#define MAX_TRANSPLANT 58.0             // 12-24 giorni di trapianto + monitoraggio
+#else
 #define MIN_TRANSPLANT 12.0
-#define MAX_TRANSPLANT 24.0             // 12-24 giorni di trapianto + monitoraggio
+#define MAX_TRANSPLANT 24.0  // 12-24 giorni di trapianto + monitoraggio
+#endif
 
 // Transplant probability : P(Bt AND Pr)
-#define TRANSPLANT_PROB (double[]){0.0004, 0.4147, 0.0333, 0.0002, 0.3280, 0.0317, 0.0002, 0.1257, 0.0100, 0.00004, 0.0452, 0.0033}
+#define TRANSPLANT_PROB (double[]){0.45, /* O */ \
+                                   0.36, /* A */ \
+                                   0.14, /* B */ \
+                                   0.05 /* AB */ }
 
-/*
-#define TRANSPLANT_O_CRIT 0.0004
-#define TRANSPLANT_O_NORM 0.4147
-#define TRANSPLANT_O_LOW 0.0333
-#define TRANSPLANT_A_CRIT 0.0002
-#define TRANSPLANT_A_NORM 0.3280
-#define TRANSPLANT_A_LOW 0.0317
-#define TRANSPLANT_B_CRIT 0.0002
-#define TRANSPLANT_B_NORM 0.1257
-#define TRANSPLANT_B_LOW 0.0100
-#define TRANSPLANT_AB_CRIT 0.0000
-#define TRANSPLANT_AB_NORM 0.0452
-#define TRANSPLANT_AB_LOW 0.0033
- */
-
-
-double getDecDonorOrganArrival(BLOOD_TYPE bt, double arrival);
-double getLivingDonorOrganArrival(BLOOD_TYPE bt, double arrival);
-double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, double arrival);
-double getOrganRenege(BLOOD_TYPE bt, double arrival);
-double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, double arrival);
-double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, double arrival);
+//--------------------------------------------------------------------------------------------------------------------
+double getOrganArrival(BLOOD_TYPE bt, DONOR_TYPE dt, double arrival);
+double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arrival);
+double getOrganRenege(double arrival);
+double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arrival);
+double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arrival);
 double getActivationCompletion(double arrival);
 double getTransplantCompletion(double arrival);
 double getRejectionProb();
-double getTransplantProb(BLOOD_TYPE bt, PRIORITY pr);
+double getTransplantProb(BLOOD_TYPE bt);
 
 #endif //PMCSN_PROJECT_RGF_H

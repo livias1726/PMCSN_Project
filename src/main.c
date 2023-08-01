@@ -1,4 +1,7 @@
 #include "headers/utils.h"
+#include "headers/sim.h"
+#include "headers/stats.h"
+#include "headers/init.h"
 
 int main(){
 
@@ -31,7 +34,7 @@ int main(){
     time_integrated_stats *ti_stats = initializeTimeStatistics();
 
     // batches for each observation year
-    int i, num_iter = OBSERVATION * (365 / BATCH_SIZE); // measure for each month
+    int i, num_iter = STOP / BATCH_SIZE; // measure for each month
     stats **batches = malloc(num_iter * sizeof(stats*));
     MALLOC_HANDLER(batches)
     for (i = 0; i < num_iter; ++i) {
@@ -54,15 +57,11 @@ int main(){
 
     computeFinalStatistics(final_stat, batches, num_iter);
 
-#ifdef AUDIT
-    //printResults(batches, stdout); //fixme: to remove?
-#else
     saveResultsCsv(final_stat);
-#endif
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
-    //cleanUpEventList(events);
+    cleanUpEventList(events);
     cleanUpTimeStatistics(ti_stats);
     for (i = 0; i < num_iter; ++i) {
         cleanUpStatistics(batches[i]);

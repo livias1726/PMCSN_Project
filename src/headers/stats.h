@@ -66,7 +66,6 @@ typedef struct organ_bank_stats{
     double num_organ_arrivals[NUM_BLOOD_TYPES];            // total number of organs arrived to the system
     double num_organ_outdatings[NUM_BLOOD_TYPES];          // number of organ outdatings
     double num_organs_in_queue[NUM_BLOOD_TYPES];           // number of organs still in the bank
-
     double avg_interarrival_time[NUM_BLOOD_TYPES];
     double avg_in_queue[NUM_BLOOD_TYPES];
     double std_interarrival_time[NUM_BLOOD_TYPES];
@@ -76,18 +75,24 @@ typedef struct organ_bank_stats{
 typedef struct transplant_stats{
     double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-
     double rejection_perc[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_in_node;
     double std_in_node;
 } transplant_stats;
 
 typedef struct activation_stats{
-    double num_activated[NUM_BLOOD_TYPES];
-    double avg_in_node;
+    double num_arrivals;
+    double num_deaths;
+    double num_reneges;
+    double num_activated;
+
+    // means
     double avg_delay;
-    double std_in_node;
+    double avg_in_node;
+
+    // stdev: used first as a sum container, then for the std deviation and lastly as confidence interval
     double std_delay;
+    double std_in_node;
 } activation_stats;
 
 /**
@@ -102,8 +107,9 @@ typedef struct statistics{
 
 // ------------------- PROTOTYPES ----------------
 void gatherResults(stats *statistics, event_list *events);
-void computeTimeAveragedStats(time_integrated_stats *stats);
-void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
+void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
 void computeFinalStatistics(stats *final_stat, stats **batches, int num_stats);
+void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats);
+void welford(int iter, stats *stat, stats *batch);
 
 #endif //PMCSN_PROJECT_STATS_H
