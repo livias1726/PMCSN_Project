@@ -19,11 +19,23 @@
                               0.000, 0.776, 1.212, /* B */ \
                               0.000, 0.105, 0.225  /* AB */ }
 
-// Patient death rate [blood type][priority]
-#define MU_RENEGE_P (double[]){0.006, 4.168, 13.043, /* O */ \
-                               0.001, 2.338, 7.623,  /* A */ \
-                               0.000, 1.244, 3.999,  /* B */ \
-                               0.001, 0.211, 0.756   /* AB */ }
+// Patient renege rate [blood type][priority]
+/*#define MU_RENEGE_P (double[]){0.006, 4.168, 13.043, // O \
+                               0.001, 2.338, 7.623,  // A \
+                               0.000, 1.244, 3.999,  // B \
+                               0.001, 0.211, 0.756   // AB }*/
+// Patient renege rate [blood type][priority]
+/*#define MU_RENEGE_P (double[]){0.002, 2.677, 11.036, // O \
+                               0.001, 1.387, 6.310,  // A \
+                               0.001, 0.805, 3.441,  // B \
+                               0.001, 0.129, 0.612  // AB }*/
+
+#define MU_RENEGE_P (double[]){0.5, 0.5, 0.9, /* O */ \
+                               0.5, 0.5, 0.9,  /* A */\
+                               0.5, 0.5, 0.9,  /* B */ \
+                               0.5, 0.5, 0.9   /* AB */ }
+
+
 
 // Organ expire rate (1 day)
 #define MU_ORG 1.0
