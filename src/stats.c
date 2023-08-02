@@ -59,7 +59,7 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
 /**
  * Retrieves the data taken during the simulation
  * */
-void gatherResults(stats* statistics, event_list *events){
+void gatherResults(stats *statistics, event_list *events, bool collect) {
     patient_waiting_list waiting_list = events->patient_arrival;
     organ_bank bank = events->organ_arrival;
     transplant_center transplant_c = events->transplant_arrival;

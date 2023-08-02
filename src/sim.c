@@ -65,7 +65,9 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
     (events->patient_arrival.inter_arrival_time[1][normal] < STOP)||
     (events->patient_arrival.inter_arrival_time[2][normal] < STOP)||
     (events->patient_arrival.inter_arrival_time[3][normal] < STOP)||
-    (events->patient_arrival.total_number > 0)) {
+    (events->patient_arrival.total_number > 0) ||
+    (events->transplant_arrival.total_number > 0) ||
+    (events->activation_arrival.total_number > 0)) {
         t->next = getMinTime(events);		            // Next event time
         // check initialization phase
         if (t->current > INIT) {
@@ -75,12 +77,17 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
                 setupSystemState(events);
                 init_state = false;
                 checkpoint = t->current + BATCH_SIZE;   // set first batch
-            } else if (t->current > checkpoint) {
-                gatherResults(batches[iteration], events);
+            } else if ((t->current > checkpoint) && (t->current < STOP)) {
+                gatherResults(batches[iteration], events, false);
                 computeTimeAveragedStats(batches[iteration], ti_stats, t);
                 welford(iteration+1, final_stat, batches[iteration]);
                 iteration++;
                 checkpoint = t->current + BATCH_SIZE;
+            } else if ((t->current > checkpoint) && (t->current >= STOP)){
+                // batchone finale
+                gatherResults(batches[iteration], events, true);
+                computeTimeAveragedStats(batches[iteration], ti_stats, t);
+                welford(iteration+1, final_stat, batches[iteration]);
             }
         }
         t->current = t->next;                           // Clock update
@@ -117,6 +124,13 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
                     events->patient_arrival.inter_arrival_time[i][normal] = INFINITY;
                 }
                 break;
+            } else if (t->current == events->activation_arrival.inter_arrival_time[i]) {
+                handlePatientArrival(events, t, i, none, inactive);
+                if (events->activation_arrival.inter_arrival_time[i] > STOP) {
+                    t->last[patient_arrival] = t->current;
+                    events->activation_arrival.inter_arrival_time[i] = INFINITY;
+                }
+                break;
             } else if (t->current == events->patients_loss.reneging_time[i][critical]) {
                 handlePatientLoss(events, t, renege, i, critical, active);
                 break;
@@ -129,9 +143,6 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
             } else if (t->current == events->patients_loss.death_time[i][normal]) {
                 handlePatientLoss(events, t, death, i, normal, active);
                 break;
-            } else if (t->current == events->activation_arrival.inter_arrival_time[i]) {
-                handlePatientArrival(events, t, i, none, inactive);
-                break;
             } else if (t->current == events->patients_loss.reneging_time[i][2]) {
                 handlePatientLoss(events, t, renege, i, none, inactive);
                 break;
@@ -142,7 +153,7 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
         }
     }
 
-    gatherResults(final_stat, events); // to update the system state at the end of the simulation
+    gatherResults(final_stat, events, 0); // to update the system state at the end of the simulation
     *num_iterations = iteration;
 }
 
