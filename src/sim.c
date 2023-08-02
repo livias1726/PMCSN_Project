@@ -69,26 +69,22 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
     (events->transplant_arrival.total_number > 0) ||
     (events->activation_arrival.total_number > 0)) {
         t->next = getMinTime(events);		            // Next event time
-        // check initialization phase
-        if (t->current > INIT) {
-            updateIntegralsStats(events, t, ti_stats);  // Update integrals stats
-
-            if (init_state) { // first iteration after initialization phase
-                setupSystemState(events);
-                init_state = false;
-                checkpoint = t->current + BATCH_SIZE;   // set first batch
-            } else if ((t->current > checkpoint) && (t->current < STOP)) {
-                gatherResults(batches[iteration], events, false);
-                computeTimeAveragedStats(batches[iteration], ti_stats, t);
-                welford(iteration+1, final_stat, batches[iteration]);
-                iteration++;
-                checkpoint = t->current + BATCH_SIZE;
-            } else if ((t->current > checkpoint) && (t->current >= STOP)){
-                // batchone finale
-                gatherResults(batches[iteration], events, true);
-                computeTimeAveragedStats(batches[iteration], ti_stats, t);
-                welford(iteration+1, final_stat, batches[iteration]);
-            }
+        updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
+        if (init_state) {
+            init_state = false;
+            checkpoint = t->current + BATCH_SIZE;           // set first batch
+        }
+        if ((t->current > checkpoint) && (t->current < STOP)) {
+            gatherResults(batches[iteration], events, false);
+            computeTimeAveragedStats(batches[iteration], ti_stats, t);
+            welford(iteration+1, final_stat, batches[iteration]);
+            iteration++;
+            checkpoint = t->current + BATCH_SIZE;
+        } else if ((t->current > checkpoint) && (t->current >= STOP)){
+            // batchone finale
+            gatherResults(batches[iteration], events, true);
+            computeTimeAveragedStats(batches[iteration], ti_stats, t);
+            welford(iteration+1, final_stat, batches[iteration]);
         }
         t->current = t->next;                           // Clock update
 
