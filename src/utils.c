@@ -1,7 +1,7 @@
 #include "headers/utils.h"
 
 void saveResultsCsv(stats* statistics){
-    FILE *f_wl, *f_ob, *f_tr;
+    FILE *f_wl, *f_ob, *f_tr, *f_act;
     char path[MAX_LEN];
     char *model, *policy, *header;
     int i,j;
@@ -18,6 +18,8 @@ void saveResultsCsv(stats* statistics){
     policy = "comp";
 #endif
 
+    // ----------------------------------------------- HEADERS -------------------------------------------------------
+
     // Patients
     snprintf(path, MAX_LEN, "output/waiting_list_%s_%s.csv", model, policy);
     OPEN_FILE(f_wl, path)
@@ -26,12 +28,21 @@ void saveResultsCsv(stats* statistics){
              "CI service time,Avg # in the node,CI # in the node,Avg # in the queue,CI # in the queue,Utilization,"
              "CI utilization\n";
     fprintf(f_wl, "%s", header);
+
     // Organs
     snprintf(path, MAX_LEN, "output/organs_%s_%s.csv", model, policy);
     OPEN_FILE(f_ob, path)
     header = "Blood type,Organs arrived,Organs outdated,Organs in queue,"
              "Avg inter-arrival times,CI inter-arrival times,Avg # in the queue,CI # in the queue\n";
     fprintf(f_ob, "%s", header);
+
+    // Activation
+    snprintf(path, MAX_LEN, "output/activation_%s_%s.csv", model, policy);
+    OPEN_FILE(f_act, path)
+    header = "Patients arrived,Patients activated,Patients dead,Patients reneged,Avg delay,CI delay,"
+             "Avg # in the node,CI # in the node\n";
+    fprintf(f_act, "%s", header);
+
     // Transplant
     snprintf(path, MAX_LEN, "output/transplant_%s_%s.csv", model, policy);
     OPEN_FILE(f_tr, path)
@@ -39,15 +50,18 @@ void saveResultsCsv(stats* statistics){
              "Avg # in the node,CI # in the node\n";
     fprintf(f_tr, "%s", header);
 
+    // ------------------------------------------------- DATA ------------------------------------------------------
     waiting_list_stats *wl_stats = statistics->wl_stats;
     organ_bank_stats *ob_stats = statistics->ob_stats;
     transplant_stats *trans_stats = statistics->trans_stats;
+    activation_stats *act_stats = statistics->act_stats;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         fprintf(f_ob, "%s,%f,%f,%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
                 ob_stats->num_organ_arrivals[i], ob_stats->num_organ_outdatings[i], ob_stats->num_organs_in_queue[i],
                 ob_stats->avg_interarrival_time[i], ob_stats->std_interarrival_time[i],
                 ob_stats->avg_in_queue[i], ob_stats->std_in_queue[i]);
+
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             fprintf(f_wl, "%s,%s,%f,%f,%f,%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,"
                           "+/-%f\n", bt_to_str[i], pr_to_str[j],
@@ -66,8 +80,14 @@ void saveResultsCsv(stats* statistics){
                     trans_stats->rejection_perc[i][j], trans_stats->avg_in_node, trans_stats->std_in_node);
         }
     }
+
+    fprintf(f_act, "%f,%f,%f,%f,%f,+/-%f,%f,+/-%f\n",
+            act_stats->num_arrivals, act_stats->num_activated, act_stats->num_deaths, act_stats->num_reneges,
+            act_stats->avg_delay, act_stats->std_delay, act_stats->avg_in_node, act_stats->std_in_node);
+
     fclose(f_wl);
     fclose(f_ob);
+    fclose(f_act);
     fclose(f_tr);
 }
 
@@ -117,6 +137,26 @@ void cleanUpWaitingList(patient_waiting_list *wt_list) {
     }
 }
 
+void cleanUpActivationCenter(activation_center *act_center) {
+    in_activation *current, *next; // first node
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        current = act_center->inactive_patients[i]->head; // head
+        next = current->next; // first node
+
+        while(next != NULL){
+            current = next;
+            next = next->next;
+
+            free(current->patient);
+            free(current);
+        }
+
+        free(act_center->inactive_patients[i]->head);
+        free(act_center->inactive_patients[i]);
+    }
+}
+
 void cleanUpTransplantCenter(transplant_center *trans_center) {
     in_transplant *current = trans_center->transplanted_patients; // head
     in_transplant *next = current->next; // first node
@@ -136,6 +176,7 @@ void cleanUpEventList(event_list* events){
 
     cleanUpOrganBank(&events->organ_arrival);
     cleanUpWaitingList(&events->patient_arrival);
+    cleanUpActivationCenter(&events->activation_arrival);
     cleanUpTransplantCenter(&events->transplant_arrival);
 
     free(events);
@@ -152,6 +193,7 @@ void cleanUpTimeStatistics(time_integrated_stats *ti_stats) {
         }
     }
 
+    free(ti_stats->area_activation);
     free(ti_stats->area_transplant);
 
     free(ti_stats);
@@ -161,6 +203,7 @@ void cleanUpStatistics(stats *statistics){
 
     free(statistics->wl_stats);
     free(statistics->ob_stats);
+    free(statistics->act_stats);
     free(statistics->trans_stats);
 
     free(statistics);

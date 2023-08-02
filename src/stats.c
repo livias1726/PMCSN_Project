@@ -3,44 +3,6 @@
 /**
  * This file contains the implementation for every procedure that handles statistics.
  * */
-/*
-#define PRINT_TI_STATS(area, time) \
-    printf("\t\taverage # in the node...%f\n", area->node/time); \
-    printf("\t\taverage # in the queue...%f\n", area->queue/time); \
-    printf("\t\tutilization...%f\n", area->service/time);
-
-void computeTimeAveragedStats(time_integrated_stats *stats) {
-    double curr = stats->current_time;
-    area *curr_area;
-    int i,j;
-
-    // Waiting list
-    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (j = 0; j < NUM_PRIORITIES; ++j) {
-            curr_area = stats->area_waiting_list[i][j];
-            printf("Waiting list - BLOOD TYPE %s - PRIORITY %s: \n", bt_to_str[i], pr_to_str[j]);
-            PRINT_TI_STATS(curr_area, curr)
-        }
-    }
-
-    // Organ bank
-    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        curr_area = stats->area_bank[i];
-        printf("Organ bank - BLOOD TYPE %s: \n", bt_to_str[i]);
-        PRINT_TI_STATS(curr_area, curr)
-    }
-
-    // Activation center
-    curr_area = stats->area_activation;
-    printf("Activation center: \n");
-    PRINT_TI_STATS(curr_area, curr)
-
-    // Transplant center
-    curr_area = stats->area_transplant;
-    printf("Transplant center: \n");
-    PRINT_TI_STATS(curr_area, curr)
-}
- */
 
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
     double curr = t->current;
@@ -50,7 +12,15 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
     waiting_list_stats* wl_stats = stats->wl_stats;
     organ_bank_stats* ob_stats = stats->ob_stats;
     transplant_stats* trans_stats = stats->trans_stats;
+    activation_stats* act_stats = stats->act_stats;
     int i,j;
+
+    // Activation
+    curr_area = ti_stats->area_activation;
+    completion = act_stats->num_activated;
+
+    act_stats->avg_in_node = curr_area->node / curr;
+    act_stats->avg_delay = (completion == 0) ? 0 : curr_area->node / completion;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
@@ -61,6 +31,7 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
+            // FIXME: il tempo di attesa dei low deve essere sommato al tempo di attesa in attivazione!!!
             // Waiting list
             curr_area = ti_stats->area_waiting_list[i][j];
             population = wl_stats->num_patient_arrivals[i][j];
@@ -92,25 +63,34 @@ void gatherResults(stats* statistics, event_list *events){
     patient_waiting_list waiting_list = events->patient_arrival;
     organ_bank bank = events->organ_arrival;
     transplant_center transplant_c = events->transplant_arrival;
-    organs_expired organs_expired = events->organs_loss;
-    patients_lost patients_lost = events->patients_loss;
+    activation_center activation = events->activation_arrival;
+    patients_lost p_lost = events->patients_loss;
+    organs_expired o_exp = events->organs_loss;
 
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+    int i,j;
+
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         statistics->ob_stats->num_organs_in_queue[i] = bank.queues[i]->number;
         statistics->ob_stats->num_organ_arrivals[i] = bank.num_arrivals[i];
-        statistics->ob_stats->num_organ_outdatings[i] = organs_expired.number[i];
+        statistics->ob_stats->num_organ_outdatings[i] = o_exp.num_renege[i];
 
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
             statistics->wl_stats->num_patients_in_queue[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
             statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
-            statistics->wl_stats->num_patient_deaths[i][j] = patients_lost.number_dead[i][j];
-            statistics->wl_stats->num_patient_reneges[i][j] = patients_lost.number_renege[i][j];
+            statistics->wl_stats->num_patient_deaths[i][j] = p_lost.number_dead[i][j];
+            statistics->wl_stats->num_patient_reneges[i][j] = p_lost.number_renege[i][j];
             statistics->wl_stats->num_patients_served[i][j] = waiting_list.num_completions[i][j];
 
-            statistics->trans_stats->completed_transplants[i][j] = transplant_c.completed_transplants[i][j];
-            statistics->trans_stats->rejected_transplants[i][j] = transplant_c.rejected_transplants[i][j];
+            statistics->trans_stats->completed_transplants[i][j] = transplant_c.num_completions[i][j];
+            statistics->trans_stats->rejected_transplants[i][j] = transplant_c.num_rejections[i][j];
         }
+
+        statistics->act_stats->num_deaths += p_lost.number_dead[i][j];
+        statistics->act_stats->num_reneges += p_lost.number_renege[i][j];
     }
+
+    statistics->act_stats->num_activated = activation.num_completions;
+    statistics->act_stats->num_arrivals = activation.num_arrivals;
 }
 
 /**
@@ -174,6 +154,77 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
         }
     }
 
+    STDEV(sum, final_stat->act_stats->std_in_node, num_stats)
+    CONFIDENCE(u,t,w,final_stat->act_stats->std_in_node,num_stats)
+
+    STDEV(sum, final_stat->act_stats->std_delay, num_stats)
+    CONFIDENCE(u,t,w,final_stat->act_stats->std_delay,num_stats)
+
     STDEV(sum, final_stat->trans_stats->std_in_node, num_stats)
     CONFIDENCE(u,t,w,final_stat->trans_stats->std_in_node,num_stats)
+}
+
+void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
+    double number_inactive = events->activation_arrival.total_number;
+    double number_trans = events->transplant_arrival.total_number;
+    double number_wl, number_bank;
+    double diff = t->next - t->current;
+
+    int i,j;
+
+    /* Update waiting list integrals */
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+
+        /* Update organ bank integrals */
+        number_bank = events->organ_arrival.queues[i]->number;
+        ti_stats->area_bank[i]->node += diff * (number_bank+1);
+        ti_stats->area_bank[i]->queue += diff * (number_bank);
+        ti_stats->area_bank[i]->service += diff;
+
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
+            ti_stats->area_waiting_list[i][j]->node += diff * (number_wl+1);
+            ti_stats->area_waiting_list[i][j]->queue += diff * (number_wl);
+            ti_stats->area_waiting_list[i][j]->service += diff;
+        }
+    }
+
+    /* Update activation_center center integrals */
+    ti_stats->area_activation->node += diff * number_inactive;
+    ti_stats->area_activation->service += diff * number_inactive;
+
+    /* Update transplant center integrals */
+    ti_stats->area_transplant->node += diff * number_trans;
+    ti_stats->area_transplant->service += diff * number_trans;
+}
+
+/**
+ * Welford's one-pass algorithm to compute the mean and the standard deviation for each statistic
+ * */
+void welford(int iter, stats *stat, stats *batch){
+    double diff;
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        // Organ bank
+        WELFORD(diff, batch->ob_stats->avg_interarrival_time[i],stat->ob_stats->avg_interarrival_time[i],stat->ob_stats->std_interarrival_time[i],iter)
+        WELFORD(diff, batch->ob_stats->avg_in_queue[i],stat->ob_stats->avg_in_queue[i],stat->ob_stats->std_in_queue[i],iter)
+
+        for (int j = 0; j < NUM_PRIORITIES; ++j) {
+            // Waiting list
+            WELFORD(diff, batch->wl_stats->avg_interarrival_time[i][j], stat->wl_stats->avg_interarrival_time[i][j],stat->wl_stats->std_interarrival_time[i][j], iter)
+            WELFORD(diff, batch->wl_stats->avg_wait[i][j],stat->wl_stats->avg_wait[i][j],stat->wl_stats->std_wait[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_delay[i][j],stat->wl_stats->avg_delay[i][j],stat->wl_stats->std_delay[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_service[i][j],stat->wl_stats->avg_service[i][j],stat->wl_stats->std_service[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_in_node[i][j],stat->wl_stats->avg_in_node[i][j],stat->wl_stats->std_in_node[i][j],iter)
+            WELFORD(diff, batch->wl_stats->avg_in_queue[i][j],stat->wl_stats->avg_in_queue[i][j],stat->wl_stats->std_in_queue[i][j],iter)
+            WELFORD(diff, batch->wl_stats->utilization[i][j],stat->wl_stats->utilization[i][j],stat->wl_stats->std_utilization[i][j],iter)
+        }
+    }
+
+    // Activation center
+    WELFORD(diff, batch->act_stats->avg_in_node,stat->act_stats->avg_in_node,stat->act_stats->std_in_node,iter)
+    WELFORD(diff, batch->act_stats->avg_delay,stat->act_stats->avg_delay,stat->act_stats->std_delay,iter)
+
+    // Transplant center
+    WELFORD(diff, batch->trans_stats->avg_in_node,stat->trans_stats->avg_in_node,stat->trans_stats->std_in_node,iter)
 }
