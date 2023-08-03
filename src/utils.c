@@ -18,6 +18,10 @@ void saveResultsCsv(stats* statistics){
     policy = "comp";
 #endif
 
+#ifdef IMPROVEMENT
+    policy = "incomp";
+#endif
+
     // ----------------------------------------------- HEADERS -------------------------------------------------------
 
     // Patients
