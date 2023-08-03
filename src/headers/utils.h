@@ -60,7 +60,7 @@ static long long random_seed = 0UL;
 
 //-----------------------------------------------------------------------------
 
-void saveResultsCsv(stats *statistics);
+void saveResultsCsv(stats *statistics, bool batch, int batch_num);
 void cleanUpEventList(event_list *events);
 void cleanUpStatistics(stats *statistics);
 void cleanUpTimeStatistics(time_integrated_stats *ti_stats);

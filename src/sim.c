@@ -78,6 +78,7 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
             gatherResults(batches[iteration], events, false);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
+            saveResultsCsv(batches[iteration], true, iteration);
             iteration++;
             checkpoint = t->current + BATCH_SIZE;
         } else if ((t->current > checkpoint) && (t->current >= STOP)){
@@ -85,6 +86,7 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
             gatherResults(batches[iteration], events, true);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
+            saveResultsCsv(batches[iteration], true, iteration);
         }
         t->current = t->next;                           // Clock update
 
