@@ -12,16 +12,16 @@
 
 #ifdef IMPROVEMENT
 static BLOOD_TYPE* const get_compatibles[] = {
-        [O] = (BLOOD_TYPE[]){AB, B, A, O},
-        [A] = (BLOOD_TYPE[]){AB, B, A, O},
-        [B] = (BLOOD_TYPE[]){AB, B, A, O},
+        [O] = (BLOOD_TYPE[]){O, A, B, AB},
+        [A] = (BLOOD_TYPE[]){A, AB, O, B},
+        [B] = (BLOOD_TYPE[]){B, AB, O, A},
         [AB] = (BLOOD_TYPE[]){AB, B, A, O}
 };
 #else
 static BLOOD_TYPE* const get_compatibles[] = {
-        [O] = (BLOOD_TYPE[]){AB, B, A, O},
-        [A] = (BLOOD_TYPE[]){AB, A},
-        [B] = (BLOOD_TYPE[]){AB, B},
+        [O] = (BLOOD_TYPE[]){O, A, B, AB},
+        [A] = (BLOOD_TYPE[]){A, AB},
+        [B] = (BLOOD_TYPE[]){B, AB},
         [AB] = (BLOOD_TYPE[]){AB}
 };
 #endif

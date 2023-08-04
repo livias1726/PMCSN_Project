@@ -29,17 +29,10 @@
                                0.000, 1.244, 3.999,  // B \
                                0.001, 0.211, 0.756   // AB }*/
 // Patient renege rate [blood type][priority]
-/*#define MU_RENEGE_P (double[]){0.002, 2.677, 11.036, // O \
-                               0.001, 1.387, 6.310,  // A \
-                               0.001, 0.805, 3.441,  // B \
-                               0.001, 0.129, 0.612  // AB }*/
-
-#define MU_RENEGE_P (double[]){0.5, 0.5, 0.9, /* O */ \
-                               0.5, 0.5, 0.9,  /* A */\
-                               0.5, 0.5, 0.9,  /* B */ \
-                               0.5, 0.5, 0.9   /* AB */ }
-
-
+#define MU_RENEGE_P (double[]){0.002, 2.677, 11.036, \
+                               0.001, 1.387, 6.310,  \
+                               0.001, 0.805, 3.441,  \
+                               0.001, 0.129, 0.612   }
 
 // Organ expire rate (1 day)
 #define MU_ORG 1.0
@@ -54,7 +47,7 @@
     #endif
 #endif
 
-// 1/2 anni di attesa
+// 2/3 anni di attesa
 #define MIN_ACTIVATION 730.0
 #define MAX_ACTIVATION 1095.0
 

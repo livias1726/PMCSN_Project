@@ -1,6 +1,5 @@
 #include "headers/sim.h"
 #include "headers/stats.h"
-#include "headers/init.h"
 #include "headers/utils.h"
 
 double getMinTime(event_list *events) {
@@ -34,60 +33,36 @@ double getMinTime(event_list *events) {
     return min;
 }
 
-void setupSystemState(event_list *events) {
-    int i, j;
-    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        events->organ_arrival.num_arrivals[i] = 0;
-        events->organs_loss.num_renege[i] = 0;
-        for (j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patient_arrival.num_arrivals[i][j] = 0;
-            events->patients_loss.number_renege[i][j] = 0;
-            events->patients_loss.number_dead[i][j] = 0;
-        }
-    }
-
-    events->transplant_arrival = initializeTransplantCenter();
-}
-
 void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                int *num_iterations) {
-    /* Choose next event selecting minimum time */
-    bool init_state = true;
-    double checkpoint;
+
+    double checkpoint = t->current + BATCH_SIZE;           // set first batch;
+    bool new_batch;
     int i, iteration = 0;
     t->current = 0;
 
-    while ((events->patient_arrival.inter_arrival_time[0][critical] < STOP)||
-    (events->patient_arrival.inter_arrival_time[1][critical] < STOP)||
-    (events->patient_arrival.inter_arrival_time[2][critical] < STOP)||
-    (events->patient_arrival.inter_arrival_time[3][critical] < STOP)||
-    (events->patient_arrival.inter_arrival_time[0][normal] < STOP)||
-    (events->patient_arrival.inter_arrival_time[1][normal] < STOP)||
-    (events->patient_arrival.inter_arrival_time[2][normal] < STOP)||
-    (events->patient_arrival.inter_arrival_time[3][normal] < STOP)||
-    (events->patient_arrival.total_number > 0) ||
-    (events->transplant_arrival.total_number > 0) ||
-    (events->activation_arrival.total_number > 0)) {
-        t->next = getMinTime(events);		            // Next event time
+    while (CLOSE_THE_DOOR(events)) {
+        t->next = getMinTime(events);		            // Choose next event selecting minimum time
         updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
-        if (init_state) {
-            init_state = false;
-            checkpoint = t->current + BATCH_SIZE;           // set first batch
-        }
-        if ((t->current > checkpoint) && (t->current < STOP)) {
-            gatherResults(batches[iteration], events, false);
+
+        new_batch = t->current > checkpoint;
+
+        if (new_batch){
+            new_batch = t->current < STOP;
+
+            gatherResults(batches[iteration], events, !new_batch);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
             saveResultsCsv(batches[iteration], true, iteration);
-            iteration++;
-            checkpoint = t->current + BATCH_SIZE;
-        } else if ((t->current > checkpoint) && (t->current >= STOP)){
-            // batchone finale
-            gatherResults(batches[iteration], events, true);
-            computeTimeAveragedStats(batches[iteration], ti_stats, t);
-            welford(iteration+1, final_stat, batches[iteration]);
-            saveResultsCsv(batches[iteration], true, iteration);
+
+            if (new_batch) {
+                iteration++;
+                checkpoint = t->current + BATCH_SIZE;
+            } else {
+                printf("");
+            }
         }
+
         t->current = t->next;                           // Clock update
 
         if (t->current == events->activation_arrival.min_activation) {
