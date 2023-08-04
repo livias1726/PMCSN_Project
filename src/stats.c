@@ -6,7 +6,7 @@
 
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
     double curr = t->current;
-    double population, completion;
+    double population_bank, population_wl, completion;
     area * curr_area;
 
     waiting_list_stats* wl_stats = stats->wl_stats;
@@ -22,22 +22,37 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
     act_stats->avg_in_node = curr_area->node / curr;
     act_stats->avg_delay = (completion == 0) ? 0 : curr_area->node / completion;
 
+#ifdef AUDIT
+    printf("curr area - node - AB crit: %f\n", ti_stats->area_waiting_list[AB][critical]->node);
+    printf("curr area - node - AB norm: %f\n", ti_stats->area_waiting_list[AB][normal]->node);
+    printf("waiting - node - AB crit: %f\n", ti_stats->area_waiting_list[AB][critical]->node/wl_stats->num_patients_served[AB][critical]);
+    printf("waiting - node - AB norm: %f\n\n", ti_stats->area_waiting_list[AB][normal]->node/wl_stats->num_patients_served[AB][normal]);
+
+    printf("curr area - node - O crit: %f\n", ti_stats->area_waiting_list[O][critical]->node);
+    printf("curr area - node - O norm: %f\n", ti_stats->area_waiting_list[O][normal]->node);
+    /* FIXME: dato che i tassi del numero di pazienti serviti sono diversi per ogni coda in realtà è necessario
+     * considerare in numero totale per gruppo sanguigno e non per priorità!*/
+    printf("waiting - node - O crit: %f\n", ti_stats->area_waiting_list[O][critical]->node/wl_stats->num_patients_served[O][critical]);
+    printf("waiting - node - O norm: %f\n\n", ti_stats->area_waiting_list[O][normal]->node/wl_stats->num_patients_served[O][normal]);
+#endif
+
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
         curr_area = ti_stats->area_bank[i];
-        population = ob_stats->num_organ_arrivals[i];
+        population_bank = ob_stats->num_organ_arrivals[i];
 
-        ob_stats->avg_interarrival_time[i] = (population == 0) ? 0 : t->last[organ_arrival] / population;
+        ob_stats->avg_interarrival_time[i] = (population_bank == 0) ? 0 : t->last[organ_arrival] / population_bank;
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
-        for (j = 0; j < NUM_PRIORITIES; ++j) {
-            // FIXME: il tempo di attesa dei low deve essere sommato al tempo di attesa in attivazione!!!
-            // Waiting list
-            curr_area = ti_stats->area_waiting_list[i][j];
-            population = wl_stats->num_patient_arrivals[i][j];
-            completion = wl_stats->num_patients_served[i][j];
+        // Waiting list
+        completion = wl_stats->num_patients_served[i][critical]+wl_stats->num_patients_served[i][normal];
 
-            wl_stats->avg_interarrival_time[i][j] = (population == 0) ? 0 : t->last[patient_arrival] / population;
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            // FIXME: il tempo di attesa dei low deve essere sommato al tempo di attesa in attivazione!!
+            curr_area = ti_stats->area_waiting_list[i][j];
+            population_wl = wl_stats->num_patient_arrivals[i][j];
+
+            wl_stats->avg_interarrival_time[i][j] = (population_wl == 0) ? 0 : t->last[patient_arrival] / population_wl;
 
             if (completion != 0) {
                 wl_stats->avg_wait[i][j] = curr_area->node / completion;
@@ -59,7 +74,7 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
 /**
  * Retrieves the data taken during the simulation
  * */
-void gatherResults(stats* statistics, event_list *events){
+void gatherResults(stats *statistics, event_list *events, bool collect) {
     patient_waiting_list waiting_list = events->patient_arrival;
     organ_bank bank = events->organ_arrival;
     transplant_center transplant_c = events->transplant_arrival;
@@ -105,9 +120,9 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
 
-        final_stat->ob_stats->num_organs_in_queue[i] = statistics[num_stats-1]->ob_stats->num_organs_in_queue[i];
-        final_stat->ob_stats->num_organ_arrivals[i] = statistics[num_stats-1]->ob_stats->num_organ_arrivals[i];
-        final_stat->ob_stats->num_organ_outdatings[i] = statistics[num_stats-1]->ob_stats->num_organ_outdatings[i];
+        final_stat->ob_stats->num_organs_in_queue[i] = statistics[num_stats]->ob_stats->num_organs_in_queue[i];
+        final_stat->ob_stats->num_organ_arrivals[i] = statistics[num_stats]->ob_stats->num_organ_arrivals[i];
+        final_stat->ob_stats->num_organ_outdatings[i] = statistics[num_stats]->ob_stats->num_organ_outdatings[i];
 
         STDEV(sum, final_stat->ob_stats->std_interarrival_time[i], num_stats)
         CONFIDENCE(u,t,w,final_stat->ob_stats->std_interarrival_time[i],num_stats)
@@ -117,14 +132,14 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
 
-            final_stat->wl_stats->num_patients_in_queue[i][j] = statistics[num_stats-1]->wl_stats->num_patients_in_queue[i][j];
-            final_stat->wl_stats->num_patient_arrivals[i][j] = statistics[num_stats-1]->wl_stats->num_patient_arrivals[i][j];
-            final_stat->wl_stats->num_patient_deaths[i][j] = statistics[num_stats-1]->wl_stats->num_patient_deaths[i][j];
-            final_stat->wl_stats->num_patient_reneges[i][j] = statistics[num_stats-1]->wl_stats->num_patient_reneges[i][j];
-            final_stat->wl_stats->num_patients_served[i][j] = statistics[num_stats-1]->wl_stats->num_patients_served[i][j];
+            final_stat->wl_stats->num_patients_in_queue[i][j] = statistics[num_stats]->wl_stats->num_patients_in_queue[i][j];
+            final_stat->wl_stats->num_patient_arrivals[i][j] = statistics[num_stats]->wl_stats->num_patient_arrivals[i][j];
+            final_stat->wl_stats->num_patient_deaths[i][j] = statistics[num_stats]->wl_stats->num_patient_deaths[i][j];
+            final_stat->wl_stats->num_patient_reneges[i][j] = statistics[num_stats]->wl_stats->num_patient_reneges[i][j];
+            final_stat->wl_stats->num_patients_served[i][j] = statistics[num_stats]->wl_stats->num_patients_served[i][j];
 
-            final_stat->trans_stats->completed_transplants[i][j] = statistics[num_stats-1]->trans_stats->completed_transplants[i][j];
-            final_stat->trans_stats->rejected_transplants[i][j] = statistics[num_stats-1]->trans_stats->rejected_transplants[i][j];
+            final_stat->trans_stats->completed_transplants[i][j] = statistics[num_stats]->trans_stats->completed_transplants[i][j];
+            final_stat->trans_stats->rejected_transplants[i][j] = statistics[num_stats]->trans_stats->rejected_transplants[i][j];
 
             STDEV(sum, final_stat->wl_stats->std_interarrival_time[i][j], num_stats)
             CONFIDENCE(u,t,w,final_stat->wl_stats->std_interarrival_time[i][j],num_stats)

@@ -1,6 +1,6 @@
 #include "headers/utils.h"
 
-void saveResultsCsv(stats* statistics){
+void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     FILE *f_wl, *f_ob, *f_tr, *f_act;
     char path[MAX_LEN];
     char *model, *policy, *header;
@@ -18,10 +18,18 @@ void saveResultsCsv(stats* statistics){
     policy = "comp";
 #endif
 
+#ifdef IMPROVEMENT
+    policy = "incomp";
+#endif
+
     // ----------------------------------------------- HEADERS -------------------------------------------------------
 
     // Patients
-    snprintf(path, MAX_LEN, "output/waiting_list_%s_%s.csv", model, policy);
+    if (batch) {
+        snprintf(path, MAX_LEN, "output/batch/waiting_list/waiting_list_%s_%s_%d.csv", model, policy, batch_num);
+    } else {
+        snprintf(path, MAX_LEN, "output/waiting_list_%s_%s.csv", model, policy);
+    }
     OPEN_FILE(f_wl, path)
     header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,"
              "Avg inter-arrival times,CI inter-arrival times,Avg wait,CI wait,Avg delay,CI delay,Avg service time,"
@@ -30,21 +38,34 @@ void saveResultsCsv(stats* statistics){
     fprintf(f_wl, "%s", header);
 
     // Organs
-    snprintf(path, MAX_LEN, "output/organs_%s_%s.csv", model, policy);
+    if (batch) {
+        snprintf(path, MAX_LEN, "output/batch/organs/organs_%s_%s_%d.csv", model, policy, batch_num);
+    } else {
+        snprintf(path, MAX_LEN, "output/organs_%s_%s.csv", model, policy);
+    }
     OPEN_FILE(f_ob, path)
     header = "Blood type,Organs arrived,Organs outdated,Organs in queue,"
              "Avg inter-arrival times,CI inter-arrival times,Avg # in the queue,CI # in the queue\n";
     fprintf(f_ob, "%s", header);
 
     // Activation
-    snprintf(path, MAX_LEN, "output/activation_%s_%s.csv", model, policy);
+    if (batch) {
+        snprintf(path, MAX_LEN, "output/batch/activation/activation_%s_%s_%d.csv", model, policy, batch_num);
+    } else {
+        snprintf(path, MAX_LEN, "output/activation_%s_%s.csv", model, policy);
+    }
+
     OPEN_FILE(f_act, path)
     header = "Patients arrived,Patients activated,Patients dead,Patients reneged,Avg delay,CI delay,"
              "Avg # in the node,CI # in the node\n";
     fprintf(f_act, "%s", header);
 
     // Transplant
-    snprintf(path, MAX_LEN, "output/transplant_%s_%s.csv", model, policy);
+    if (batch) {
+        snprintf(path, MAX_LEN, "output/batch/transplant/transplant_%s_%s_%d.csv", model, policy, batch_num);
+    } else {
+        snprintf(path, MAX_LEN, "output/transplant_%s_%s.csv", model, policy);
+    }
     OPEN_FILE(f_tr, path)
     header = "Blood type,Priority,Successful transplants,Rejected transplants,Rejection percentage,"
              "Avg # in the node,CI # in the node\n";

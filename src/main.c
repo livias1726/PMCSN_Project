@@ -34,7 +34,7 @@ int main(){
     time_integrated_stats *ti_stats = initializeTimeStatistics();
 
     // batches for each observation year
-    int i, num_iter = STOP / BATCH_SIZE; // measure for each month
+    int i, num_iter = (STOP / BATCH_SIZE)+1; // measure for each month
     stats **batches = malloc(num_iter * sizeof(stats*));
     MALLOC_HANDLER(batches)
     for (i = 0; i < num_iter; ++i) {
@@ -57,7 +57,7 @@ int main(){
 
     computeFinalStatistics(final_stat, batches, num_iter);
 
-    saveResultsCsv(final_stat);
+    saveResultsCsv(final_stat, false, 0);
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 

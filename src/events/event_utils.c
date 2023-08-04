@@ -1,5 +1,6 @@
 #include "../headers/events.h"
 #include "../headers/utils.h"
+#include "../headers/sim.h"
 
 // always pop organ from the head of the queue
 organ * removeOrgan(organ_queue *queue, organ_bank *bank) {
@@ -119,9 +120,11 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
         p->priority = normal;
         priority = p->priority;
     } else {
-        //t->last[patient_arrival] = t->current; //TODO: see what happens if this is outside
-        events->patient_arrival.inter_arrival_time[bt][priority] =
-                getPatientArrival(bt, priority, active,t->current);
+        if (t->current < STOP) {
+            //t->last[patient_arrival] = t->current; //TODO: see what happens if this is outside
+            events->patient_arrival.inter_arrival_time[bt][priority] =
+                    getPatientArrival(bt, priority, active,t->current);
+        }
     }
 
     bool match = handleMatchingFromPatient(events, t, p);

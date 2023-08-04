@@ -106,7 +106,7 @@ typedef struct statistics{
 } stats;
 
 // ------------------- PROTOTYPES ----------------
-void gatherResults(stats *statistics, event_list *events);
+void gatherResults(stats *statistics, event_list *events, bool collect);
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
 void computeFinalStatistics(stats *final_stat, stats **batches, int num_stats);
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats);
