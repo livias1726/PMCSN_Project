@@ -59,29 +59,27 @@ patient *getPatientFromPatient(patient* arrived, patient_waiting_list *wl) {
     patient_queue_priority *pp_queue;
     patient_queue_blood_type *pbt_queue;
     patient *curr;
-    bool no_trans = true, found = false;
+    bool found = false;
 
     for (j = 0; j <= pr; ++j) {          // for each priority higher or equal than the new patient's
         // if a patient is available
         pp_queue = wl->blood_type_queues[patient_bt]->priority_queue[j];
         tot_in_queue = (int) pp_queue->number;
         idx = -1;
-        if (tot_in_queue == 0) continue; // test next blood type
-        curr = pp_queue->queue; // get the head of the queue
-
+        if (tot_in_queue == 0) {
+            continue; // test next blood type
+        }
 #ifdef IMPROVEMENT
-        // Get the oldest in this queue (scan from head to tail) that can go to transplant
         // No need to check for complete compatibility
-        do {
-            curr = curr->next;
-            idx++;
-            tot_in_queue--;
-        } while (tot_in_queue > 0);
-        found = true;   // at this point a patient has been found
-        to_transplant = idx;
-        break;
+        else {
+            found = true;   // at this point a patient has been found
+            to_transplant = ++idx;
+            break;
+        }
 #else
         // Get the oldest in this queue (scan from head to tail) that can go to transplant
+        bool no_trans = true;
+        curr = pp_queue->queue; // get the head of the queue
         do {
             curr = curr->next;
             idx++;
@@ -132,7 +130,7 @@ patient *getPatientFromOrgan(BLOOD_TYPE organ_bt, patient_waiting_list *wl) {
     patient_queue_priority *pp_queue;
     patient_queue_blood_type *pbt_queue;
     patient *curr;
-    bool found = false, no_trans = false;
+    bool found = false;
 
     BLOOD_TYPE *comp = get_compatibles[organ_bt];     // list of compatible blood types to search for an organ
     const int size = get_num_compatibles[organ_bt];
@@ -148,16 +146,13 @@ patient *getPatientFromOrgan(BLOOD_TYPE organ_bt, patient_waiting_list *wl) {
             if (tot_in_queue == 0) continue; // test next blood type
             curr = pp_queue->queue; // get the head of the queue
 
+            // Get the oldest in this queue (scan from head to tail) that can go to transplant
 #ifdef IMPROVEMENT
-            // Get the oldest in this queue (scan from head to tail) that can go to transplant
             // No need to check for complete compatibility
-            do{
-                curr = curr->next;
-                idx++;
-                tot_in_queue--;
-            } while (tot_in_queue > 0);
+            curr = curr->next;
+            idx++;
 #else
-            // Get the oldest in this queue (scan from head to tail) that can go to transplant
+            bool no_trans = false;
             do{
                 curr = curr->next;
                 idx++;
@@ -254,7 +249,6 @@ bool handleMatchingFromPatient(event_list *events, sim_time *t, patient *p) {
     patient_queue_priority **pp_queues = pbt_queue->priority_queue;
 
     patient *to_transplant;
-
 
 #ifdef ABO_ID
     to_transplant = p;

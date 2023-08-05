@@ -3,14 +3,8 @@
 void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     FILE *f_wl, *f_ob, *f_tr, *f_act;
     char path[MAX_LEN];
-    char *model, *policy, *header;
+    char *policy, *header;
     int i,j;
-
-#ifdef REAL
-    model = "real";
-#else
-    model = "dummy";
-#endif
 
 #ifdef ABO_ID
     policy = "id";
@@ -26,9 +20,9 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Patients
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/waiting_list/waiting_list_%s_%s_%d.csv", model, policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/waiting_list/waiting_list_%s_%d.csv", policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/waiting_list_%s_%s.csv", model, policy);
+        snprintf(path, MAX_LEN, "output/waiting_list_%s.csv", policy);
     }
     OPEN_FILE(f_wl, path)
     header = "Blood type,Priority,Patients arrived,Patients dead,Patients reneged,Patients in queue,"
@@ -39,9 +33,9 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Organs
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/organs/organs_%s_%s_%d.csv", model, policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/organs/organs_%s_%d.csv", policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/organs_%s_%s.csv", model, policy);
+        snprintf(path, MAX_LEN, "output/organs_%s.csv", policy);
     }
     OPEN_FILE(f_ob, path)
     header = "Blood type,Organs arrived,Organs outdated,Organs in queue,"
@@ -50,9 +44,9 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Activation
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/activation/activation_%s_%s_%d.csv", model, policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/activation/activation_%s_%d.csv", policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/activation_%s_%s.csv", model, policy);
+        snprintf(path, MAX_LEN, "output/activation_%s.csv", policy);
     }
 
     OPEN_FILE(f_act, path)
@@ -62,9 +56,9 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Transplant
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/transplant/transplant_%s_%s_%d.csv", model, policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/transplant/transplant_%s_%d.csv", policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/transplant_%s_%s.csv", model, policy);
+        snprintf(path, MAX_LEN, "output/transplant_%s.csv", policy);
     }
     OPEN_FILE(f_tr, path)
     header = "Blood type,Priority,Successful transplants,Rejected transplants,Rejection percentage,"

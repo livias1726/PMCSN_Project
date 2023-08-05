@@ -129,7 +129,7 @@ void activePatientLoss(event_list *events, sim_time *t, LOSS_REASON reason, BLOO
     if (p != NULL) {
         addActivePatientToLost(events, t, p, lost, reason);
 #ifdef AUDIT
-        printf("A patient has left the queue with priority %s with reason %d\n", pr_to_str[priority], reason);
+        printf("A patient has left the queue with priority %s with reason %d\n", pr_to_str[pr], reason);
 #endif
     }
 }
