@@ -7,7 +7,7 @@
 #define SEED 123456789
 #define BATCH_SIZE 30                       // number of days
 #define BASE_OBSERVATION 0                  // must be at least 3 years to unblock inactive patients
-#define OBSERVATION 6                       // years of system observation after the initial phase
+#define OBSERVATION 10                       // years of system observation after the initial phase
 #define START 0.0                           /* initial sim_time                   */
 #define STOP (365 * (BASE_OBSERVATION + OBSERVATION))
 

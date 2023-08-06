@@ -210,7 +210,6 @@ void cleanUpTimeStatistics(time_integrated_stats *ti_stats) {
 
     free(ti_stats->area_activation);
     free(ti_stats->area_transplant);
-
     free(ti_stats);
 }
 
