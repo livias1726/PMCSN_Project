@@ -24,7 +24,7 @@
     (events->transplant_arrival.total_number > 0) ||                    \
     (events->activation_arrival.total_number > 0)
 
-void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
-               int *num_iterations);
+void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
+                 int *num_iterations);
 
 #endif //PMCSN_PROJECT_SIM_H

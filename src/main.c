@@ -34,7 +34,7 @@ int main(){
     time_integrated_stats *ti_stats = initializeTimeStatistics();
 
     // batches for each observation year
-    int i, num_iter = (STOP / BATCH_SIZE) + 1; // measure for each month
+    int i, num_iter = (STOP / BATCH_SIZE)*20 + 1; // measure for each month
     stats **batches = malloc(num_iter * sizeof(stats*));
     MALLOC_HANDLER(batches)
     for (i = 0; i < num_iter; ++i) {
@@ -48,7 +48,7 @@ int main(){
     time_t s, e;
     s = clock();
 
-    finiteSim(events, &sim_time, ti_stats, batches, final_stat, &num_iter);
+    infiniteSim(events, &sim_time, ti_stats, batches, final_stat, &num_iter);
 
     e = clock();
     printf("time: %lld\n", (e-s)/CLOCKS_PER_SEC);

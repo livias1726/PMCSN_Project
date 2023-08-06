@@ -33,8 +33,8 @@ double getMinTime(event_list *events) {
     return min;
 }
 
-void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
-               int *num_iterations) {
+void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
+                 int *num_iterations) {
 
     double checkpoint = t->current + BATCH_SIZE;           // set first batch;
     bool new_batch;
@@ -48,12 +48,16 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
         new_batch = t->current > checkpoint;
 
         if (new_batch){
-            new_batch = t->current < STOP;
+            //new_batch = t->current < STOP;
 
-            gatherResults(batches[iteration], events, !new_batch);
+            gatherResults(batches[iteration], events);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
             saveResultsCsv(batches[iteration], true, iteration);
+
+            iteration++;
+            checkpoint = t->current + BATCH_SIZE;
+            /*
 
             if (new_batch) {
                 iteration++;
@@ -61,6 +65,7 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
             } else {
                 printf("");
             }
+            */
         }
 
         t->current = t->next;                           // Clock update
@@ -126,7 +131,7 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
         }
     }
 
-    gatherResults(final_stat, events, 0); // to update the system state at the end of the simulation
+    gatherResults(final_stat, events); // to update the system state at the end of the simulation
     *num_iterations = iteration;
 }
 

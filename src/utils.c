@@ -20,7 +20,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Patients
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/waiting_list/waiting_list_%s_%d.csv", policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/waiting_list/%s/waiting_list_%s_%d.csv", policy, policy, batch_num);
     } else {
         snprintf(path, MAX_LEN, "output/waiting_list_%s.csv", policy);
     }
@@ -33,7 +33,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Organs
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/organs/organs_%s_%d.csv", policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/organs/%s/organs_%s_%d.csv", policy, policy, batch_num);
     } else {
         snprintf(path, MAX_LEN, "output/organs_%s.csv", policy);
     }
@@ -44,7 +44,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Activation
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/activation/activation_%s_%d.csv", policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/activation/%s/activation_%s_%d.csv", policy, policy, batch_num);
     } else {
         snprintf(path, MAX_LEN, "output/activation_%s.csv", policy);
     }
@@ -56,7 +56,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 
     // Transplant
     if (batch) {
-        snprintf(path, MAX_LEN, "output/batch/transplant/transplant_%s_%d.csv", policy, batch_num);
+        snprintf(path, MAX_LEN, "output/batch/transplant/%s/transplant_%s_%d.csv", policy, policy, batch_num);
     } else {
         snprintf(path, MAX_LEN, "output/transplant_%s.csv", policy);
     }

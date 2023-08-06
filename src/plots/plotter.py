@@ -24,11 +24,6 @@ class Policy(Enum):
     INCOMP = 3
 
 
-class Model(Enum):
-    REAL = 1
-    DUMMY = 2
-
-
 class Center(Enum):
     WAITING_LIST = 1
     TRANSPLANT = 2
@@ -36,7 +31,7 @@ class Center(Enum):
     ORGANS = 4
 
 
-def handle_wl_plot(num_batches, base):
+def handle_wl_plot(num_batches, base, policy):
     arrivals = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
     delay = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
     loss_prob = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
@@ -53,7 +48,8 @@ def handle_wl_plot(num_batches, base):
                 delay.get(b).get(p).append(df.at[idx, "Avg delay"])
                 num_center.get(b).get(p).append(df.at[idx, "Avg # in the queue"])
                 if df.at[idx, "Patients arrived"] != 0:
-                    loss_prob.get(b).get(p).append((df.at[idx, "Patients dead"]+df.at[idx, "Patients reneged"])/df.at[idx, "Patients arrived"])
+                    loss_prob.get(b).get(p).append(
+                        (df.at[idx, "Patients dead"] + df.at[idx, "Patients reneged"]) / df.at[idx, "Patients arrived"])
                 else:
                     loss_prob.get(b).get(p).append(0)
                 idx += 1
@@ -67,17 +63,18 @@ def handle_wl_plot(num_batches, base):
                 x_new = np.linspace(min(idx), max(idx), 300)
                 spl = make_interp_spline(idx, v_pr, k=3)
                 y = spl(x_new)
-                plt.plot(x_new, y, label=bt+"-"+pr)
+                plt.plot(x_new, y, label=bt + "-" + pr)
         plt.ylabel(key.lower(), fontdict=FONT_LABEL)
         plt.xlabel("Batch", fontdict=FONT_LABEL)
         plt.title(key, fontdict=FONT_TITLE)
         plt.legend()
-        plt.savefig("output/plot/waiting_list_{}.png".format(key.lower()))
+        plt.savefig("output/plot/{}/waiting_list_{}.png".format(policy.name.lower(), key.lower()))
         plt.clf()
 
 
-def handle_trans_plot(num_batches, base):
-    rejection_perc = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
+def handle_trans_plot(num_batches, base, policy):
+    rejection_perc = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []},
+                      "AB": {"c": [], "n": []}}
     num_center = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
     bt_keys = ["O", "A", "B", "AB"]
     pr_keys = ["c", "n"]
@@ -101,16 +98,16 @@ def handle_trans_plot(num_batches, base):
                 x_new = np.linspace(min(idx), max(idx), 300)
                 spl = make_interp_spline(idx, v_pr, k=3)
                 y = spl(x_new)
-                plt.plot(x_new, y, label=bt+"-"+pr)
+                plt.plot(x_new, y, label=bt + "-" + pr)
         plt.ylabel(key.lower(), fontdict=FONT_LABEL)
         plt.xlabel("Batch", fontdict=FONT_LABEL)
         plt.title(key, fontdict=FONT_TITLE)
         plt.legend()
-        plt.savefig("output/plot/transplant_{}.png".format(key.lower()))
+        plt.savefig("output/plot/{}/transplant_{}.png".format(policy.name.lower(), key.lower()))
         plt.clf()
 
 
-def handle_activ_plot(num_batches, base):
+def handle_activ_plot(num_batches, base, policy):
     arrivals = []
     activations = []
     num_center = []
@@ -139,11 +136,11 @@ def handle_activ_plot(num_batches, base):
         plt.ylabel(key.lower(), fontdict=FONT_LABEL)
         plt.xlabel("Batch", fontdict=FONT_LABEL)
         plt.title(key, fontdict=FONT_TITLE)
-        plt.savefig("output/plot/activation_{}.png".format(key.lower()))
+        plt.savefig("output/plot/{}/activation_{}.png".format(policy.name.lower(), key.lower()))
         plt.clf()
 
 
-def handle_organs_plot(num_batches, base):
+def handle_organs_plot(num_batches, base, policy):
     arrivals = {"O": [], "A": [], "B": [], "AB": []}
     loss_prob = {"O": [], "A": [], "B": [], "AB": []}
     num_center = {"O": [], "A": [], "B": [], "AB": []}
@@ -161,10 +158,10 @@ def handle_organs_plot(num_batches, base):
         num_center.get("B").append(df.at[2, "Avg # in the queue"])
         num_center.get("AB").append(df.at[3, "Avg # in the queue"])
 
-        loss_prob.get("O").append(df.at[0, "Organs outdated"]/df.at[0, "Organs arrived"])
-        loss_prob.get("A").append(df.at[1, "Organs outdated"]/df.at[1, "Organs arrived"])
-        loss_prob.get("B").append(df.at[2, "Organs outdated"]/df.at[2, "Organs arrived"])
-        loss_prob.get("AB").append(df.at[3, "Organs outdated"]/df.at[3, "Organs arrived"])
+        loss_prob.get("O").append(df.at[0, "Organs outdated"] / df.at[0, "Organs arrived"])
+        loss_prob.get("A").append(df.at[1, "Organs outdated"] / df.at[1, "Organs arrived"])
+        loss_prob.get("B").append(df.at[2, "Organs outdated"] / df.at[2, "Organs arrived"])
+        loss_prob.get("AB").append(df.at[3, "Organs outdated"] / df.at[3, "Organs arrived"])
     stats = {"ARRIVALS": arrivals, "AVG. IN NODE": num_center, "PROB. LOSS": loss_prob}
 
     for key, value in stats.items():
@@ -178,28 +175,28 @@ def handle_organs_plot(num_batches, base):
         plt.xlabel("Batch", fontdict=FONT_LABEL)
         plt.title(key, fontdict=FONT_TITLE)
         plt.legend()
-        plt.savefig("output/plot/organs_{}.png".format(key.lower()))
+        plt.savefig("output/plot/{}/organs_{}.png".format(policy.name.lower(), key.lower()))
         plt.clf()
 
 
-def plot_infinite_horizon_sim(center: Center, policy: Policy, model: Model):
+def plot_infinite_horizon_sim(center: Center, policy: Policy):
     if center.value < 0 | center.value > 5:
         print(center.value)
         print("Center is not valid...\n")
         return 1
 
     # count the number of files in directory
-    num_batches = len(fnmatch.filter(os.listdir("output/batch/{}".format(center.name.lower())), '*.*'))
+    num_batches = len(fnmatch.filter(os.listdir("output/batch/{}/{}".format(center.name.lower(), policy.name.lower())),
+                                     '*.*'))
 
-    filename_base = "output/batch/{}/{}_{}_{}_".format(center.name.lower(), center.name.lower(),
-                                                       model.name.lower(),
+    filename_base = "output/batch/{}/{}/{}_{}_".format(center.name.lower(), policy.name.lower(), center.name.lower(),
                                                        policy.name.lower())
 
     if center == Center.WAITING_LIST:
-        handle_wl_plot(num_batches, filename_base)
+        handle_wl_plot(num_batches, filename_base, policy)
     elif center == Center.TRANSPLANT:
-        handle_trans_plot(num_batches, filename_base)
+        handle_trans_plot(num_batches, filename_base, policy)
     elif center == Center.ACTIVATION:
-        handle_activ_plot(num_batches, filename_base)
+        handle_activ_plot(num_batches, filename_base, policy)
     elif center == Center.ORGANS:
-        handle_organs_plot(num_batches, filename_base)
+        handle_organs_plot(num_batches, filename_base, policy)
