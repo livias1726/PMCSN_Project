@@ -138,9 +138,6 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
             final_stat->wl_stats->num_patient_reneges[i][j] = statistics[num_stats]->wl_stats->num_patient_reneges[i][j];
             final_stat->wl_stats->num_patients_served[i][j] = statistics[num_stats]->wl_stats->num_patients_served[i][j];
 
-            final_stat->trans_stats->completed_transplants[i][j] = statistics[num_stats]->trans_stats->completed_transplants[i][j];
-            final_stat->trans_stats->rejected_transplants[i][j] = statistics[num_stats]->trans_stats->rejected_transplants[i][j];
-
             STDEV(sum, final_stat->wl_stats->std_interarrival_time[i][j], num_stats)
             CONFIDENCE(u,t,w,final_stat->wl_stats->std_interarrival_time[i][j],num_stats)
 
@@ -161,6 +158,9 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
 
             STDEV(sum, final_stat->wl_stats->utilization[i][j], num_stats)
             CONFIDENCE(u,t,w,final_stat->wl_stats->utilization[i][j],num_stats)
+
+            final_stat->trans_stats->completed_transplants[i][j] = statistics[num_stats]->trans_stats->completed_transplants[i][j];
+            final_stat->trans_stats->rejected_transplants[i][j] = statistics[num_stats]->trans_stats->rejected_transplants[i][j];
 
             final_stat->trans_stats->rejection_perc[i][j] =
                     (final_stat->trans_stats->rejected_transplants[i][j] == 0) ? 0 :
