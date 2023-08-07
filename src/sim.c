@@ -32,7 +32,7 @@ double getMinTime(event_list *events) {
 
     return min;
 }
-/*
+
 void updateArrivalRates(){
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (int j = 0; j < NUM_PRIORITIES; ++j) {
@@ -45,13 +45,13 @@ void updateArrivalRates(){
         MU_DEATH_P[i + 2] -= MU_DEATH_P[i + 2] * mu_dp_dec[2];
         MU_RENEGE_P[i + 2] += MU_RENEGE_P[i + 2] * mu_rp_inc[2];
     }
-}*/
+}
 
 void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                int *num_iterations) {
 
     double checkpoint = t->current + BATCH_SIZE;           // set first batch;
-    //double check2 = t->current + 365;
+    double check2 = t->current + 365;
     bool new_batch;
     int i, iteration = 0;
     t->current = 0;
@@ -61,12 +61,12 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
         updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
 
         new_batch = t->current > checkpoint;
-/*
+
         if (t->current > check2) {
             updateArrivalRates();
             check2 = t->current + 365;
         }
-*/
+
         if (new_batch){
             new_batch = t->current < STOP;
 
