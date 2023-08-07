@@ -198,7 +198,7 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, organ *organ) {
     PRIORITY pr = none;
     BLOOD_TYPE patient_bt = organ_bt;
     patient_queue_blood_type *pbt_queue = wl->blood_type_queues[patient_bt];
-    if (pbt_queue->number != 0) return false; // no patient in list for a ABO_identical transplant
+    if (pbt_queue->number == 0) return false; // no patient in list for a ABO_identical transplant
 
     for (int i = 0; i < NUM_PRIORITIES; ++i) {
         if (pbt_queue->priority_queue[i]->number != 0) {
