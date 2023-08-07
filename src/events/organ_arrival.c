@@ -26,7 +26,7 @@ void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bt, DONOR_TY
     o = newOrgan(bt, dt);
 
     /* Increment arrivals */
-    bank->num_arrivals[bt]++;
+    bank->num_arrivals[bt][dt]++;
 
     /* Check for matching */
     bool match = handleMatchingFromOrgan(events, t, o);

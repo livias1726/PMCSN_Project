@@ -39,7 +39,7 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
         curr_area = ti_stats->area_bank[i];
-        population_bank = ob_stats->num_organ_arrivals[i];
+        population_bank = ob_stats->num_organ_arrivals[i][0];
 
         ob_stats->avg_interarrival_time[i] = (population_bank == 0) ? 0 : t->last[organ_arrival] / population_bank;
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
@@ -86,7 +86,8 @@ void gatherResults(stats *statistics, event_list *events) {
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         statistics->ob_stats->num_organs_in_queue[i] = bank.queues[i]->number;
-        statistics->ob_stats->num_organ_arrivals[i] = bank.num_arrivals[i];
+        statistics->ob_stats->num_organ_arrivals[i][0] = bank.num_arrivals[i][0];
+        statistics->ob_stats->num_organ_arrivals[i][1] = bank.num_arrivals[i][1];
         statistics->ob_stats->num_organ_outdatings[i] = o_exp.num_renege[i];
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
@@ -121,7 +122,8 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
 
         final_stat->ob_stats->num_organs_in_queue[i] = statistics[num_stats]->ob_stats->num_organs_in_queue[i];
-        final_stat->ob_stats->num_organ_arrivals[i] = statistics[num_stats]->ob_stats->num_organ_arrivals[i];
+        final_stat->ob_stats->num_organ_arrivals[i][0] = statistics[num_stats]->ob_stats->num_organ_arrivals[i][0];
+        final_stat->ob_stats->num_organ_arrivals[i][1] = statistics[num_stats]->ob_stats->num_organ_arrivals[i][1];
         final_stat->ob_stats->num_organ_outdatings[i] = statistics[num_stats]->ob_stats->num_organ_outdatings[i];
 
         STDEV(sum, final_stat->ob_stats->std_interarrival_time[i], num_stats)

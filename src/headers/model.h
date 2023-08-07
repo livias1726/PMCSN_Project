@@ -142,7 +142,7 @@ typedef struct organ_bank {
     organ_queue *queues[NUM_BLOOD_TYPES];           /* organ queues for blood type */
     double total_number;                            /* l_{o} */
     double inter_arrival_time[NUM_BLOOD_TYPES];     /* t_{a,o,BT} */
-    double num_arrivals[NUM_BLOOD_TYPES];
+    double num_arrivals[NUM_BLOOD_TYPES][2];
 } organ_bank;
 
 /**

@@ -63,7 +63,7 @@ typedef struct waiting_list_stats{
 } waiting_list_stats;
 
 typedef struct organ_bank_stats{
-    double num_organ_arrivals[NUM_BLOOD_TYPES];            // total number of organs arrived to the system
+    double num_organ_arrivals[NUM_BLOOD_TYPES][2];            // total number of organs arrived to the system
     double num_organ_outdatings[NUM_BLOOD_TYPES];          // number of organ outdatings
     double num_organs_in_queue[NUM_BLOOD_TYPES];           // number of organs still in the bank
     double avg_interarrival_time[NUM_BLOOD_TYPES];
