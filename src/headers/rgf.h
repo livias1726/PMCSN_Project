@@ -5,7 +5,7 @@
 #include "../../lib/rvms.h"
 #include "../../lib/rvgs.h"
 
-/* TODO: test tassi incrementali */
+/* TODO: test tassi incrementali
 static double LAMBDA_P[] = {0.044, 32.348, 13.784,
                             0.033, 22.268, 9.203,
                             0.014, 9.636, 4.159,
@@ -29,9 +29,9 @@ static double MU_RENEGE_P[] = {0.011, 3.564, 7.553,
                                0.005, 1.038, 2.315,
                                0.000, 0.203, 0.370};
 static double mu_rp_inc[] = {0.083, 0.023, 0.063};
+*/
 
-
-/*
+/**/
 // Patient arrival rate [blood type][priority]
 #define LAMBDA_P (double[]){0.052, 37.68, 12.233,  \
                             0.029, 24.666, 8.642,  \
@@ -55,7 +55,6 @@ static double mu_rp_inc[] = {0.083, 0.023, 0.063};
                                0.001, 1.387, 6.310,  \
                                0.001, 0.805, 3.441,  \
                                0.001, 0.129, 0.612   }
-*/
 
 // Organ expire rate (1 day)
 #define MU_ORG 1.0
