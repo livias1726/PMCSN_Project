@@ -31,17 +31,58 @@ static double MU_RENEGE_P[] = {0.011, 3.564, 7.553,
 static double mu_rp_inc[] = {0.083, 0.023, 0.063};
 */
 
-// Patient arrival rate [blood type][priority]
-#define LAMBDA_P (double[]){0.052, 37.68, 12.233,  \
-                            0.029, 24.666, 8.642,  \
-                            0.016, 11.501, 3.725,  \
-                            0.005, 2.880, 1.019  }
+#ifdef ABO_ID
+// Organ arrival rate [blood type][donor type]
+#define LAMBDA_O (double[]){14.580822, 11.789041,  \
+                            11.306849, 5.175342,    \
+                            3.597260, 1.539726,    \
+                            1.068493, 0.306849     }
 
+// Patient arrival rate [blood type][priority]
+#define LAMBDA_P (double[]){0.052055, 42.142466, 13.526027,  \
+                            0.027397, 27.164384, 9.6684932,  \
+                            0.027397, 12.846575, 3.9698630,  \
+                            0.005479, 3.1780822, 1.1780822  }
+
+// Patient death rate [blood type][priority]
+#define MU_DEATH_P (double[]){0.002740, 2.394521, 3.460274,  \
+                              0.000000, 1.008219, 1.906849,  \
+                              0.000000, 0.739726, 1.046575,  \
+                              0.000000, 0.093151, 0.180822  }
+
+// Additional percentage of patients to renege from waiting list [blood type]
+#define ADDITIONAL_EXIT_PERCENTAGE (double[]){0.46, /* O */ \
+                                              0.55, /* A */ \
+                                              0.53, /* B */ \
+                                              0.68  /* AB */ }
+// Patient renege rate [blood type][priority]
+#define BASE_RENEGE_P (double[]){0.000000, 4.284932, 12.975342,  \
+                                 0.005479, 2.367123, 7.315068,  \
+                                 0.000000, 1.309589, 4.104110,   \
+                                 0.000000, 0.238356, 0.632877   }
+
+#define INC_RENEGE_P (double[]) {BASE_RENEGE_P[0]*ADDITIONAL_EXIT_PERCENTAGE[0], BASE_RENEGE_P[1]*ADDITIONAL_EXIT_PERCENTAGE[0], BASE_RENEGE_P[2]*ADDITIONAL_EXIT_PERCENTAGE[0], \
+                                BASE_RENEGE_P[3]*ADDITIONAL_EXIT_PERCENTAGE[1], BASE_RENEGE_P[4]*ADDITIONAL_EXIT_PERCENTAGE[1], BASE_RENEGE_P[5]*ADDITIONAL_EXIT_PERCENTAGE[1], \
+                                BASE_RENEGE_P[6]*ADDITIONAL_EXIT_PERCENTAGE[2], BASE_RENEGE_P[7]*ADDITIONAL_EXIT_PERCENTAGE[2], BASE_RENEGE_P[8]*ADDITIONAL_EXIT_PERCENTAGE[2], \
+                                BASE_RENEGE_P[9]*ADDITIONAL_EXIT_PERCENTAGE[3], BASE_RENEGE_P[10]*ADDITIONAL_EXIT_PERCENTAGE[3], BASE_RENEGE_P[11]*ADDITIONAL_EXIT_PERCENTAGE[3] }
+
+#define MU_RENEGE_P (double[]) {BASE_RENEGE_P[0]+INC_RENEGE_P[0], BASE_RENEGE_P[1]+INC_RENEGE_P[1], BASE_RENEGE_P[2]+INC_RENEGE_P[2], \
+                                BASE_RENEGE_P[3]+INC_RENEGE_P[3], BASE_RENEGE_P[4]+INC_RENEGE_P[4], BASE_RENEGE_P[5]+INC_RENEGE_P[5], \
+                                BASE_RENEGE_P[6]+INC_RENEGE_P[6], BASE_RENEGE_P[7]+INC_RENEGE_P[7], BASE_RENEGE_P[8]+INC_RENEGE_P[8], \
+                                BASE_RENEGE_P[9]+INC_RENEGE_P[9], BASE_RENEGE_P[10]+INC_RENEGE_P[10], BASE_RENEGE_P[11]+INC_RENEGE_P[11] }
+
+#else
 // Organ arrival rate [blood type][donor type]
 #define LAMBDA_O (double[]){12.11, 10.31,  \
                             9.40, 4.54,    \
                             2.99, 1.34,    \
                             0.87, 0.22     }
+
+// Patient arrival rate [blood type][priority]
+#define LAMBDA_P (double[]){0.052, 37.68, 12.233,  \
+                            0.029, 24.666, 8.642,  \
+                            0.016, 11.501, 3.725,  \
+                            0.005, 2.880, 1.019       }
 
 // Patient death rate [blood type][priority]
 #define MU_DEATH_P (double[]){0.003, 2.504, 3.947,  \
@@ -49,19 +90,20 @@ static double mu_rp_inc[] = {0.083, 0.023, 0.063};
                               0.000, 0.776, 1.212,  \
                               0.000, 0.105, 0.225  }
 
-
 // Patient renege rate [blood type][priority]
-/*#define MU_RENEGE_P (double[]){0.006, 4.168, 13.043,  \
+#define MU_RENEGE_P (double[]){0.006, 4.168, 13.043,  \
                                0.001, 2.338, 7.623,  \
                                0.000, 1.244, 3.999,   \
-                               0.001, 0.211, 0.756   }*/
+                               0.001, 0.211, 0.756   }
 
 // Patient renege rate [blood type][priority]
 
-#define MU_RENEGE_P (double[]){0.002, 2.677, 11.036, \
+/*#define MU_RENEGE_P (double[]){0.002, 2.677, 11.036, \
                                0.001, 1.387, 6.310,  \
                                0.001, 0.805, 3.441,  \
-                               0.001, 0.129, 0.612   }
+                               0.001, 0.129, 0.612   }*/
+
+#endif
 
 
 // Organ expire rate (1 day)
