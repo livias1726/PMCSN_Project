@@ -120,11 +120,12 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
     double u = 1.0 - 0.5 * (1.0 - LOC), t, w;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-
+        /*
         final_stat->ob_stats->num_organs_in_queue[i] = statistics[num_stats]->ob_stats->num_organs_in_queue[i];
         final_stat->ob_stats->num_organ_arrivals[i][0] = statistics[num_stats]->ob_stats->num_organ_arrivals[i][0];
         final_stat->ob_stats->num_organ_arrivals[i][1] = statistics[num_stats]->ob_stats->num_organ_arrivals[i][1];
         final_stat->ob_stats->num_organ_outdatings[i] = statistics[num_stats]->ob_stats->num_organ_outdatings[i];
+        */
 
         STDEV(sum, final_stat->ob_stats->std_interarrival_time[i], num_stats)
         CONFIDENCE(u,t,w,final_stat->ob_stats->std_interarrival_time[i],num_stats)
