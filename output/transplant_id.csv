@@ -1,4 +1,4 @@
-Blood type,Priority,Successful transplants,Rejected transplants,Rejection percentage,Avg # in the node,CI # in the node
+Blood type,Priority,Successful transplant,Rejected transplant,Rejection percentage,Avg # in the node,CI # in the node
 0,critical,193.000000,0.000000,0.000000,848.185116,+/-9.106937
 0,normal,115581.000000,0.000000,0.000000,848.185116,+/-9.106937
 A,critical,106.000000,0.000000,0.000000,848.185116,+/-9.106937

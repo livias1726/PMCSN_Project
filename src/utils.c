@@ -15,6 +15,8 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 #ifdef IMPROVEMENT
     policy = "incomp";
 #endif
+    struct stat st = {0};
+
 
     // ----------------------------------------------- HEADERS -------------------------------------------------------
 
@@ -61,7 +63,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
         snprintf(path, MAX_LEN, "output/transplant_%s.csv", policy);
     }
     OPEN_FILE(f_tr, path)
-    header = "Blood type,Priority,Successful transplants,Rejected transplants,Rejection percentage,"
+    header = "Blood type,Priority,Successful transplant,Rejected transplant,Rejection percentage,"
              "Avg # in the node,CI # in the node\n";
     fprintf(f_tr, "%s", header);
 
