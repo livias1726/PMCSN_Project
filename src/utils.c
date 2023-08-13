@@ -40,7 +40,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
         snprintf(path, MAX_LEN, "output/organs_%s.csv", policy);
     }
     OPEN_FILE(f_ob, path)
-    header = "Blood type,Organs arrived,Organs outdated,Organs in queue,"
+    header = "Blood type,Deceased donor organs arrived,Living donor organs arrived,Organs outdated,Organs in queue,"
              "Avg inter-arrival times,CI inter-arrival times,Avg # in the queue,CI # in the queue\n";
     fprintf(f_ob, "%s", header);
 
@@ -74,8 +74,8 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     activation_stats *act_stats = statistics->act_stats;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        fprintf(f_ob, "%s,%f,%f,%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
-                ob_stats->num_organ_arrivals[i], ob_stats->num_organ_outdatings[i], ob_stats->num_organs_in_queue[i],
+        fprintf(f_ob, "%s,%f,%f,%f,%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
+                ob_stats->num_organ_arrivals[i][0], ob_stats->num_organ_arrivals[i][1], ob_stats->num_organ_outdatings[i], ob_stats->num_organs_in_queue[i],
                 ob_stats->avg_interarrival_time[i], ob_stats->std_interarrival_time[i],
                 ob_stats->avg_in_queue[i], ob_stats->std_in_queue[i]);
 
