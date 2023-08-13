@@ -48,7 +48,6 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
         completion = wl_stats->num_patients_served[i][critical]+wl_stats->num_patients_served[i][normal];
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
-            // FIXME: il tempo di attesa dei low deve essere sommato al tempo di attesa in attivazione!!
             curr_area = ti_stats->area_waiting_list[i][j];
             population_wl = wl_stats->num_patient_arrivals[i][j];
 
@@ -195,15 +194,17 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
 
         /* Update organ bank integrals */
         number_bank = events->organ_arrival.queues[i]->number;
-        ti_stats->area_bank[i]->node += diff * (number_bank+1);
+        //fixme useless: ti_stats->area_bank[i]->node += diff * (number_bank+1);
         ti_stats->area_bank[i]->queue += diff * (number_bank);
-        ti_stats->area_bank[i]->service += diff;
+        //fixme useless: ti_stats->area_bank[i]->service += diff;
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
-            ti_stats->area_waiting_list[i][j]->node += diff * (number_wl+1);
-            ti_stats->area_waiting_list[i][j]->queue += diff * (number_wl);
-            ti_stats->area_waiting_list[i][j]->service += diff;
+            if (number_wl > 0) {
+                ti_stats->area_waiting_list[i][j]->node += diff * (number_wl);
+                ti_stats->area_waiting_list[i][j]->queue += diff * (number_wl-1);
+                ti_stats->area_waiting_list[i][j]->service += diff;
+            }
         }
     }
 

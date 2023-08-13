@@ -5,7 +5,7 @@
 #include "stats.h"
 
 #define SEED 123456789
-#define BATCH_SIZE 1                       // number of days
+#define BATCH_SIZE 365                       // number of days
 #define BASE_OBSERVATION 0                  // must be at least 3 years to unblock inactive patients
 #define OBSERVATION 10                       // years of system observation after the initial phase
 #define START 0.0                           /* initial sim_time                   */
