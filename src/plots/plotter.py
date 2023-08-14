@@ -17,7 +17,6 @@ FONT_LABEL = {'color': 'black', 'size': 14}
 FONT_TITLE = {'color': 'black', 'size': 26}
 FONT_NUM = 14
 
-
 class Policy(Enum):
     ID = 1
     COMP = 2
@@ -44,12 +43,12 @@ def handle_wl_plot(num_batches, base, policy):
         idx = 0
         for b in bt_keys:
             for p in pr_keys:
-                arrivals.get(b).get(p).append(df.at[idx, "Patients arrived"])
+                arrivals.get(b).get(p).append(df.at[idx, "(Avg) Patients arrived"])
                 delay.get(b).get(p).append(df.at[idx, "Avg delay"])
                 num_center.get(b).get(p).append(df.at[idx, "Avg # in the queue"])
-                if df.at[idx, "Patients arrived"] != 0:
+                if df.at[idx, "(Avg) Patients arrived"] != 0:
                     loss_prob.get(b).get(p).append(
-                        (df.at[idx, "Patients dead"] + df.at[idx, "Patients reneged"]) / df.at[idx, "Patients arrived"])
+                        (df.at[idx, "(Avg) Patients dead"] + df.at[idx, "(Avg) Patients reneged"]) / df.at[idx, "(Avg) Patients arrived"])
                 else:
                     loss_prob.get(b).get(p).append(0)
                 idx += 1
@@ -103,7 +102,7 @@ def handle_trans_plot(num_batches, base, policy):
         plt.xlabel("Batch", fontdict=FONT_LABEL)
         plt.title(key, fontdict=FONT_TITLE)
         plt.legend()
-        plt.savefig("output/plot/{}/transplant_{}.png".format(policy.name.lower(), key.lower()))
+        plt.savefig("output/plot/{}/transplant_{}.png".format(policy.name.lower(), policy.name.lower(), key.lower()))
         plt.clf()
 
 
@@ -116,9 +115,9 @@ def handle_activ_plot(num_batches, base, policy):
     for i in range(0, num_batches):
         filename = base + "{}.csv".format(i)
         df = pd.read_csv(filename)
-        arrivals.append(df.at[0, "Patients arrived"])
-        activations.append(df.at[0, "Patients activated"])
-        prob_loss.append((df.at[0, "Patients dead"] + df.at[0, "Patients reneged"]) / df.at[0, "Patients arrived"])
+        arrivals.append(df.at[0, "(Avg) Patients arrived"])
+        activations.append(df.at[0, "(Avg) Patients activated"])
+        prob_loss.append((df.at[0, "(Avg) Patients dead"] + df.at[0, "(Avg) Patients reneged"]) / df.at[0, "(Avg) Patients arrived"])
         num_center.append(df.at[0, "Avg # in the node"])
         delay.append(df.at[0, "Avg delay"])
     stats = {"ARRIVALS": arrivals, "ACTIVATIONS": activations, "AVG. IN NODE": num_center, "DELAY": delay,
@@ -141,42 +140,60 @@ def handle_activ_plot(num_batches, base, policy):
 
 
 def handle_organs_plot(num_batches, base, policy):
-    arrivals = {"O": [], "A": [], "B": [], "AB": []}
+    arrivals = {"O": {"d": [], "l": []}, "A": {"d": [], "l": []}, "B": {"d": [], "l": []}, "AB": {"d": [], "l": []}}
     loss_prob = {"O": [], "A": [], "B": [], "AB": []}
     num_center = {"O": [], "A": [], "B": [], "AB": []}
     for i in range(0, num_batches):
         filename = base + "{}.csv".format(i)
         df = pd.read_csv(filename)
-        print(df.at[0, "Organs arrived"])
-        arrivals.get("O").append(df.at[0, "Organs arrived"])
-        arrivals.get("A").append(df.at[1, "Organs arrived"])
-        arrivals.get("B").append(df.at[2, "Organs arrived"])
-        arrivals.get("AB").append(df.at[3, "Organs arrived"])
+        arrivals.get("O").get("d").append(df.at[0, "(Avg) Deceased donor organs arrived"])
+        arrivals.get("A").get("d").append(df.at[1, "(Avg) Deceased donor organs arrived"])
+        arrivals.get("B").get("d").append(df.at[2, "(Avg) Deceased donor organs arrived"])
+        arrivals.get("AB").get("d").append(df.at[3, "(Avg) Deceased donor organs arrived"])
+
+        arrivals.get("O").get("l").append(df.at[0, "(Avg) Living donor organs arrived"])
+        arrivals.get("A").get("l").append(df.at[1, "(Avg) Living donor organs arrived"])
+        arrivals.get("B").get("l").append(df.at[2, "(Avg) Living donor organs arrived"])
+        arrivals.get("AB").get("l").append(df.at[3, "(Avg) Living donor organs arrived"])
 
         num_center.get("O").append(df.at[0, "Avg # in the queue"])
         num_center.get("A").append(df.at[1, "Avg # in the queue"])
         num_center.get("B").append(df.at[2, "Avg # in the queue"])
         num_center.get("AB").append(df.at[3, "Avg # in the queue"])
 
-        loss_prob.get("O").append(df.at[0, "Organs outdated"] / df.at[0, "Organs arrived"])
-        loss_prob.get("A").append(df.at[1, "Organs outdated"] / df.at[1, "Organs arrived"])
-        loss_prob.get("B").append(df.at[2, "Organs outdated"] / df.at[2, "Organs arrived"])
-        loss_prob.get("AB").append(df.at[3, "Organs outdated"] / df.at[3, "Organs arrived"])
+        loss_prob.get("O").append(df.at[0, "(Avg) Organs outdated"] / df.at[0, "(Avg) Deceased donor organs arrived"])
+        loss_prob.get("A").append(df.at[1, "(Avg) Organs outdated"] / df.at[1, "(Avg) Deceased donor organs arrived"])
+        loss_prob.get("B").append(df.at[2, "(Avg) Organs outdated"] / df.at[2, "(Avg) Deceased donor organs arrived"])
+        loss_prob.get("AB").append(df.at[3, "(Avg) Organs outdated"] / df.at[3, "(Avg) Deceased donor organs arrived"])
     stats = {"ARRIVALS": arrivals, "AVG. IN NODE": num_center, "PROB. LOSS": loss_prob}
 
     for key, value in stats.items():
         idx = range(num_batches)
-        for bt, v in value.items():
-            x_new = np.linspace(min(idx), max(idx), 300)
-            spl = make_interp_spline(idx, v, k=3)
-            y = spl(x_new)
-            plt.plot(x_new, y, label=bt)
-        plt.ylabel(key.lower(), fontdict=FONT_LABEL)
-        plt.xlabel("Batch", fontdict=FONT_LABEL)
-        plt.title(key, fontdict=FONT_TITLE)
-        plt.legend()
-        plt.savefig("output/plot/{}/organs_{}.png".format(policy.name.lower(), key.lower()))
-        plt.clf()
+        if key == "ARRIVALS":
+            for bt, v in value.items():
+                for t, v_type in v.items():
+                    x_new = np.linspace(min(idx), max(idx), 300)
+                    spl = make_interp_spline(idx, v_type, k=3)
+                    y = spl(x_new)
+                    plt.plot(x_new, y, label=bt + "-" + t)
+                    plt.ylabel(key.lower(), fontdict=FONT_LABEL)
+                    plt.xlabel("Batch", fontdict=FONT_LABEL)
+                    plt.title(key, fontdict=FONT_TITLE)
+                    plt.legend()
+                    plt.savefig("output/plot/{}/organs_{}_{}.png".format(policy.name.lower(), key.lower(), t))
+                    plt.clf()
+        else:
+            for bt, v in value.items():
+                x_new = np.linspace(min(idx), max(idx), 300)
+                spl = make_interp_spline(idx, v, k=3)
+                y = spl(x_new)
+                plt.plot(x_new, y, label=bt)
+            plt.ylabel(key.lower(), fontdict=FONT_LABEL)
+            plt.xlabel("Batch", fontdict=FONT_LABEL)
+            plt.title(key, fontdict=FONT_TITLE)
+            plt.legend()
+            plt.savefig("output/plot/{}/organs_{}.png".format(policy.name.lower(), key.lower()))
+            plt.clf()
 
 
 def plot_infinite_horizon_sim(center: Center, policy: Policy):

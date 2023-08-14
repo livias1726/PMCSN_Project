@@ -130,8 +130,8 @@ void gatherResults(stats *statistics, stats *prev_statistics, event_list *events
         }
 
         // fixme: activation center
-        statistics->act_stats->num_deaths = p_lost.number_dead[i][j];
-        statistics->act_stats->num_reneges = p_lost.number_renege[i][j];
+        statistics->act_stats->num_deaths += p_lost.number_dead[i][j];
+        statistics->act_stats->num_reneges += p_lost.number_renege[i][j];
     }
 
     // fixme
@@ -295,6 +295,10 @@ void welford(int iter, stats *stat, stats *batch){
     }
 
     // Activation center
+    WELFORD(diff, batch->act_stats->num_arrivals,stat->act_stats->avg_arrivals,stat->act_stats->std_arrivals,iter)
+    WELFORD(diff, batch->act_stats->num_deaths,stat->act_stats->avg_deaths,stat->act_stats->std_deaths,iter)
+    WELFORD(diff, batch->act_stats->num_reneges,stat->act_stats->avg_reneges,stat->act_stats->std_reneges,iter)
+    WELFORD(diff, batch->act_stats->num_activated,stat->act_stats->avg_activated,stat->act_stats->std_activated,iter)
     WELFORD(diff, batch->act_stats->avg_in_node,stat->act_stats->avg_in_node,stat->act_stats->std_in_node,iter)
     WELFORD(diff, batch->act_stats->avg_delay,stat->act_stats->avg_delay,stat->act_stats->std_delay,iter)
 

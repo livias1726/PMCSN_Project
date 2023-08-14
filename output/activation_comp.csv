@@ -1,2 +1,2 @@
-Patients arrived,Patients activated,Patients dead,Patients reneged,Avg delay,CI delay,Avg # in the node,CI # in the node
-149501.000000,607.000000,1431.000000,3981.000000,50992.274064,+/-83856.111516,355.258597,+/-59.713452
+(Avg) Patients arrived,CI arrivals,(Avg) Patients activated,CI activations,(Avg) Patients dead,CI deaths,(Avg) Patients reneged,CI reneges,Avg delay,CI delay,Avg # in the node,CI # in the node
+149438.379310,+/-201904629158.827545,594.827586,+/-9449894.137931,38916.413793,+/-13556111299.034483,109212.275862,+/-108083707205.793106,40464.563197,+/-65605.510484,463.286714,+/-74.416580

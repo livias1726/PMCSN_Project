@@ -137,6 +137,9 @@ static double mu_rp_inc[] = {0.083, 0.023, 0.063};
                                    0.14, /* B */ \
                                    0.05 /* AB */ }
 
+// Critical probability:
+#define CRIT_P 0.3
+
 //--------------------------------------------------------------------------------------------------------------------
 double getOrganArrival(BLOOD_TYPE bt, DONOR_TYPE dt, double arrival);
 double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arrival);
@@ -146,6 +149,7 @@ double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arriv
 double getActivationCompletion(double arrival);
 double getTransplantCompletion(double arrival);
 double getRejectionProb();
+double getCriticalProb();
 double getTransplantProb(BLOOD_TYPE bt);
 
 #endif //PMCSN_PROJECT_RGF_H

@@ -73,7 +73,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
             gatherResults(batches[iteration], batches[iteration-1], events, iteration);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
-            //saveResultsCsv(batches[iteration], true, iteration);
+            saveResultsCsv(final_stat, true, iteration);
 
             iteration++;
             checkpoint = t->current + BATCH_SIZE;

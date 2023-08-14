@@ -61,7 +61,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     }
 
     OPEN_FILE(f_act, path)
-    header = "Patients arrived,Patients activated,Patients dead,Patients reneged,Avg delay,CI delay,"
+    header = "(Avg) Patients arrived,CI arrivals,(Avg) Patients activated,CI activations,(Avg) Patients dead,CI deaths,(Avg) Patients reneged,CI reneges,Avg delay,CI delay,"
              "Avg # in the node,CI # in the node\n";
     fprintf(f_act, "%s", header);
 
@@ -110,9 +110,13 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
         }
     }
 
-    fprintf(f_act, "%f,%f,%f,%f,%f,+/-%f,%f,+/-%f\n",
-            act_stats->num_arrivals, act_stats->num_activated, act_stats->num_deaths, act_stats->num_reneges,
-            act_stats->avg_delay, act_stats->std_delay, act_stats->avg_in_node, act_stats->std_in_node);
+    fprintf(f_act, "%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n",
+            act_stats->avg_arrivals, act_stats->std_arrivals,
+            act_stats->avg_activated, act_stats->std_activated,
+            act_stats->avg_deaths, act_stats->std_deaths,
+            act_stats->avg_reneges, act_stats->std_reneges,
+            act_stats->avg_delay, act_stats->std_delay,
+            act_stats->avg_in_node, act_stats->std_in_node);
 
     fclose(f_wl);
     fclose(f_ob);

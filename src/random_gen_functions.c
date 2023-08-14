@@ -112,3 +112,8 @@ double getTransplantProb(BLOOD_TYPE bt) {
 
     return Random();
 }
+
+double getCriticalProb() {
+    SelectStream(49);
+    return Random();
+}

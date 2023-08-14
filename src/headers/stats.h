@@ -107,10 +107,18 @@ typedef struct activation_stats{
     double num_activated;
 
     // means
+    double avg_arrivals;
+    double avg_deaths;
+    double avg_reneges;
+    double avg_activated;
     double avg_delay;
     double avg_in_node;
 
     // stdev: used first as a sum container, then for the std deviation and lastly as confidence interval
+    double std_arrivals;
+    double std_deaths;
+    double std_reneges;
+    double std_activated;
     double std_delay;
     double std_in_node;
 } activation_stats;

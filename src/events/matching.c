@@ -83,7 +83,7 @@ patient *getPatientFromPatient(patient* arrived, patient_waiting_list *wl) {
         do {
             curr = curr->next;
             idx++;
-            no_trans = (getTransplantProb(patient_bt) < TRANSPLANT_PROB[patient_bt]); // check for complete compatibility
+            no_trans = (getTransplantProb(patient_bt) >= TRANSPLANT_PROB[patient_bt]); // check for complete compatibility
             tot_in_queue--;
         } while (tot_in_queue > 0 && no_trans);
 
