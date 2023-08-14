@@ -42,8 +42,15 @@ typedef struct waiting_list_stats{
     double num_patient_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];       // number of reneges occurred in each waiting list
     double num_patients_in_queue[NUM_BLOOD_TYPES][NUM_PRIORITIES];     // number of patients still in waiting list
     double num_patients_served[NUM_BLOOD_TYPES][NUM_PRIORITIES];       // number of patients matched
+    double sum_patient_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double sum_patient_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double sum_patient_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double sum_patient_served[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 
     // means
+    double avg_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_interarrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_wait[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_delay[NUM_BLOOD_TYPES][NUM_PRIORITIES];
@@ -53,6 +60,9 @@ typedef struct waiting_list_stats{
     double utilization[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 
     // stdev: used first as a sum container, then for the std deviation and lastly as confidence interval
+    double std_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_interarrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_wait[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_delay[NUM_BLOOD_TYPES][NUM_PRIORITIES];
@@ -63,11 +73,21 @@ typedef struct waiting_list_stats{
 } waiting_list_stats;
 
 typedef struct organ_bank_stats{
-    double num_organ_arrivals[NUM_BLOOD_TYPES][2];            // total number of organs arrived to the system
+    double num_organ_arrivals[NUM_BLOOD_TYPES][2];         // total number of organs arrived to the system
     double num_organ_outdatings[NUM_BLOOD_TYPES];          // number of organ outdatings
     double num_organs_in_queue[NUM_BLOOD_TYPES];           // number of organs still in the bank
+    double sum_organ_arrivals[NUM_BLOOD_TYPES][2];
+    double sum_organ_outdatings[NUM_BLOOD_TYPES];
+
+    // means
+    double avg_arrivals[NUM_BLOOD_TYPES][2];
+    double avg_outdatings[NUM_BLOOD_TYPES];
     double avg_interarrival_time[NUM_BLOOD_TYPES];
     double avg_in_queue[NUM_BLOOD_TYPES];
+
+    // stdev
+    double std_arrivals[NUM_BLOOD_TYPES][2];
+    double std_outdatings[NUM_BLOOD_TYPES];
     double std_interarrival_time[NUM_BLOOD_TYPES];
     double std_in_queue[NUM_BLOOD_TYPES];
 } organ_bank_stats;
@@ -106,7 +126,7 @@ typedef struct statistics{
 } stats;
 
 // ------------------- PROTOTYPES ----------------
-void gatherResults(stats *statistics, event_list *events);
+void gatherResults(stats *statistics, stats *prev_statistics, event_list *events, int iter_num);
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
 void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
 void computeFinalStatistics(stats *final_stat, stats **batches, int num_stats);

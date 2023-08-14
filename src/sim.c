@@ -70,7 +70,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
         if (new_batch){
             //new_batch = t->current < STOP;
 
-            gatherResults(batches[iteration], events);
+            gatherResults(batches[iteration], batches[iteration-1], events, iteration);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
             //saveResultsCsv(batches[iteration], true, iteration);
@@ -149,7 +149,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
         }
     }
 
-    gatherResults(final_stat, events); // to update the system state at the end of the simulation
+    gatherResults(final_stat, batches[iteration], events, iteration); // to update the system state at the end of the simulation
     *num_iterations = iteration;
 }
 
