@@ -50,7 +50,7 @@ void updateArrivalRates(){
 void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                  int *num_iterations) {
 
-    double checkpoint = t->current + BATCH_SIZE;           // set first batch;
+    double batch_cp = t->current + BATCH_SIZE;           // set first batch;
     //double check2 = t->current + 365;
     bool new_batch;
     int i, iteration = 0;
@@ -60,7 +60,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
         t->next = getMinTime(events);		            // Choose next event selecting minimum time
         updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
 
-        new_batch = t->current > checkpoint;
+        new_batch = t->current > batch_cp;
 /*
         if (t->current > check2) {
             updateArrivalRates();
@@ -76,12 +76,12 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
             saveResultsCsv(final_stat, true, iteration);
 
             iteration++;
-            checkpoint = t->current + BATCH_SIZE;
+            batch_cp = t->current + BATCH_SIZE;
             /*
 
             if (new_batch) {
                 iteration++;
-                checkpoint = t->current + BATCH_SIZE;
+                batch_cp = t->current + BATCH_SIZE;
             }
             */
         }
