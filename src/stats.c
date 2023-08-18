@@ -6,7 +6,7 @@
 
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
     double curr = t->current;
-    double population_bank, population_wl, completion;
+    double population_bank, completion_bank, population_wl, completion;
     area * curr_area;
 
     waiting_list_stats* wl_stats = stats->wl_stats;
@@ -40,8 +40,16 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
         // Organ bank
         curr_area = ti_stats->area_bank[i];
         population_bank = ob_stats->sum_organ_arrivals[i][0];
+        completion_bank = ob_stats->sum_organs_completions[i][0];
 
         ob_stats->avg_interarrival_time[i] = (population_bank == 0) ? 0 : t->last[organ_arrival] / population_bank;
+
+        if (completion_bank != 0) {
+            ob_stats->avg_wait[i][0] = curr_area->node / completion_bank;
+            ob_stats->avg_delay[i][0] = curr_area->queue / completion_bank;
+            ob_stats->avg_service[i][0] = curr_area->service / completion_bank;
+        }
+
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
 
         // Waiting list
@@ -90,15 +98,21 @@ void gatherResults(stats *statistics, stats *prev_statistics, event_list *events
         if (iter_num != 0) {
             statistics->ob_stats->num_organ_arrivals[i][0] = bank.num_arrivals[i][0]-prev_statistics->ob_stats->sum_organ_arrivals[i][0];
             statistics->ob_stats->num_organ_arrivals[i][1] = bank.num_arrivals[i][1]-prev_statistics->ob_stats->sum_organ_arrivals[i][1];
+            statistics->ob_stats->num_organs_completions[i][0] = bank.num_completions[i][0]-prev_statistics->ob_stats->sum_organs_completions[i][0];
+            statistics->ob_stats->num_organs_completions[i][1] = bank.num_completions[i][1]-prev_statistics->ob_stats->sum_organs_completions[i][1];
             statistics->ob_stats->num_organ_outdatings[i] = o_exp.num_renege[i]-prev_statistics->ob_stats->sum_organ_outdatings[i];
         } else {
             statistics->ob_stats->num_organ_arrivals[i][0] = bank.num_arrivals[i][0];
             statistics->ob_stats->num_organ_arrivals[i][1] = bank.num_arrivals[i][1];
+            statistics->ob_stats->num_organs_completions[i][0] = bank.num_completions[i][0];
+            statistics->ob_stats->num_organs_completions[i][1] = bank.num_completions[i][1];
             statistics->ob_stats->num_organ_outdatings[i] = o_exp.num_renege[i];
         }
 
         statistics->ob_stats->sum_organ_arrivals[i][0] = bank.num_arrivals[i][0];
         statistics->ob_stats->sum_organ_arrivals[i][1] = bank.num_arrivals[i][1];
+        statistics->ob_stats->sum_organs_completions[i][0] = bank.num_completions[i][0];
+        statistics->ob_stats->sum_organs_completions[i][1] = bank.num_completions[i][1];
         statistics->ob_stats->sum_organ_outdatings[i] = o_exp.num_renege[i];
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
@@ -237,15 +251,17 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
 
     int i,j;
 
-    /* Update waiting list integrals */
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
 
         /* Update organ bank integrals */
         number_bank = events->organ_arrival.queues[i]->number;
-        //fixme useless: ti_stats->area_bank[i]->node += diff * (number_bank+1);
-        ti_stats->area_bank[i]->queue += diff * (number_bank);
-        //fixme useless: ti_stats->area_bank[i]->service += diff;
+        if (number_bank > 0) {
+            ti_stats->area_bank[i]->node += diff * (number_bank);
+            ti_stats->area_bank[i]->queue += diff * (number_bank-1);
+            ti_stats->area_bank[i]->service += diff;
+        }
 
+        /* Update waiting list integrals */
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             number_wl = events->patient_arrival.blood_type_queues[i]->priority_queue[j]->number;
             if (number_wl > 0) {
@@ -277,6 +293,12 @@ void welford(int iter, stats *stat, stats *batch){
         WELFORD(diff, batch->ob_stats->num_organ_arrivals[i][1], stat->ob_stats->avg_arrivals[i][1], stat->ob_stats->std_arrivals[i][1], iter);
         WELFORD(diff, batch->ob_stats->num_organ_outdatings[i], stat->ob_stats->avg_outdatings[i], stat->ob_stats->std_outdatings[i], iter);
         WELFORD(diff, batch->ob_stats->avg_interarrival_time[i],stat->ob_stats->avg_interarrival_time[i],stat->ob_stats->std_interarrival_time[i],iter)
+        WELFORD(diff, batch->ob_stats->avg_wait[i][0], stat->ob_stats->avg_wait[i][0], stat->ob_stats->std_wait[i][0], iter)
+        WELFORD(diff, batch->ob_stats->avg_delay[i][0], stat->ob_stats->avg_delay[i][0], stat->ob_stats->std_delay[i][0], iter)
+        WELFORD(diff, batch->ob_stats->avg_service[i][0], stat->ob_stats->avg_service[i][0], stat->ob_stats->std_service[i][0], iter)
+        WELFORD(diff, batch->ob_stats->avg_wait[i][1], stat->ob_stats->avg_wait[i][1], stat->ob_stats->std_wait[i][1], iter)
+        WELFORD(diff, batch->ob_stats->avg_delay[i][1], stat->ob_stats->avg_delay[i][1], stat->ob_stats->std_delay[i][1], iter)
+        WELFORD(diff, batch->ob_stats->avg_service[i][1], stat->ob_stats->avg_service[i][1], stat->ob_stats->std_service[i][1], iter)
         WELFORD(diff, batch->ob_stats->avg_in_queue[i],stat->ob_stats->avg_in_queue[i],stat->ob_stats->std_in_queue[i],iter)
 
         for (int j = 0; j < NUM_PRIORITIES; ++j) {

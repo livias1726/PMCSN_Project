@@ -1,5 +1,96 @@
 #include "headers/utils.h"
 
+void saveResultsLean(stats *statistics) {
+    FILE *f_wl, *f_ob, *f_tr, *f_act;
+    char path[MAX_LEN];
+    char *policy, *s, *format;
+    int i,j;
+
+#ifdef ABO_ID
+    policy = "id";
+#else
+    policy = "comp";
+#endif
+
+#ifdef IMPROVEMENT
+    policy = "incomp";
+#endif
+    struct stat st = {0};
+
+    // waiting list
+    format = "Results for WAITING_LIST:"
+             "Arrivals ............... = %f\n"
+             "Completions ............ = %f\n"
+             "Reneged ................ = %f\n"
+             "Average wait ........... = %f\n"
+             "Average delay .......... = %f\n"
+             "Average service time ... = %f\n";
+    s = malloc(sizeof(char ) * strlen(format));
+
+    for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
+        for (int l = 0; l < NUM_PRIORITIES; ++l) {
+            snprintf(path, MAX_LEN, "output/lean/waiting_list_%s_%u_%u.txt", policy, (PRIORITY)l, (BLOOD_TYPE)k);
+            OPEN_FILE(f_wl, path)
+            sprintf(s, format,
+                    statistics->wl_stats->sum_patient_arrivals[k][l],
+                    statistics->wl_stats->sum_patient_served[k][l],
+                    statistics->wl_stats->sum_patient_reneges[k][l]+statistics->wl_stats->sum_patient_deaths[k][l],
+                    statistics->wl_stats->avg_wait[k][l],
+                    statistics->wl_stats->avg_delay[k][l],
+                    statistics->wl_stats->avg_service[k][l]);
+        }
+    }
+
+    free(s);
+
+    // organs
+    format = "Results for ORGAN_BANK:"
+             "Arrivals ............... = %f\n"
+             "Completions ............ = %f\n"
+             "Reneged ................ = %f\n"
+             "Average wait ........... = %f\n"
+             "Average delay .......... = %f\n"
+             "Average service time ... = %f\n";
+    s = malloc(sizeof(char ) * strlen(format));
+
+    for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
+        snprintf(path, MAX_LEN, "output/lean/organs_%s_%u.txt", policy, (BLOOD_TYPE)k);
+        OPEN_FILE(f_wl, path)
+        sprintf(s, format,
+                statistics->ob_stats->sum_organ_arrivals[k][0],
+                statistics->ob_stats->sum_organs_completions[k][0],
+                statistics->ob_stats->sum_organ_outdatings[k],
+                statistics->ob_stats->avg_wait[k][0],
+                statistics->ob_stats->avg_delay[k][0],
+                statistics->ob_stats->avg_service[k][0]);
+    }
+
+    free(s);
+
+    // Activation center
+    format = "Results for ACTIVATION_CENTER:"
+             "Arrivals ............... = %f\n"
+             "Completions ............ = %f\n"
+             "Reneged ................ = %f\n"
+             "Average wait ........... = %f\n"
+             "Average delay .......... = %f\n"
+             "Average service time ... = %f\n";
+    s = malloc(sizeof(char ) * strlen(format));
+
+    for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
+        snprintf(path, MAX_LEN, "output/lean/activation_%s_%u.txt", policy, (BLOOD_TYPE)k);
+        OPEN_FILE(f_wl, path)
+        sprintf(s, format,
+                statistics->act_stats->num_arrivals,
+                statistics->ob_stats->sum_organs_completions[k][0],
+                statistics->ob_stats->sum_organ_outdatings[k],
+                statistics->ob_stats->avg_wait[k][0],
+                statistics->ob_stats->avg_delay[k][0],
+                statistics->ob_stats->avg_service[k][0]);
+    }
+
+}
+
 void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     FILE *f_wl, *f_ob, *f_tr, *f_act;
     char path[MAX_LEN];

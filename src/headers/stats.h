@@ -74,21 +74,29 @@ typedef struct waiting_list_stats{
 
 typedef struct organ_bank_stats{
     double num_organ_arrivals[NUM_BLOOD_TYPES][2];         // total number of organs arrived to the system
+    double num_organs_completions[NUM_BLOOD_TYPES][2];
     double num_organ_outdatings[NUM_BLOOD_TYPES];          // number of organ outdatings
     double num_organs_in_queue[NUM_BLOOD_TYPES];           // number of organs still in the bank
     double sum_organ_arrivals[NUM_BLOOD_TYPES][2];
+    double sum_organs_completions[NUM_BLOOD_TYPES][2];
     double sum_organ_outdatings[NUM_BLOOD_TYPES];
 
     // means
     double avg_arrivals[NUM_BLOOD_TYPES][2];
     double avg_outdatings[NUM_BLOOD_TYPES];
     double avg_interarrival_time[NUM_BLOOD_TYPES];
+    double avg_wait[NUM_BLOOD_TYPES][2];
+    double avg_delay[NUM_BLOOD_TYPES][2];
+    double avg_service[NUM_BLOOD_TYPES][2];
     double avg_in_queue[NUM_BLOOD_TYPES];
 
     // stdev
     double std_arrivals[NUM_BLOOD_TYPES][2];
     double std_outdatings[NUM_BLOOD_TYPES];
     double std_interarrival_time[NUM_BLOOD_TYPES];
+    double std_wait[NUM_BLOOD_TYPES][2];
+    double std_delay[NUM_BLOOD_TYPES][2];
+    double std_service[NUM_BLOOD_TYPES][2];
     double std_in_queue[NUM_BLOOD_TYPES];
 } organ_bank_stats;
 

@@ -56,7 +56,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
     int i, iteration = 0;
     t->current = 0;
 
-    while (CLOSE_THE_DOOR(events)) {
+    while (t->current < STOP) {
         t->next = getMinTime(events);		            // Choose next event selecting minimum time
         updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
 
@@ -108,24 +108,24 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
                 break;
             } else if (t->current == events->patient_arrival.inter_arrival_time[i][critical]) {
                 handlePatientArrival(events, t, i, critical, active);
-                if (events->patient_arrival.inter_arrival_time[i][critical] > STOP) {
+                /*if (events->patient_arrival.inter_arrival_time[i][critical] > STOP) {
                     t->last[patient_arrival] = t->current;
                     events->patient_arrival.inter_arrival_time[i][critical] = INFINITY;
-                }
+                }*/
                 break;
             } else if (t->current == events->patient_arrival.inter_arrival_time[i][normal]) {
                 handlePatientArrival(events, t, i, normal, active);
-                if (events->patient_arrival.inter_arrival_time[i][normal] > STOP) {
+                /*if (events->patient_arrival.inter_arrival_time[i][normal] > STOP) {
                     t->last[patient_arrival] = t->current;
                     events->patient_arrival.inter_arrival_time[i][normal] = INFINITY;
-                }
+                }*/
                 break;
             } else if (t->current == events->activation_arrival.inter_arrival_time[i]) {
                 handlePatientArrival(events, t, i, none, inactive);
-                if (events->activation_arrival.inter_arrival_time[i] > STOP) {
+                /*if (events->activation_arrival.inter_arrival_time[i] > STOP) {
                     t->last[patient_arrival] = t->current;
                     events->activation_arrival.inter_arrival_time[i] = INFINITY;
-                }
+                }*/
                 break;
             } else if (t->current == events->patients_loss.reneging_time[i][critical]) {
                 handlePatientLoss(events, t, renege, i, critical, active);

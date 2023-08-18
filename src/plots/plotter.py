@@ -17,6 +17,7 @@ FONT_LABEL = {'color': 'black', 'size': 14}
 FONT_TITLE = {'color': 'black', 'size': 26}
 FONT_NUM = 14
 
+
 class Policy(Enum):
     ID = 1
     COMP = 2
@@ -31,10 +32,23 @@ class Center(Enum):
 
 
 def handle_wl_plot(num_batches, base, policy):
-    arrivals = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
-    delay = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
-    loss_prob = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
-    num_center = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
+    arrivals = {"O": {"c": [], "n": [], "steady": [17.90, 12975.9]},
+                "A": {"c": [], "n": [], "steady": [10, 8612.8]},
+                "B": {"c": [], "n": [], "steady": [5, 3934.4]},
+                "AB": {"c": [], "n": [], "steady": [1.5, 992]}}
+    delay = {"O": {"c": [], "n": [], "steady": [913.13, 913.13]},
+             "A": {"c": [], "n": [], "steady": [913.13, 913.13]},
+             "B": {"c": [], "n": [], "steady": [913.13, 913.13]},
+             "AB": {"c": [], "n": [], "steady": [913.13, 913.13]}}
+    loss_prob = {"O": {"c": [], "n": [], "steady": [0, 0]},
+                 "A": {"c": [], "n": [], "steady": [0, 0]},
+                 "B": {"c": [], "n": [], "steady": [0, 0]},
+                 "AB": {"c": [], "n": [], "steady": [0, 0]}}
+    int_arr = {"O": {"c": [], "n": [], "steady": [20.391061, 0.028129]},
+               "A": {"c": [], "n": [], "steady": [36.500000, 0.042379]},
+               "B": {"c": [], "n": [], "steady": [73.000000, 0.092771]},
+               "AB": {"c": [], "n": [], "steady": [243.333333, 0.367944]}}
+    # num_center = {"O": {"c": [], "n": []}, "A": {"c": [], "n": []}, "B": {"c": [], "n": []}, "AB": {"c": [], "n": []}}
     bt_keys = ["O", "A", "B", "AB"]
     pr_keys = ["c", "n"]
     for i in range(0, num_batches):
@@ -43,32 +57,63 @@ def handle_wl_plot(num_batches, base, policy):
         idx = 0
         for b in bt_keys:
             for p in pr_keys:
+                if p == "steady":
+                    continue
                 arrivals.get(b).get(p).append(df.at[idx, "(Avg) Patients arrived"])
+                int_arr.get(b).get(p).append(df.at[idx, "Avg inter-arrival times"])
                 delay.get(b).get(p).append(df.at[idx, "Avg delay"])
-                num_center.get(b).get(p).append(df.at[idx, "Avg # in the queue"])
+                # num_center.get(b).get(p).append(df.at[idx, "Avg # in the queue"])
                 if df.at[idx, "(Avg) Patients arrived"] != 0:
                     loss_prob.get(b).get(p).append(
-                        (df.at[idx, "(Avg) Patients dead"] + df.at[idx, "(Avg) Patients reneged"]) / df.at[idx, "(Avg) Patients arrived"])
+                        (df.at[idx, "(Avg) Patients dead"] + df.at[idx, "(Avg) Patients reneged"]) / df.at[
+                            idx, "(Avg) Patients arrived"])
                 else:
                     loss_prob.get(b).get(p).append(0)
                 idx += 1
-    stats = {"ARRIVALS": arrivals, "DELAY": delay, "PROB. LOSS": loss_prob, "AVG. IN NODE": num_center}
+    stats = {"ARRIVALS": arrivals, "DELAY": delay, "PROB. LOSS": loss_prob, "AVG. INTERARRIVALS": int_arr}
 
     # todo: modificare grafico non mi piace come sono rappresentate le linee (sono troppe!)
     for key, value in stats.items():
         idx = range(num_batches)
-        for bt, v in value.items():
-            for pr, v_pr in v.items():
+        if key.lower() == "delay":
+            for bt, v in value.items():
+                # create a plot for each blood tyoe
+                c = v.get("c")
+                n = v.get("n")
+                print(len(c))
+                print(len(n))
+                means = []
+                for i in range(0, len(c)):
+                    means.append((c[i]+n[i])/2)
                 x_new = np.linspace(min(idx), max(idx), 300)
-                spl = make_interp_spline(idx, v_pr, k=3)
+                spl = make_interp_spline(idx, means, k=3)
                 y = spl(x_new)
-                plt.plot(x_new, y, label=bt + "-" + pr)
-        plt.ylabel(key.lower(), fontdict=FONT_LABEL)
-        plt.xlabel("Batch", fontdict=FONT_LABEL)
-        plt.title(key, fontdict=FONT_TITLE)
-        plt.legend()
-        plt.savefig("output/plot/{}/waiting_list_{}.png".format(policy.name.lower(), key.lower()))
-        plt.clf()
+                plt.plot(x_new, y, label=bt)
+                plt.ylabel(key.lower(), fontdict=FONT_LABEL)
+                plt.xlabel("Batch", fontdict=FONT_LABEL)
+                plt.axhline(y=v.get("steady")[0], color='black', linestyle='-')
+                plt.title(key, fontdict=FONT_TITLE)
+                plt.legend()
+                plt.savefig("output/plot/{}/waiting_list_{}_{}.png".format(policy.name.lower(), key.lower(), bt.lower()))
+                plt.clf()
+        else:
+            for bt, v in value.items():
+                # create a plot for each blood tyoe
+                for pr, v_pr in v.items():
+                    if pr == "steady":
+                        continue
+                    x_new = np.linspace(min(idx), max(idx), 300)
+                    spl = make_interp_spline(idx, v_pr, k=3)
+                    y = spl(x_new)
+                    plt.plot(x_new, y, label=bt + "-" + pr)
+                plt.ylabel(key.lower(), fontdict=FONT_LABEL)
+                plt.xlabel("Batch", fontdict=FONT_LABEL)
+                plt.axhline(y=v.get("steady")[0], color='black', linestyle='-')
+                plt.axhline(y=v.get("steady")[1], color='black', linestyle='-')
+                plt.title(key, fontdict=FONT_TITLE)
+                plt.legend()
+                plt.savefig("output/plot/{}/waiting_list_{}_{}.png".format(policy.name.lower(), key.lower(), bt.lower()))
+                plt.clf()
 
 
 def handle_trans_plot(num_batches, base, policy):
@@ -117,7 +162,8 @@ def handle_activ_plot(num_batches, base, policy):
         df = pd.read_csv(filename)
         arrivals.append(df.at[0, "(Avg) Patients arrived"])
         activations.append(df.at[0, "(Avg) Patients activated"])
-        prob_loss.append((df.at[0, "(Avg) Patients dead"] + df.at[0, "(Avg) Patients reneged"]) / df.at[0, "(Avg) Patients arrived"])
+        prob_loss.append(
+            (df.at[0, "(Avg) Patients dead"] + df.at[0, "(Avg) Patients reneged"]) / df.at[0, "(Avg) Patients arrived"])
         num_center.append(df.at[0, "Avg # in the node"])
         delay.append(df.at[0, "Avg delay"])
     stats = {"ARRIVALS": arrivals, "ACTIVATIONS": activations, "AVG. IN NODE": num_center, "DELAY": delay,
@@ -141,6 +187,10 @@ def handle_activ_plot(num_batches, base, policy):
 
 def handle_organs_plot(num_batches, base, policy):
     arrivals = {"O": {"d": [], "l": []}, "A": {"d": [], "l": []}, "B": {"d": [], "l": []}, "AB": {"d": [], "l": []}}
+    int_arrival = {"O": {"v": [], "steady": 0.089888},
+                   "A": {"v": [], "steady": 0.115811},
+                   "B": {"v": [], "steady": 0.360067},
+                   "AB": {"v": [], "steady": 1.244460}}
     loss_prob = {"O": [], "A": [], "B": [], "AB": []}
     num_center = {"O": [], "A": [], "B": [], "AB": []}
     for i in range(0, num_batches):
@@ -165,7 +215,13 @@ def handle_organs_plot(num_batches, base, policy):
         loss_prob.get("A").append(df.at[1, "(Avg) Organs outdated"] / df.at[1, "(Avg) Deceased donor organs arrived"])
         loss_prob.get("B").append(df.at[2, "(Avg) Organs outdated"] / df.at[2, "(Avg) Deceased donor organs arrived"])
         loss_prob.get("AB").append(df.at[3, "(Avg) Organs outdated"] / df.at[3, "(Avg) Deceased donor organs arrived"])
-    stats = {"ARRIVALS": arrivals, "AVG. IN NODE": num_center, "PROB. LOSS": loss_prob}
+
+        int_arrival.get("O").get("v").append(df.at[0, "Avg inter-arrival times"])
+        int_arrival.get("A").get("v").append(df.at[1, "Avg inter-arrival times"])
+        int_arrival.get("B").get("v").append(df.at[2, "Avg inter-arrival times"])
+        int_arrival.get("AB").get("v").append(df.at[3, "Avg inter-arrival times"])
+
+    stats = {"ARRIVALS": arrivals, "INT. ARRIVALS": int_arrival, "AVG. IN NODE": num_center, "PROB. LOSS": loss_prob}
 
     for key, value in stats.items():
         idx = range(num_batches)
@@ -182,6 +238,19 @@ def handle_organs_plot(num_batches, base, policy):
                     plt.legend()
                     plt.savefig("output/plot/{}/organs_{}_{}.png".format(policy.name.lower(), key.lower(), t))
                     plt.clf()
+        elif key == "INT. ARRIVALS":
+            for bt, v in value.items():
+                x_new = np.linspace(min(idx), max(idx), 500)
+                spl = make_interp_spline(idx, v.get("v"), k=3)
+                y = spl(x_new)
+                plt.plot(x_new, y, label=bt)
+                plt.axhline(y=v.get("steady"), color='black', linestyle='-')
+                plt.ylabel(key.lower(), fontdict=FONT_LABEL)
+                plt.xlabel("Batch", fontdict=FONT_LABEL)
+                plt.title(key, fontdict=FONT_TITLE)
+                plt.legend()
+                plt.savefig("output/plot/{}/organs_{}_{}.png".format(policy.name.lower(), key.lower(), bt.lower()))
+                plt.clf()
         else:
             for bt, v in value.items():
                 x_new = np.linspace(min(idx), max(idx), 300)
