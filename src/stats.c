@@ -15,12 +15,6 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
     activation_stats* act_stats = stats->act_stats;
     int i,j;
 
-    // Activation
-    curr_area = ti_stats->area_activation;
-    completion = act_stats->num_activated;
-
-    act_stats->avg_in_node = curr_area->node / curr;
-    act_stats->avg_delay = (completion == 0) ? 0 : curr_area->node / completion;
 
 #ifdef AUDIT
     printf("curr area - node - AB crit: %f\n", ti_stats->area_waiting_list[AB][critical]->node);
@@ -71,11 +65,38 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
             wl_stats->avg_in_queue[i][j] = curr_area->queue / curr;
             wl_stats->utilization[i][j] = curr_area->service / curr;
         }
-    }
 
-    // Transplant center
-    curr_area = ti_stats->area_transplant;
-    trans_stats->avg_in_node = curr_area->node / curr;
+        // Activation
+        curr_area = ti_stats->area_activation;
+        completion = act_stats->sum_activated[O]+
+                     act_stats->sum_activated[A]+
+                     act_stats->sum_activated[B]+
+                     act_stats->sum_activated[AB];
+
+        act_stats->avg_in_node[i] = curr_area->node / curr;
+
+        if (completion != 0) {
+            act_stats->avg_wait[i] = curr_area->node / completion;
+            act_stats->avg_delay[i] = curr_area->queue / completion;
+            act_stats->avg_service[i] = curr_area->service / completion;
+        }
+
+
+        // Transplant center
+        completion = trans_stats->sum_transplanted[i][critical]+trans_stats->sum_transplanted[i][normal];
+
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            curr_area = ti_stats->area_transplant;
+
+            if (completion != 0) {
+                trans_stats->avg_wait[i][j] = curr_area->node / completion;
+                trans_stats->avg_delay[i][j] = curr_area->queue / completion;
+                trans_stats->avg_service[i][j] = curr_area->service / completion;
+            }
+        }
+
+        trans_stats->avg_in_node = curr_area->node / curr;
+    }
 }
 
 /**
@@ -124,17 +145,11 @@ void gatherResults(stats *statistics, stats *prev_statistics, event_list *events
                 statistics->wl_stats->num_patient_deaths[i][j] = p_lost.number_dead[i][j]-prev_statistics->wl_stats->sum_patient_deaths[i][j];
                 statistics->wl_stats->num_patient_reneges[i][j] = p_lost.number_renege[i][j]-prev_statistics->wl_stats->sum_patient_reneges[i][j];
                 statistics->wl_stats->num_patients_served[i][j] = waiting_list.num_completions[i][j]-prev_statistics->wl_stats->sum_patient_served[i][j];
-
-                statistics->trans_stats->completed_transplants[i][j] = transplant_c.num_completions[i][j];
-                statistics->trans_stats->rejected_transplants[i][j] = transplant_c.num_rejections[i][j];
             } else {
                 statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
                 statistics->wl_stats->num_patient_deaths[i][j] = p_lost.number_dead[i][j];
                 statistics->wl_stats->num_patient_reneges[i][j] = p_lost.number_renege[i][j];
                 statistics->wl_stats->num_patients_served[i][j] = waiting_list.num_completions[i][j];
-
-                statistics->trans_stats->completed_transplants[i][j] = transplant_c.num_completions[i][j];
-                statistics->trans_stats->rejected_transplants[i][j] = transplant_c.num_rejections[i][j];
             }
 
             statistics->wl_stats->sum_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
@@ -142,15 +157,49 @@ void gatherResults(stats *statistics, stats *prev_statistics, event_list *events
             statistics->wl_stats->sum_patient_reneges[i][j] = p_lost.number_renege[i][j];
             statistics->wl_stats->sum_patient_served[i][j] = waiting_list.num_completions[i][j];
         }
-
-        // fixme: activation center
-        statistics->act_stats->num_deaths += p_lost.number_dead[i][j];
-        statistics->act_stats->num_reneges += p_lost.number_renege[i][j];
     }
 
-    // fixme
-    statistics->act_stats->num_activated = activation.num_completions;
-    statistics->act_stats->num_arrivals = activation.num_arrivals;
+    // Activation center
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+
+        if (iter_num != 0) {
+            statistics->act_stats->num_arrivals[i] = activation.num_arrivals[i]-prev_statistics->act_stats->sum_arrivals[i];
+            statistics->act_stats->num_deaths[i] = p_lost.number_dead[i][none]-prev_statistics->act_stats->sum_deaths[i];
+            statistics->act_stats->num_reneges[i] = p_lost.number_renege[i][none]-prev_statistics->act_stats->sum_reneges[i];
+            statistics->act_stats->num_activated[i] = activation.num_completions[i]-prev_statistics->act_stats->sum_activated[i];
+        } else {
+            statistics->act_stats->num_arrivals[i] = activation.num_arrivals[i];
+            statistics->act_stats->num_deaths[i] = p_lost.number_dead[i][none];
+            statistics->act_stats->num_reneges[i] = p_lost.number_renege[i][none];
+            statistics->act_stats->num_activated[i] = activation.num_completions[i];
+        }
+
+        statistics->act_stats->sum_arrivals[i] = activation.num_arrivals[i];
+        statistics->act_stats->sum_deaths[i] = p_lost.number_dead[i][none];
+        statistics->act_stats->sum_reneges[i] = p_lost.number_renege[i][none];
+        statistics->act_stats->num_activated[i] = activation.num_completions[i];
+
+        // Transplant center
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            if (iter_num != 0) {
+                statistics->trans_stats->num_arrivals[i][j] =
+                        transplant_c.num_arrivals[i][j] - prev_statistics->trans_stats->sum_arrivals[i][j];
+                statistics->trans_stats->num_rejected[i][j] =
+                        transplant_c.num_rejections[i][j] - prev_statistics->trans_stats->sum_rejected[i][j];
+                statistics->trans_stats->num_transplanted[i][j] =
+                        transplant_c.num_completions[i][j] - prev_statistics->trans_stats->sum_transplanted[i][j];
+            } else {
+                statistics->trans_stats->num_arrivals[i][j] = transplant_c.num_arrivals[i][j];
+                statistics->trans_stats->num_rejected[i][j] = transplant_c.num_rejections[i][j];
+                statistics->trans_stats->num_transplanted[i][j] = transplant_c.num_completions[i][j];
+            }
+
+            statistics->trans_stats->sum_arrivals[i][j] = transplant_c.num_arrivals[i][j];
+            statistics->trans_stats->sum_rejected[i][j] = transplant_c.num_rejections[i][j];
+            statistics->trans_stats->sum_transplanted[i][j] = transplant_c.num_completions[i][j];
+        }
+    }
+
 }
 
 /**
@@ -164,17 +213,24 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
     double u = 1.0 - 0.5 * (1.0 - LOC), t, w;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        /*
-        final_stat->ob_stats->num_organs_in_queue[i] = statistics[num_stats]->ob_stats->num_organs_in_queue[i];
-        final_stat->ob_stats->num_organ_arrivals[i][0] = statistics[num_stats]->ob_stats->num_organ_arrivals[i][0];
-        final_stat->ob_stats->num_organ_arrivals[i][1] = statistics[num_stats]->ob_stats->num_organ_arrivals[i][1];
-        final_stat->ob_stats->num_organ_outdatings[i] = statistics[num_stats]->ob_stats->num_organ_outdatings[i];
-        */
-        STDEV(sum, final_stat->ob_stats->std_arrivals[i][0], num_stats)
-        CONFIDENCE(u,t,w,final_stat->ob_stats->std_arrivals[i][0], num_stats)
 
-        STDEV(sum, final_stat->ob_stats->std_arrivals[i][1], num_stats)
-        CONFIDENCE(u,t,w,final_stat->ob_stats->std_arrivals[i][1], num_stats)
+        // organ bank
+        for (int k = 0; k < 2; ++k) {
+            STDEV(sum, final_stat->ob_stats->std_arrivals[i][k], num_stats)
+            CONFIDENCE(u,t,w,final_stat->ob_stats->std_arrivals[i][k], num_stats)
+
+            STDEV(sum, final_stat->ob_stats->std_completions[i][k], num_stats)
+            CONFIDENCE(u,t,w,final_stat->ob_stats->std_completions[i][k], num_stats)
+
+            STDEV(sum, final_stat->ob_stats->std_service[i][k], num_stats)
+            CONFIDENCE(u,t,w,final_stat->ob_stats->std_service[i][k],num_stats)
+
+            STDEV(sum, final_stat->ob_stats->std_wait[i][k], num_stats)
+            CONFIDENCE(u,t,w,final_stat->ob_stats->std_wait[i][k], num_stats)
+
+            STDEV(sum, final_stat->ob_stats->std_delay[i][k], num_stats)
+            CONFIDENCE(u,t,w,final_stat->ob_stats->std_delay[i][k], num_stats)
+        }
 
         STDEV(sum, final_stat->ob_stats->std_outdatings[i], num_stats)
         CONFIDENCE(u,t,w,final_stat->ob_stats->std_outdatings[i], num_stats)
@@ -185,13 +241,9 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
         STDEV(sum, final_stat->ob_stats->std_in_queue[i], num_stats)
         CONFIDENCE(u,t,w,final_stat->ob_stats->std_in_queue[i],num_stats)
 
-        for (j = 0; j < NUM_PRIORITIES; ++j) {
 
-            /*final_stat->wl_stats->num_patients_in_queue[i][j] = statistics[num_stats]->wl_stats->num_patients_in_queue[i][j];
-            final_stat->wl_stats->num_patient_arrivals[i][j] = statistics[num_stats]->wl_stats->num_patient_arrivals[i][j];
-            final_stat->wl_stats->num_patient_deaths[i][j] = statistics[num_stats]->wl_stats->num_patient_deaths[i][j];
-            final_stat->wl_stats->num_patient_reneges[i][j] = statistics[num_stats]->wl_stats->num_patient_reneges[i][j];
-            final_stat->wl_stats->num_patients_served[i][j] = statistics[num_stats]->wl_stats->num_patients_served[i][j];*/
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            // waiting list
 
             STDEV(sum, final_stat->wl_stats->std_arrivals[i][j], num_stats)
             CONFIDENCE(u,t,w,final_stat->wl_stats->std_arrivals[i][j], num_stats)
@@ -223,24 +275,60 @@ void computeFinalStatistics(stats *final_stat, stats **statistics, int num_stats
             STDEV(sum, final_stat->wl_stats->utilization[i][j], num_stats)
             CONFIDENCE(u,t,w,final_stat->wl_stats->utilization[i][j],num_stats)
 
-            /*final_stat->trans_stats->completed_transplants[i][j] = statistics[num_stats]->trans_stats->completed_transplants[i][j];
-            final_stat->trans_stats->rejected_transplants[i][j] = statistics[num_stats]->trans_stats->rejected_transplants[i][j];*/
+
+            // Transplant center
+            STDEV(sum, final_stat->trans_stats->std_arrivals[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->trans_stats->std_arrivals[i][j], num_stats)
+
+            STDEV(sum, final_stat->trans_stats->std_transplanted[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->trans_stats->std_transplanted[i][j], num_stats)
+
+            STDEV(sum, final_stat->trans_stats->std_rejected[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->trans_stats->std_rejected[i][j], num_stats)
+
+            STDEV(sum, final_stat->trans_stats->std_wait[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->trans_stats->std_wait[i][j], num_stats)
+
+            STDEV(sum, final_stat->trans_stats->std_delay[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->trans_stats->std_delay[i][j], num_stats)
+
+            STDEV(sum, final_stat->trans_stats->std_service[i][j], num_stats)
+            CONFIDENCE(u,t,w,final_stat->trans_stats->std_service[i][j], num_stats)
+
+            STDEV(sum, final_stat->trans_stats->std_in_node, num_stats) // fixme
+            CONFIDENCE(u,t,w,final_stat->trans_stats->std_in_node,num_stats) // fixme
 
             final_stat->trans_stats->rejection_perc[i][j] =
-                    (final_stat->trans_stats->rejected_transplants[i][j] == 0) ? 0 :
-                    100 * (final_stat->trans_stats->rejected_transplants[i][j] /
-                    (final_stat->trans_stats->completed_transplants[i][j]+final_stat->trans_stats->rejected_transplants[i][j]));
+                    (final_stat->trans_stats->num_rejected[i][j] == 0) ? 0 :
+                    100 * (final_stat->trans_stats->num_rejected[i][j] /
+                    (final_stat->trans_stats->num_transplanted[i][j]+final_stat->trans_stats->num_transplanted[i][j]));
         }
+
+        // Activation center
+        STDEV(sum, final_stat->act_stats->std_in_node[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_in_node[i],num_stats)
+
+        STDEV(sum, final_stat->act_stats->std_delay[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_delay[i],num_stats)
+
+        STDEV(sum, final_stat->act_stats->std_wait[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_wait[i], num_stats)
+
+        STDEV(sum, final_stat->act_stats->std_service[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_service[i], num_stats)
+
+        STDEV(sum, final_stat->act_stats->std_arrivals[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_arrivals[i], num_stats)
+
+        STDEV(sum, final_stat->act_stats->std_deaths[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_deaths[i], num_stats)
+
+        STDEV(sum, final_stat->act_stats->std_reneges[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_reneges[i], num_stats)
+
+        STDEV(sum, final_stat->act_stats->std_activated[i], num_stats)
+        CONFIDENCE(u,t,w,final_stat->act_stats->std_activated[i], num_stats)
     }
-
-    STDEV(sum, final_stat->act_stats->std_in_node, num_stats)
-    CONFIDENCE(u,t,w,final_stat->act_stats->std_in_node,num_stats)
-
-    STDEV(sum, final_stat->act_stats->std_delay, num_stats)
-    CONFIDENCE(u,t,w,final_stat->act_stats->std_delay,num_stats)
-
-    STDEV(sum, final_stat->trans_stats->std_in_node, num_stats)
-    CONFIDENCE(u,t,w,final_stat->trans_stats->std_in_node,num_stats)
 }
 
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats) {
@@ -273,12 +361,18 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
     }
 
     /* Update activation_center center integrals */
-    ti_stats->area_activation->node += diff * number_inactive;
-    ti_stats->area_activation->service += diff * number_inactive;
+    if (number_inactive > 0) {
+        ti_stats->area_activation->node += diff * number_inactive;
+        ti_stats->area_activation->queue += diff * (number_inactive-1);
+        ti_stats->area_activation->service += diff * number_inactive;
+    }
 
     /* Update transplant center integrals */
-    ti_stats->area_transplant->node += diff * number_trans;
-    ti_stats->area_transplant->service += diff * number_trans;
+    if (number_trans > 0) {
+        ti_stats->area_transplant->node += diff * number_trans;
+        ti_stats->area_transplant->queue += diff * (number_trans-1);
+        ti_stats->area_transplant->service += diff * number_trans;
+    }
 }
 
 /**
@@ -292,6 +386,8 @@ void welford(int iter, stats *stat, stats *batch){
         WELFORD(diff, batch->ob_stats->num_organ_arrivals[i][0], stat->ob_stats->avg_arrivals[i][0], stat->ob_stats->std_arrivals[i][0], iter);
         WELFORD(diff, batch->ob_stats->num_organ_arrivals[i][1], stat->ob_stats->avg_arrivals[i][1], stat->ob_stats->std_arrivals[i][1], iter);
         WELFORD(diff, batch->ob_stats->num_organ_outdatings[i], stat->ob_stats->avg_outdatings[i], stat->ob_stats->std_outdatings[i], iter);
+        WELFORD(diff, batch->ob_stats->num_organs_completions[i][0], stat->ob_stats->avg_completions[i][0], stat->ob_stats->std_completions[i][0], iter)
+        WELFORD(diff, batch->ob_stats->num_organs_completions[i][1], stat->ob_stats->avg_completions[i][1], stat->ob_stats->std_completions[i][1], iter)
         WELFORD(diff, batch->ob_stats->avg_interarrival_time[i],stat->ob_stats->avg_interarrival_time[i],stat->ob_stats->std_interarrival_time[i],iter)
         WELFORD(diff, batch->ob_stats->avg_wait[i][0], stat->ob_stats->avg_wait[i][0], stat->ob_stats->std_wait[i][0], iter)
         WELFORD(diff, batch->ob_stats->avg_delay[i][0], stat->ob_stats->avg_delay[i][0], stat->ob_stats->std_delay[i][0], iter)
@@ -314,16 +410,32 @@ void welford(int iter, stats *stat, stats *batch){
             WELFORD(diff, batch->wl_stats->avg_in_queue[i][j],stat->wl_stats->avg_in_queue[i][j],stat->wl_stats->std_in_queue[i][j],iter)
             WELFORD(diff, batch->wl_stats->utilization[i][j],stat->wl_stats->utilization[i][j],stat->wl_stats->std_utilization[i][j],iter)
         }
+
+        // Activation center
+        WELFORD(diff, batch->act_stats->num_arrivals[i],stat->act_stats->avg_arrivals[i],stat->act_stats->std_arrivals[i],iter)
+        WELFORD(diff, batch->act_stats->num_deaths[i],stat->act_stats->avg_deaths[i],stat->act_stats->std_deaths[i],iter)
+        WELFORD(diff, batch->act_stats->num_reneges[i],stat->act_stats->avg_reneges[i],stat->act_stats->std_reneges[i],iter)
+        WELFORD(diff, batch->act_stats->num_activated[i],stat->act_stats->avg_activated[i],stat->act_stats->std_activated[i],iter)
+        WELFORD(diff, batch->act_stats->avg_in_node[i],stat->act_stats->avg_in_node[i],stat->act_stats->std_in_node[i],iter)
+        WELFORD(diff, batch->act_stats->avg_wait[i], stat->act_stats->avg_wait[i], stat->act_stats->std_wait[i], iter)
+        WELFORD(diff, batch->act_stats->avg_service[i], stat->act_stats->avg_service[i], stat->act_stats->std_service[i], iter)
+        WELFORD(diff, batch->act_stats->avg_delay[i],stat->act_stats->avg_delay[i],stat->act_stats->std_delay[i],iter)
     }
 
-    // Activation center
-    WELFORD(diff, batch->act_stats->num_arrivals,stat->act_stats->avg_arrivals,stat->act_stats->std_arrivals,iter)
-    WELFORD(diff, batch->act_stats->num_deaths,stat->act_stats->avg_deaths,stat->act_stats->std_deaths,iter)
-    WELFORD(diff, batch->act_stats->num_reneges,stat->act_stats->avg_reneges,stat->act_stats->std_reneges,iter)
-    WELFORD(diff, batch->act_stats->num_activated,stat->act_stats->avg_activated,stat->act_stats->std_activated,iter)
-    WELFORD(diff, batch->act_stats->avg_in_node,stat->act_stats->avg_in_node,stat->act_stats->std_in_node,iter)
-    WELFORD(diff, batch->act_stats->avg_delay,stat->act_stats->avg_delay,stat->act_stats->std_delay,iter)
-
     // Transplant center
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        WELFORD(diff, batch->trans_stats->num_arrivals[i][critical], stat->trans_stats->avg_arrivals[i][critical], stat->trans_stats->std_arrivals[i][critical], iter)
+        WELFORD(diff, batch->trans_stats->num_arrivals[i][normal], stat->trans_stats->avg_arrivals[i][normal], stat->trans_stats->std_arrivals[i][normal], iter)
+        WELFORD(diff, batch->trans_stats->num_transplanted[i][critical], stat->trans_stats->avg_transplanted[i][critical], stat->trans_stats->std_transplanted[i][critical], iter)
+        WELFORD(diff, batch->trans_stats->num_transplanted[i][normal], stat->trans_stats->avg_transplanted[i][normal], stat->trans_stats->std_transplanted[i][normal], iter)
+        WELFORD(diff, batch->trans_stats->num_rejected[i][critical], stat->trans_stats->avg_rejected[i][critical], stat->trans_stats->std_rejected[i][critical], iter)
+        WELFORD(diff, batch->trans_stats->num_rejected[i][normal], stat->trans_stats->avg_rejected[i][normal], stat->trans_stats->std_rejected[i][normal], iter)
+        WELFORD(diff, batch->trans_stats->avg_wait[i][critical], stat->trans_stats->avg_wait[i][critical], stat->trans_stats->std_wait[i][critical],iter)
+        WELFORD(diff, batch->trans_stats->avg_wait[i][normal], stat->trans_stats->avg_wait[i][normal], stat->trans_stats->std_wait[i][normal],iter)
+        WELFORD(diff, batch->trans_stats->avg_service[i][critical], stat->trans_stats->avg_service[i][critical], stat->trans_stats->std_service[i][critical],iter)
+        WELFORD(diff, batch->trans_stats->avg_service[i][normal], stat->trans_stats->avg_service[i][normal], stat->trans_stats->std_service[i][normal],iter)
+        WELFORD(diff, batch->trans_stats->avg_delay[i][critical], stat->trans_stats->avg_delay[i][critical], stat->trans_stats->std_delay[i][critical],iter)
+        WELFORD(diff, batch->trans_stats->avg_delay[i][normal], stat->trans_stats->avg_delay[i][normal], stat->trans_stats->std_delay[i][normal],iter)
+    }
     WELFORD(diff, batch->trans_stats->avg_in_node,stat->trans_stats->avg_in_node,stat->trans_stats->std_in_node,iter)
 }

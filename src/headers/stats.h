@@ -59,7 +59,7 @@ typedef struct waiting_list_stats{
     double avg_in_queue[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double utilization[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 
-    // stdev: used first as a sum container, then for the std deviation and lastly as confidence interval
+    // stddev: used first as a sum container, then for the std deviation and lastly as confidence interval
     double std_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];
@@ -83,6 +83,7 @@ typedef struct organ_bank_stats{
 
     // means
     double avg_arrivals[NUM_BLOOD_TYPES][2];
+    double avg_completions[NUM_BLOOD_TYPES][2];
     double avg_outdatings[NUM_BLOOD_TYPES];
     double avg_interarrival_time[NUM_BLOOD_TYPES];
     double avg_wait[NUM_BLOOD_TYPES][2];
@@ -90,8 +91,9 @@ typedef struct organ_bank_stats{
     double avg_service[NUM_BLOOD_TYPES][2];
     double avg_in_queue[NUM_BLOOD_TYPES];
 
-    // stdev
+    // stddev
     double std_arrivals[NUM_BLOOD_TYPES][2];
+    double std_completions[NUM_BLOOD_TYPES][2];
     double std_outdatings[NUM_BLOOD_TYPES];
     double std_interarrival_time[NUM_BLOOD_TYPES];
     double std_wait[NUM_BLOOD_TYPES][2];
@@ -101,34 +103,63 @@ typedef struct organ_bank_stats{
 } organ_bank_stats;
 
 typedef struct transplant_stats{
-    double completed_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
-    double rejected_transplants[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double num_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double num_transplanted[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double num_rejected[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double sum_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double sum_transplanted[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double sum_rejected[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+
     double rejection_perc[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+
+    // mean
+    double avg_wait[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_delay[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_service[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_transplanted[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_rejected[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_in_node;
+
+    // stddev
+    double std_wait[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_delay[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_service[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_transplanted[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_rejected[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_in_node;
 } transplant_stats;
 
 typedef struct activation_stats{
-    double num_arrivals;
-    double num_deaths;
-    double num_reneges;
-    double num_activated;
+    double num_arrivals[NUM_BLOOD_TYPES];
+    double num_deaths[NUM_BLOOD_TYPES];
+    double num_reneges[NUM_BLOOD_TYPES];
+    double num_activated[NUM_BLOOD_TYPES];
+    double sum_arrivals[NUM_BLOOD_TYPES];
+    double sum_deaths[NUM_BLOOD_TYPES];
+    double sum_reneges[NUM_BLOOD_TYPES];
+    double sum_activated[NUM_BLOOD_TYPES];
 
     // means
-    double avg_arrivals;
-    double avg_deaths;
-    double avg_reneges;
-    double avg_activated;
-    double avg_delay;
-    double avg_in_node;
+    double avg_arrivals[NUM_BLOOD_TYPES];
+    double avg_deaths[NUM_BLOOD_TYPES];
+    double avg_reneges[NUM_BLOOD_TYPES];
+    double avg_activated[NUM_BLOOD_TYPES];
+    double avg_wait[NUM_BLOOD_TYPES];
+    double avg_delay[NUM_BLOOD_TYPES];
+    double avg_service[NUM_BLOOD_TYPES];
+    double avg_in_node[NUM_BLOOD_TYPES];
 
-    // stdev: used first as a sum container, then for the std deviation and lastly as confidence interval
-    double std_arrivals;
-    double std_deaths;
-    double std_reneges;
-    double std_activated;
-    double std_delay;
-    double std_in_node;
+    // stddev: used first as a sum container, then for the std deviation and lastly as confidence interval
+    double std_arrivals[NUM_BLOOD_TYPES];
+    double std_deaths[NUM_BLOOD_TYPES];
+    double std_reneges[NUM_BLOOD_TYPES];
+    double std_activated[NUM_BLOOD_TYPES];
+    double std_wait[NUM_BLOOD_TYPES];
+    double std_delay[NUM_BLOOD_TYPES];
+    double std_service[NUM_BLOOD_TYPES];
+    double std_in_node[NUM_BLOOD_TYPES];
 } activation_stats;
 
 /**

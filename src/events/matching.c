@@ -11,9 +11,10 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
 
     /* Init new match, increment transplant number and add match to transplant queue*/
     matched *m = newMatched(*patient, *organ);
-    tc->total_number++;
     wl->num_completions[p_bt][pr]++;
     bank->num_completions[o_bt][organ->dt]++;
+    tc->total_number++;
+    tc->num_arrivals[p_bt][pr]++;
     in_transplant *in_tr = newTransplant(m);
 
     /* generate and change transplant completion time */

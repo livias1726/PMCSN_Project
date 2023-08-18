@@ -62,7 +62,7 @@ void handlePatientActivation(event_list *events, sim_time *t) {
 
     aq->number--;
     ac->total_number--;
-    ac->num_completions++;
+    ac->num_completions[to_activate->patient->bt]++;
 
     /* Check if there are other patients in queue to eventually deactivate reneging and death events */
     if (aq->number == 0) {

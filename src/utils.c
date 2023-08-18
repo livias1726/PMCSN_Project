@@ -3,6 +3,7 @@
 void saveResultsLean(stats *statistics) {
     FILE *f_wl, *f_ob, *f_tr, *f_act;
     char path[MAX_LEN];
+    char text[MAX_LEN];
     char *policy, *s, *format;
     int i,j;
 
@@ -18,75 +19,95 @@ void saveResultsLean(stats *statistics) {
     struct stat st = {0};
 
     // waiting list
-    format = "Results for WAITING_LIST:"
+    format = "Results for WAITING_LIST:\n"
              "Arrivals ............... = %f\n"
              "Completions ............ = %f\n"
              "Reneged ................ = %f\n"
              "Average wait ........... = %f\n"
              "Average delay .......... = %f\n"
              "Average service time ... = %f\n";
-    s = malloc(sizeof(char ) * strlen(format));
 
     for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
         for (int l = 0; l < NUM_PRIORITIES; ++l) {
             snprintf(path, MAX_LEN, "output/lean/waiting_list_%s_%u_%u.txt", policy, (PRIORITY)l, (BLOOD_TYPE)k);
             OPEN_FILE(f_wl, path)
-            sprintf(s, format,
+            sprintf(text, format,
                     statistics->wl_stats->sum_patient_arrivals[k][l],
                     statistics->wl_stats->sum_patient_served[k][l],
                     statistics->wl_stats->sum_patient_reneges[k][l]+statistics->wl_stats->sum_patient_deaths[k][l],
                     statistics->wl_stats->avg_wait[k][l],
                     statistics->wl_stats->avg_delay[k][l],
                     statistics->wl_stats->avg_service[k][l]);
+            fprintf(f_wl, "%s", text);
         }
     }
 
-    free(s);
-
     // organs
-    format = "Results for ORGAN_BANK:"
+    format = "Results for ORGAN_BANK:\n"
              "Arrivals ............... = %f\n"
              "Completions ............ = %f\n"
              "Reneged ................ = %f\n"
              "Average wait ........... = %f\n"
              "Average delay .......... = %f\n"
              "Average service time ... = %f\n";
-    s = malloc(sizeof(char ) * strlen(format));
 
     for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
         snprintf(path, MAX_LEN, "output/lean/organs_%s_%u.txt", policy, (BLOOD_TYPE)k);
-        OPEN_FILE(f_wl, path)
-        sprintf(s, format,
+        OPEN_FILE(f_ob, path)
+        sprintf(text, format,
                 statistics->ob_stats->sum_organ_arrivals[k][0],
                 statistics->ob_stats->sum_organs_completions[k][0],
                 statistics->ob_stats->sum_organ_outdatings[k],
                 statistics->ob_stats->avg_wait[k][0],
                 statistics->ob_stats->avg_delay[k][0],
                 statistics->ob_stats->avg_service[k][0]);
+        fprintf(f_ob, "%s", text);
     }
 
-    free(s);
-
     // Activation center
-    format = "Results for ACTIVATION_CENTER:"
+    format = "Results for ACTIVATION_CENTER:\n"
              "Arrivals ............... = %f\n"
              "Completions ............ = %f\n"
              "Reneged ................ = %f\n"
              "Average wait ........... = %f\n"
              "Average delay .......... = %f\n"
              "Average service time ... = %f\n";
-    s = malloc(sizeof(char ) * strlen(format));
 
     for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
         snprintf(path, MAX_LEN, "output/lean/activation_%s_%u.txt", policy, (BLOOD_TYPE)k);
-        OPEN_FILE(f_wl, path)
-        sprintf(s, format,
-                statistics->act_stats->num_arrivals,
-                statistics->ob_stats->sum_organs_completions[k][0],
-                statistics->ob_stats->sum_organ_outdatings[k],
-                statistics->ob_stats->avg_wait[k][0],
-                statistics->ob_stats->avg_delay[k][0],
-                statistics->ob_stats->avg_service[k][0]);
+        OPEN_FILE(f_act, path)
+        sprintf(text, format,
+                statistics->act_stats->sum_arrivals[k],
+                statistics->act_stats->sum_activated[k],
+                statistics->act_stats->sum_reneges[k]+statistics->act_stats->sum_deaths[k],
+                statistics->act_stats->avg_wait[k],
+                statistics->act_stats->avg_delay[k],
+                statistics->act_stats->avg_service[k]);
+        fprintf(f_act, "%s", text);
+    }
+
+    // Transplant center
+    format = "Results for TRANSPLANT_CENTER:\n"
+             "Arrivals ............... = %f\n"
+             "Completions ............ = %f\n"
+             "Rejections ............. = %f\n"
+             "Average wait ........... = %f\n"
+             "Average delay .......... = %f\n"
+             "Average service time ... = %f\n";
+
+    for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
+        for (int l = 0; l < NUM_PRIORITIES-1; ++l) {
+            snprintf(path, MAX_LEN, "output/lean/transplant_%s_%u.txt", policy, (BLOOD_TYPE)k);
+            OPEN_FILE(f_tr, path)
+            sprintf(text, format,
+                    statistics->trans_stats->sum_arrivals[k][l],
+                    statistics->trans_stats->sum_transplanted[k][l],
+                    statistics->trans_stats->sum_rejected[k][l],
+                    statistics->trans_stats->avg_wait[k][l],
+                    statistics->trans_stats->avg_delay[k][l],
+                    statistics->trans_stats->avg_service[k][l]);
+            fprintf(f_tr, "%s", text);
+        }
     }
 
 }
@@ -196,18 +217,18 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
                     wl_stats->utilization[i][j], wl_stats->std_utilization[i][j]);
 
             fprintf(f_tr, "%s,%s,%f,%f,%f,%f,+/-%f\n", bt_to_str[i], pr_to_str[j],
-                    trans_stats->completed_transplants[i][j], trans_stats->rejected_transplants[i][j],
+                    trans_stats->num_transplanted[i][j], trans_stats->num_rejected[i][j],
                     trans_stats->rejection_perc[i][j], trans_stats->avg_in_node, trans_stats->std_in_node);
         }
     }
 
     fprintf(f_act, "%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n",
-            act_stats->avg_arrivals, act_stats->std_arrivals,
-            act_stats->avg_activated, act_stats->std_activated,
-            act_stats->avg_deaths, act_stats->std_deaths,
-            act_stats->avg_reneges, act_stats->std_reneges,
-            act_stats->avg_delay, act_stats->std_delay,
-            act_stats->avg_in_node, act_stats->std_in_node);
+            act_stats->avg_arrivals[i], act_stats->std_arrivals[i],
+            act_stats->avg_activated[i], act_stats->std_activated[i],
+            act_stats->avg_deaths[i], act_stats->std_deaths[i],
+            act_stats->avg_reneges[i], act_stats->std_reneges[i],
+            act_stats->avg_delay[i], act_stats->std_delay[i],
+            act_stats->avg_in_node[i], act_stats->std_in_node[i]);
 
     fclose(f_wl);
     fclose(f_ob);

@@ -163,6 +163,7 @@ typedef struct transplant_center {
     in_transplant *last_node;           // reference to the last node in the queue to obtain fast append operations
     double total_number;                                /* l_{trans} */
     double min_transplant;
+    double num_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double num_completions[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double num_rejections[NUM_BLOOD_TYPES][NUM_PRIORITIES];
 } transplant_center;
@@ -194,8 +195,8 @@ typedef struct activation_center {
     double total_number;
     double min_activation;
     double inter_arrival_time[NUM_BLOOD_TYPES];
-    double num_arrivals;
-    double num_completions;
+    double num_arrivals[NUM_BLOOD_TYPES];
+    double num_completions[NUM_BLOOD_TYPES];
 } activation_center;
 
 // ---------------------------------------------------- EXTRA --------------------------------------------------------

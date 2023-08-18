@@ -58,6 +58,7 @@ int main(){
     computeFinalStatistics(final_stat, batches, num_iter);
 
     saveResultsCsv(final_stat, false, 0);
+    saveResultsLean(final_stat);
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 
