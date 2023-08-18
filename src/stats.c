@@ -177,7 +177,7 @@ void gatherResults(stats *statistics, stats *prev_statistics, event_list *events
         statistics->act_stats->sum_arrivals[i] = activation.num_arrivals[i];
         statistics->act_stats->sum_deaths[i] = p_lost.number_dead[i][none];
         statistics->act_stats->sum_reneges[i] = p_lost.number_renege[i][none];
-        statistics->act_stats->num_activated[i] = activation.num_completions[i];
+        statistics->act_stats->sum_activated[i] = activation.num_completions[i];
 
         // Transplant center
         for (j = 0; j < NUM_PRIORITIES; ++j) {
@@ -363,14 +363,14 @@ void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats
     /* Update activation_center center integrals */
     if (number_inactive > 0) {
         ti_stats->area_activation->node += diff * number_inactive;
-        ti_stats->area_activation->queue += diff * (number_inactive-1);
+        ti_stats->area_activation->queue += diff * (number_inactive-number_inactive);
         ti_stats->area_activation->service += diff * number_inactive;
     }
 
     /* Update transplant center integrals */
     if (number_trans > 0) {
         ti_stats->area_transplant->node += diff * number_trans;
-        ti_stats->area_transplant->queue += diff * (number_trans-1);
+        ti_stats->area_transplant->queue += diff * (number_trans-number_trans);
         ti_stats->area_transplant->service += diff * number_trans;
     }
 }

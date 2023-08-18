@@ -56,7 +56,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
     int i, iteration = 0;
     t->current = 0;
 
-    while (t->current < STOP) {
+    while (CLOSE_THE_DOOR(events)) {
         t->next = getMinTime(events);		            // Choose next event selecting minimum time
         updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
 
@@ -69,7 +69,6 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
 */
         if (new_batch){
             //new_batch = t->current < STOP;
-
             gatherResults(batches[iteration], batches[iteration-1], events, iteration);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
@@ -99,33 +98,41 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
         for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
             if (t->current == events->organ_arrival.inter_arrival_time[i]) {
                 handleOrganArrival(events, t, i, deceased);
+                if (events->organ_arrival.inter_arrival_time[i] > STOP) {
+                    t->last[organ_arrival] = t->current;
+                    events->organ_arrival.inter_arrival_time[i] = INFINITY;
+                }
                 break;
             } else if (t->current == events->living_donor_completion[i]) {
                 handleOrganArrival(events, t, i, living);
+                if (events->organ_arrival.inter_arrival_time[i] > STOP) {
+                    t->last[organ_arrival] = t->current;
+                    events->organ_arrival.inter_arrival_time[i] = INFINITY;
+                }
                 break;
             } else if (t->current == events->organs_loss.reneging_time[i]) {
                 handleOrganRenege(events, t, i);
                 break;
             } else if (t->current == events->patient_arrival.inter_arrival_time[i][critical]) {
                 handlePatientArrival(events, t, i, critical, active);
-                /*if (events->patient_arrival.inter_arrival_time[i][critical] > STOP) {
+                if (events->patient_arrival.inter_arrival_time[i][critical] > STOP) {
                     t->last[patient_arrival] = t->current;
                     events->patient_arrival.inter_arrival_time[i][critical] = INFINITY;
-                }*/
+                }
                 break;
             } else if (t->current == events->patient_arrival.inter_arrival_time[i][normal]) {
                 handlePatientArrival(events, t, i, normal, active);
-                /*if (events->patient_arrival.inter_arrival_time[i][normal] > STOP) {
+                if (events->patient_arrival.inter_arrival_time[i][normal] > STOP) {
                     t->last[patient_arrival] = t->current;
                     events->patient_arrival.inter_arrival_time[i][normal] = INFINITY;
-                }*/
+                }
                 break;
             } else if (t->current == events->activation_arrival.inter_arrival_time[i]) {
                 handlePatientArrival(events, t, i, none, inactive);
-                /*if (events->activation_arrival.inter_arrival_time[i] > STOP) {
+                if (events->activation_arrival.inter_arrival_time[i] > STOP) {
                     t->last[patient_arrival] = t->current;
                     events->activation_arrival.inter_arrival_time[i] = INFINITY;
-                }*/
+                }
                 break;
             } else if (t->current == events->patients_loss.reneging_time[i][critical]) {
                 handlePatientLoss(events, t, renege, i, critical, active);

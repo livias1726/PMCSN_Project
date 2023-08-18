@@ -56,9 +56,6 @@ void addPatientToQueue(event_list *events, sim_time *t, patient_queue_priority *
     bt_queue->number++;
     wl->total_number++;
 
-    /* increment arrivals */
-    wl->num_arrivals[bt][pr]++;
-
     /* set patient arrival time: the period of time eventually spent in activation is added */
     p->start_time += curr_time;
 
@@ -126,6 +123,9 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
                     getPatientArrival(bt, priority, active,t->current);
         }
     }
+
+    // increment arrivals to waiting list
+    wl->num_arrivals[bt][priority]++;
 
     bool match = handleMatchingFromPatient(events, t, p);
 
