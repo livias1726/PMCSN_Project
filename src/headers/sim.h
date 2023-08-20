@@ -26,6 +26,8 @@
     ((events)->activation_arrival.total_number > 0) ||                    \
     ((events)->organ_arrival.total_number > 0)
 
+#define ITERATIONS 10
+
 void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                  int *num_iterations);
 

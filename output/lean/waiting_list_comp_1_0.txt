@@ -1,7 +1,0 @@
-Results for WAITING_LIST:
-Arrivals ............... = 142519.000000
-Completions ............ = 95297.000000
-Reneged ................ = 47222.000000
-Average wait ........... = 1223.686782
-Average delay .......... = 1223.626672
-Average service time ... = 0.060110

@@ -57,11 +57,26 @@
     }                                           \
     tail = node;
 
+#define RESET_QUEUE(curr, node) \
+    while(node != NULL){        \
+        curr = node;            \
+        node = curr->next;      \
+        free(curr);             \
+    }
+
+#define RESET_QUEUE_2(curr, node, name) \
+    while(node != NULL){                \
+        curr = node;                    \
+        node = curr->next;              \
+        free(curr->name);               \
+        free(curr);                     \
+    }
+
 static long long random_seed = 0UL;
 
 //-----------------------------------------------------------------------------
 
-void saveResultsCsv(stats *statistics, bool batch, int batch_num);
+void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num);
 void saveResultsLean(stats * statistics);
 void cleanUpEventList(event_list *events);
 void cleanUpStatistics(stats *statistics);

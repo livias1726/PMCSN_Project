@@ -112,7 +112,7 @@ void saveResultsLean(stats *statistics) {
 
 }
 
-void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
+void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num) {
     FILE *f_wl, *f_ob, *f_tr, *f_act;
     char path[MAX_LEN];
     char *policy, *header;
@@ -127,8 +127,6 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
 #ifdef IMPROVEMENT
     policy = "incomp";
 #endif
-    struct stat st = {0};
-
 
     // ----------------------------------------------- HEADERS -------------------------------------------------------
 
@@ -136,7 +134,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     if (batch) {
         snprintf(path, MAX_LEN, "output/batch/waiting_list/%s/waiting_list_%s_%d.csv", policy, policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/waiting_list_%s.csv", policy);
+        snprintf(path, MAX_LEN, "output/%d_waiting_list_%s.csv", iter, policy);
     }
     OPEN_FILE(f_wl, path)
     header = "Blood type,Priority,"
@@ -157,7 +155,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     if (batch) {
         snprintf(path, MAX_LEN, "output/batch/organs/%s/organs_%s_%d.csv", policy, policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/organs_%s.csv", policy);
+        snprintf(path, MAX_LEN, "output/%d_organs_%s.csv", iter, policy);
     }
     OPEN_FILE(f_ob, path)
     header = "Blood type,(Avg) Deceased donor organs arrived,(Avg) Living donor organs arrived,(Avg) Organs outdated,Organs in queue,"
@@ -169,7 +167,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     if (batch) {
         snprintf(path, MAX_LEN, "output/batch/activation/%s/activation_%s_%d.csv", policy, policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/activation_%s.csv", policy);
+        snprintf(path, MAX_LEN, "output/%d_activation_%s.csv", iter, policy);
     }
 
     OPEN_FILE(f_act, path)
@@ -181,7 +179,7 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
     if (batch) {
         snprintf(path, MAX_LEN, "output/batch/transplant/%s/transplant_%s_%d.csv", policy, policy, batch_num);
     } else {
-        snprintf(path, MAX_LEN, "output/transplant_%s.csv", policy);
+        snprintf(path, MAX_LEN, "output/%d_transplant_%s.csv", iter, policy);
     }
     OPEN_FILE(f_tr, path)
     header = "Blood type,Priority,Successful transplant,Rejected transplant,Rejection percentage,"
@@ -220,15 +218,15 @@ void saveResultsCsv(stats *statistics, bool batch, int batch_num) {
                     trans_stats->num_transplanted[i][j], trans_stats->num_rejected[i][j],
                     trans_stats->rejection_perc[i][j], trans_stats->avg_in_node, trans_stats->std_in_node);
         }
-    }
 
-    fprintf(f_act, "%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n",
-            act_stats->avg_arrivals[i], act_stats->std_arrivals[i],
-            act_stats->avg_activated[i], act_stats->std_activated[i],
-            act_stats->avg_deaths[i], act_stats->std_deaths[i],
-            act_stats->avg_reneges[i], act_stats->std_reneges[i],
-            act_stats->avg_delay[i], act_stats->std_delay[i],
-            act_stats->avg_in_node[i], act_stats->std_in_node[i]);
+        fprintf(f_act, "%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n",
+                act_stats->avg_arrivals[i], act_stats->std_arrivals[i],
+                act_stats->avg_activated[i], act_stats->std_activated[i],
+                act_stats->avg_deaths[i], act_stats->std_deaths[i],
+                act_stats->avg_reneges[i], act_stats->std_reneges[i],
+                act_stats->avg_delay[i], act_stats->std_delay[i],
+                act_stats->avg_in_node[i], act_stats->std_in_node[i]);
+    }
 
     fclose(f_wl);
     fclose(f_ob);
@@ -244,12 +242,7 @@ void cleanUpOrganBank(organ_bank *bank) {
         current = bank->queues[i]->queue; // head
         next = current->next; // first node
 
-        while(next != NULL){
-            current = next;
-            next = next->next;
-
-            free(current);
-        }
+        RESET_QUEUE(current, next)
 
         free(bank->queues[i]->queue);
         free(bank->queues[i]);
@@ -263,17 +256,11 @@ void cleanUpWaitingList(patient_waiting_list *wt_list) {
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (j = 0; j < NUM_PRIORITIES; ++j) {
-            /*
+
             current = wt_list->blood_type_queues[i]->priority_queue[j]->queue;
             next = current->next;
 
-            while(next != NULL){
-                current = next;
-                next = next->next;
-
-                free(current);
-            }
-             */
+            RESET_QUEUE(current, next)
 
             free(wt_list->blood_type_queues[i]->priority_queue[j]->queue);
             free(wt_list->blood_type_queues[i]->priority_queue[j]);
@@ -289,13 +276,7 @@ void cleanUpActivationCenter(activation_center *act_center) {
         current = act_center->inactive_patients[i]->head; // head
         next = current->next; // first node
 
-        while(next != NULL){
-            current = next;
-            next = next->next;
-
-            free(current->patient);
-            free(current);
-        }
+        RESET_QUEUE_2(current, next, patient)
 
         free(act_center->inactive_patients[i]->head);
         free(act_center->inactive_patients[i]);
@@ -306,13 +287,7 @@ void cleanUpTransplantCenter(transplant_center *trans_center) {
     in_transplant *current = trans_center->transplanted_patients; // head
     in_transplant *next = current->next; // first node
 
-    while(next != NULL){
-        current = next;
-        next = next->next;
-
-        free(current->matched);
-        free(current);
-    }
+    RESET_QUEUE_2(current, next, matched)
 
     free(trans_center->transplanted_patients); // free head
 }

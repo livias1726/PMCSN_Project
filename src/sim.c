@@ -32,26 +32,11 @@ double getMinTime(event_list *events) {
 
     return min;
 }
-/*
-void updateArrivalRates(){
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            LAMBDA_P[i*3 + j] += LAMBDA_P[i*3 + j] * lambda_p_inc[j];
-            LAMBDA_O[i*3 + j] += LAMBDA_O[i*3 + j] * lambda_o_inc[j];
-            MU_DEATH_P[i*3 + j] -= MU_DEATH_P[i*3 + j] * mu_dp_dec[j];
-            MU_RENEGE_P[i*3 + j] += MU_RENEGE_P[i*3 + j] * mu_rp_inc[j];
-        }
-        LAMBDA_P[i + 2] += LAMBDA_P[i + 2] * lambda_p_inc[2];
-        MU_DEATH_P[i + 2] -= MU_DEATH_P[i + 2] * mu_dp_dec[2];
-        MU_RENEGE_P[i + 2] += MU_RENEGE_P[i + 2] * mu_rp_inc[2];
-    }
-}*/
 
 void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                  int *num_iterations) {
 
     double batch_cp = t->current + BATCH_SIZE;           // set first batch;
-    //double check2 = t->current + 365;
     bool new_batch;
     int i, iteration = 0;
     t->current = 0;
@@ -61,28 +46,15 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
         updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
 
         new_batch = t->current > batch_cp;
-/*
-        if (t->current > check2) {
-            updateArrivalRates();
-            check2 = t->current + 365;
-        }
-*/
+
         if (new_batch){
-            //new_batch = t->current < STOP;
             gatherResults(batches[iteration], batches[iteration-1], events, iteration);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
-            saveResultsCsv(final_stat, true, iteration);
+            //saveResultsCsv(final_stat, true, iteration);
 
             iteration++;
             batch_cp = t->current + BATCH_SIZE;
-            /*
-
-            if (new_batch) {
-                iteration++;
-                batch_cp = t->current + BATCH_SIZE;
-            }
-            */
         }
 
         t->current = t->next;                           // Clock update
