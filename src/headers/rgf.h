@@ -110,12 +110,22 @@ static double mu_rp_inc[] = {0.083, 0.023, 0.063};
 #define MU_ORG 1.0
 
 #ifdef IMPROVEMENT
-#define REJECT_P (0.13 + 0.0637)
+#define REJECT_P (double []) {  (0.13 + 0.0637),\
+                                (0.13 + 0.0637),\
+                                (0.13 + 0.0637),\
+                                (0.13 + 0.0637)}
+
 #else
     #ifdef ABO_ID
-        #define REJECT_P 0.0
+        #define REJECT_P (double []) {0.0, /* O */ \
+                                      0.0, /* A */\
+                                      0.0, /* B */\
+                                      0.0  /* AB */}
     #else
-        #define REJECT_P 0.13
+        #define REJECT_P (double [4][2]) {{0.13,  0.13}, \
+                                          {0.13,  0.13}, \
+                                          {0.13,  0.13}, \
+                                          {0.13,  0.13}}
     #endif
 #endif
 
@@ -132,13 +142,13 @@ static double mu_rp_inc[] = {0.083, 0.023, 0.063};
 #endif
 
 // Transplant probability : P(Bt AND Pr)
-#define TRANSPLANT_PROB (double[]){0.45, /* O */ \
-                                   0.36, /* A */ \
-                                   0.14, /* B */ \
-                                   0.05 /* AB */ }
+#define TRANSPLANT_PROB (double[]){0.25, /* O */ \
+                                   0.25, /* A */ \
+                                   0.25, /* B */ \
+                                   0.25 /* AB */ }
 
 // Critical probability:
-#define CRIT_P 0.3
+#define CRIT_INACT_P 0.0
 
 //--------------------------------------------------------------------------------------------------------------------
 double getOrganArrival(BLOOD_TYPE bt, DONOR_TYPE dt, double arrival);

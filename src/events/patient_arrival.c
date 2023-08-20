@@ -24,7 +24,7 @@ void addToActivationCenter(event_list *events, sim_time *t, patient *p) {
 
     ac->total_number++;
     aq->number++;
-    ac->num_arrivals[p->bt]++;
+    if (!p->repeated_transplant) ac->num_arrivals[p->bt]++;
 
     p->start_time = t->current;
 

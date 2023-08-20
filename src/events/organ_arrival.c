@@ -16,10 +16,10 @@ void handleOrganArrival(event_list *events, sim_time *t, BLOOD_TYPE bt, DONOR_TY
 
     /* Generate next arrival time of an organ */
     if (dt == living) {
-        /* living donor organ */
+        // living donor organ
         events->living_donor_completion[bt] = getOrganArrival(bt, living, t->current);
     } else {
-        /* deceased donor organ */
+        // deceased donor organ
         bank->inter_arrival_time[bt] = getOrganArrival(bt, deceased, t->current);
     }
 

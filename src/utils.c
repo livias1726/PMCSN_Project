@@ -96,8 +96,8 @@ void saveResultsLean(stats *statistics) {
              "Average service time ... = %f\n";
 
     for (int k = 0; k < NUM_BLOOD_TYPES; ++k) {
-        for (int l = 0; l < NUM_PRIORITIES-1; ++l) {
-            snprintf(path, MAX_LEN, "output/lean/transplant_%s_%u.txt", policy, (BLOOD_TYPE)k);
+        for (int l = 0; l < NUM_PRIORITIES; ++l) {
+            snprintf(path, MAX_LEN, "output/lean/transplant_%s_%u_%u.txt", policy, (BLOOD_TYPE)k, (PRIORITY)l);
             OPEN_FILE(f_tr, path)
             sprintf(text, format,
                     statistics->trans_stats->sum_arrivals[k][l],

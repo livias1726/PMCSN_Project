@@ -72,10 +72,10 @@ void handlePatientActivation(event_list *events, sim_time *t) {
 
     /* get patient to activate and send it to the waiting list with normal priority */
     patient* p = to_activate->patient;
-    /*TODO MAYBE if (getCriticalProb() < CRIT_P) {
+    if (getCriticalProb() < CRIT_INACT_P) {
         // patient gets critical priority
         p->priority = critical;
-    }*/
+    }
     addToWaitingList(events, t, p);
 #ifdef AUDIT
     printf("Patient with blood type %d activated and sent to waiting list\n", p->bt);

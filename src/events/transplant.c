@@ -36,11 +36,13 @@ void handleTransplantCompletion(event_list *events, sim_time *t) {
 
     /* reject transplant with a probability below level and send patient back in queue with high priority */
     patient *p = &to_transplant->matched->patient;
+    bool repeated_transplant = p->repeated_transplant;
     BLOOD_TYPE bt = p->bt;
     PRIORITY pr = p->priority;
     double prob = getRejectionProb();
 
-    if (prob < REJECT_P) {
+    if (prob < REJECT_P[bt][pr]) {
+        p->repeated_transplant = true;
         events->transplant_arrival.num_rejections[bt][pr]++;
         addToWaitingList(events, t, p);
 #ifdef AUDIT
@@ -48,7 +50,7 @@ void handleTransplantCompletion(event_list *events, sim_time *t) {
                bt_to_str[p->bt], pr_to_str[p->priority]);
 #endif
     } else {
-        events->transplant_arrival.num_completions[bt][pr]++;
+        if (p->repeated_transplant == false) events->transplant_arrival.num_completions[bt][pr]++;
     }
 
     events->transplant_arrival.total_number--;
