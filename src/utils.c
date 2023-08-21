@@ -23,6 +23,7 @@ void saveResultsLean(stats *statistics) {
              "Arrivals ............... = %f\n"
              "Completions ............ = %f\n"
              "Reneged ................ = %f\n"
+             "Dead ................... = %f\n"
              "Average wait ........... = %f\n"
              "Average delay .......... = %f\n"
              "Average service time ... = %f\n";
@@ -34,7 +35,8 @@ void saveResultsLean(stats *statistics) {
             sprintf(text, format,
                     statistics->wl_stats->sum_patient_arrivals[k][l],
                     statistics->wl_stats->sum_patient_served[k][l],
-                    statistics->wl_stats->sum_patient_reneges[k][l]+statistics->wl_stats->sum_patient_deaths[k][l],
+                    statistics->wl_stats->sum_patient_reneges[k][l],
+                    statistics->wl_stats->sum_patient_deaths[k][l],
                     statistics->wl_stats->avg_wait[k][l],
                     statistics->wl_stats->avg_delay[k][l],
                     statistics->wl_stats->avg_service[k][l]);
@@ -69,6 +71,7 @@ void saveResultsLean(stats *statistics) {
              "Arrivals ............... = %f\n"
              "Completions ............ = %f\n"
              "Reneged ................ = %f\n"
+             "Dead ................... = %f\n"
              "Average wait ........... = %f\n"
              "Average delay .......... = %f\n"
              "Average service time ... = %f\n";
@@ -79,7 +82,8 @@ void saveResultsLean(stats *statistics) {
         sprintf(text, format,
                 statistics->act_stats->sum_arrivals[k],
                 statistics->act_stats->sum_activated[k],
-                statistics->act_stats->sum_reneges[k]+statistics->act_stats->sum_deaths[k],
+                statistics->act_stats->sum_reneges[k],
+                statistics->act_stats->sum_deaths[k],
                 statistics->act_stats->avg_wait[k],
                 statistics->act_stats->avg_delay[k],
                 statistics->act_stats->avg_service[k]);

@@ -1,7 +1,7 @@
 Results for TRANSPLANT_CENTER:
-Arrivals ............... = 95150.000000
-Completions ............ = 77126.000000
-Rejections ............. = 12498.000000
-Average wait ........... = 46.766938
+Arrivals ............... = 111930.000000
+Completions ............ = 97408.000000
+Rejections ............. = 14522.000000
+Average wait ........... = 44.294748
 Average delay .......... = 0.000000
-Average service time ... = 46.766938
+Average service time ... = 44.294748

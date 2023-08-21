@@ -1,7 +1,8 @@
 Results for ACTIVATION_CENTER:
 Arrivals ............... = 14554.000000
-Completions ............ = 0.000000
-Reneged ................ = 14554.000000
-Average wait ........... = 12239.546317
+Completions ............ = 1435.000000
+Reneged ................ = 7822.000000
+Dead ................... = 5297.000000
+Average wait ........... = 52773.433707
 Average delay .......... = 0.000000
-Average service time ... = 12239.546317
+Average service time ... = 52773.433707

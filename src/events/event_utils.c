@@ -125,7 +125,8 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
     }
 
     // increment arrivals to waiting list only if not counted before
-    if (!p->repeated_transplant) wl->num_arrivals[bt][priority]++;
+    // FIXME MAYBE if (!p->repeated_transplant) wl->num_arrivals[bt][priority]++;
+    wl->num_arrivals[bt][priority]++;
 
     bool match = handleMatchingFromPatient(events, t, p);
 
