@@ -169,7 +169,6 @@ void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num) {
     } else {
         snprintf(path, MAX_LEN, "output/%d_activation_%s.csv", iter, policy);
     }
-
     OPEN_FILE(f_act, path)
     header = "(Avg) Patients arrived,CI arrivals,(Avg) Patients activated,CI activations,(Avg) Patients dead,CI deaths,(Avg) Patients reneged,CI reneges,Avg delay,CI delay,"
              "Avg # in the node,CI # in the node\n";
@@ -187,6 +186,7 @@ void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num) {
     fprintf(f_tr, "%s", header);
 
     // ------------------------------------------------- DATA ------------------------------------------------------
+
     waiting_list_stats *wl_stats = statistics->wl_stats;
     organ_bank_stats *ob_stats = statistics->ob_stats;
     transplant_stats *trans_stats = statistics->trans_stats;
@@ -194,14 +194,14 @@ void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num) {
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         fprintf(f_ob, "%s,%f,%f,%f,%f,%f,+/-%f,+/-%f,+/-%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
-                ob_stats->avg_arrivals[i][0], ob_stats->avg_arrivals[i][1], ob_stats->avg_outdatings[i], ob_stats->num_organs_in_queue[i],
-                ob_stats->avg_interarrival_time[i], ob_stats->std_arrivals[i][0], ob_stats->std_arrivals[i][1],
-                ob_stats->std_outdatings[i],ob_stats->std_interarrival_time[i],
+                ob_stats->avg_arrivals[i][0], ob_stats->avg_arrivals[i][1], ob_stats->avg_outdatings[i],
+                ob_stats->num_organs_in_queue[i], ob_stats->avg_interarrival_time[i], ob_stats->std_arrivals[i][0],
+                ob_stats->std_arrivals[i][1], ob_stats->std_outdatings[i],ob_stats->std_interarrival_time[i],
                 ob_stats->avg_in_queue[i], ob_stats->std_in_queue[i]);
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
-            fprintf(f_wl, "%s,%s,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,"
-                          "+/-%f\n", bt_to_str[i], pr_to_str[j],
+            fprintf(f_wl, "%s,%s,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,"
+                          "%f,+/-%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i], pr_to_str[j],
                     wl_stats->avg_arrivals[i][j], wl_stats->std_arrivals[i][j],
                     wl_stats->avg_deaths[i][j], wl_stats->std_deaths[i][j],
                     wl_stats->avg_reneges[i][j], wl_stats->std_reneges[i][j],

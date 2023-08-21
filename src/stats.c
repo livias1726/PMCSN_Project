@@ -5,8 +5,7 @@
  * */
 
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
-    double curr = t->current;
-    double population_bank, completion_bank, population_wl, completion;
+    double curr = t->current, population_bank, completion_bank, population_wl, completion;
     area * curr_area;
 
     waiting_list_stats* wl_stats = stats->wl_stats;
@@ -80,7 +79,6 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
             act_stats->avg_service[i] = curr_area->service / completion;
         }
 
-
         // Transplant center
         completion = trans_stats->sum_transplanted[i][critical]+trans_stats->sum_transplanted[i][normal];
 
@@ -128,6 +126,8 @@ void gatherResults(stats *statistics, stats *prev_statistics, event_list *events
             statistics->ob_stats->sum_organ_arrivals[i][j] = bank.num_arrivals[i][j];
             statistics->ob_stats->sum_organs_completions[i][j] = bank.num_completions[i][j];
         }
+
+        statistics->ob_stats->sum_organ_outdatings[i] = o_exp.num_renege[i];
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             // waiting list
