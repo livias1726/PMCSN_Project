@@ -4,32 +4,7 @@
 #include "../../lib/rngs.h"
 #include "../../lib/rvms.h"
 #include "../../lib/rvgs.h"
-
-/* TODO: test tassi incrementali
-static double LAMBDA_P[] = {0.044, 32.348, 13.784,
-                            0.033, 22.268, 9.203,
-                            0.014, 9.636, 4.159,
-                            0.003, 2.507, 1.252};
-static double lambda_p_inc[] = {0.092, 0.028, 0.006};
-
-static double LAMBDA_O[] = {9.45, 10.91,
-                            7.23, 4.63,
-                            2.45, 1.50,
-                            0.71,0.16};
-static double lambda_o_inc[] = {0.05, 0.011};
-
-static double MU_DEATH_P[] = {0.011, 2.792, 3.962,
-                            0.005, 1.433, 2.293,
-                            0.008, 0.888, 1.156,
-                            0.003, 0.170, 0.293};
-static double mu_dp_dec[] = {0.295, 0.023, 0.016};
-
-static double MU_RENEGE_P[] = {0.011, 3.564, 7.553,
-                               0.008, 1.964, 4.504,
-                               0.005, 1.038, 2.315,
-                               0.000, 0.203, 0.370};
-static double mu_rp_inc[] = {0.083, 0.023, 0.063};
-*/
+#include "model.h"
 
 #ifdef ABO_ID
 // Organ arrival rate [blood type][donor type]
@@ -78,11 +53,17 @@ static double mu_rp_inc[] = {0.083, 0.023, 0.063};
                             2.777260, 1.334795,    \
                             0.803562, 0.206849     }
 
-// Patient arrival rate [blood type][priority]
-#define LAMBDA_P (double[]){0.049041, 35.550411, 13.090411,  \
-                            0.027397, 23.596712, 9.120548,  \
-                            0.013699, 10.779178, 4.012329,  \
-                            0.004110, 2.717808, 1.093699       }
+/* Patient arrival rate [blood type][priority]
+#define LAMBDA_P (double[]){0.049041, 35.581918, 13.096438  \
+                            0.027397, 23.624658, 9.125205   \
+                            0.013699, 10.791781, 4.013973   \
+                            0.004110, 2.722192, 1.094521       }
+*/
+
+#define LAMBDA_P (double[]){0.040548, 31.715890, 11.494247, \
+                            0.021370, 20.740822, 7.908219,  \
+                            0.012329, 9.636164, 3.526849,   \
+                            0.003836, 2.372877, 0.943014 }
 
 // Patient death rate [blood type][priority]
 #define MU_DEATH_P (double[]){0.004110, 2.570411, 3.998904,  \

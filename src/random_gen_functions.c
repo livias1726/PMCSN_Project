@@ -1,4 +1,6 @@
 #include "headers/utils.h"
+#include "headers/rgf.h"
+#include "headers/stats.h"
 
 /***
 * ------------------------------------------- RANDOM GENERATOR FUNCTIONS -----------------------------------------------

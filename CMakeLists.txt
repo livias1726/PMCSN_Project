@@ -11,7 +11,10 @@ set(SRC_INCLUDE src/utils.c lib/rngs.c lib/rvms.c src/headers/init.h src/init.c
         src/events/transplant.c
         src/events/organ_renege.c
         src/events/patient_renege.c
-        src/events/event_utils.c)
+        src/events/event_utils.c
+        src/cleanup.c
+        src/headers/cleanup.h
+        src/io.c)
 
 if (IMPROVEMENT)
     add_definitions(-DIMPROVEMENT=1)
@@ -23,6 +26,10 @@ endif()
 
 if (AUDIT)
     add_definitions(-DAUDIT=1)
+endif ()
+
+if (FINITE)
+    add_definitions(-DFINITE=1)
 endif ()
 
 add_executable(PMCSN_Project src/main.c ${SRC_INCLUDE})
