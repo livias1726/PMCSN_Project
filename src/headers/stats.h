@@ -175,8 +175,7 @@ typedef struct statistics{
 // ------------------- PROTOTYPES ----------------
 void gatherResults(stats *statistics, stats *prev_statistics, event_list *events, int iter_num);
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
-void computeTimeAveragedStats2(stats *stats, time_integrated_stats *ti_stats, sim_time *t);
-void computeFinalStatistics(stats *final_stat, stats **batches, int num_stats);
+void computeStatistics(stats *statistics, int num_stats);
 void updateIntegralsStats(event_list *events, sim_time *t, time_integrated_stats *ti_stats);
 void welford(int iter, stats *stat, stats *batch);
 

@@ -4,6 +4,7 @@
 #define NUM_BLOOD_TYPES 4       /* O, A, B, AB*/
 #define NUM_PRIORITIES 2        /* critical, normal */
 #define NUM_PATIENT_TYPES 3     /* active_critical, active_normal, inactive */
+#define NUM_DONOR_TYPES 2
 
 // ---------------------------------------- MODEL ENUMS ---------------------------------------------------
 typedef enum blood_type {
