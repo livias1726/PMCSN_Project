@@ -107,22 +107,22 @@ void saveResultsLean(stats *statistics) {
     activationLean(statistics->act_stats, policy);
 }
 
-static void waitingListResults(waiting_list_stats *wl_stats, char *path){
+void waitingListResults(waiting_list_stats *wl_stats, char *path){
     int i,j;
     FILE *f_wl;
     OPEN_FILE(f_wl, path)
     char *header = "Blood type,Priority,"
-             "(Avg) Patients arrived,CI arrivals,"
-             "(Avg) Patients dead,CI deaths,"
-             "(Avg) Patients reneged,CI reneges,"
-             "Patients in queue,"
-             "Avg inter-arrival times,CI inter-arrival times,"
-             "Avg wait,CI wait,"
-             "Avg delay,CI delay,"
-             "Avg service time,CI service time,"
-             "Avg # in the node,CI # in the node,"
-             "Avg # in the queue,CI # in the queue,"
-             "Utilization,CI utilization\n";
+                   "(Avg) Patients arrived,CI arrivals,"
+                   "(Avg) Patients dead,CI deaths,"
+                   "(Avg) Patients reneged,CI reneges,"
+                   "Patients in queue,"
+                   "Avg inter-arrival times,CI inter-arrival times,"
+                   "Avg wait,CI wait,"
+                   "Avg delay,CI delay,"
+                   "Avg service time,CI service time,"
+                   "Avg # in the node,CI # in the node,"
+                   "Avg # in the queue,CI # in the queue,"
+                   "Utilization,CI utilization\n";
     fprintf(f_wl, "%s", header);
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
@@ -142,9 +142,11 @@ static void waitingListResults(waiting_list_stats *wl_stats, char *path){
                     wl_stats->utilization[i][j], wl_stats->std_utilization[i][j]);
         }
     }
+
+    fclose(f_wl);
 }
 
-static void organBankResults(organ_bank_stats *ob_stats, char *path){
+void organBankResults(organ_bank_stats *ob_stats, char *path){
     FILE *f_ob;
     OPEN_FILE(f_ob, path)
     char *header = "Blood type,"
@@ -157,7 +159,7 @@ static void organBankResults(organ_bank_stats *ob_stats, char *path){
     fprintf(f_ob, "%s", header);
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        fprintf(f_ob, "%s,%f,%f,%f,%f,%f,+/-%f,+/-%f,+/-%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
+        fprintf(f_ob, "%s,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
                 ob_stats->avg_arrivals[i][deceased], ob_stats->std_arrivals[i][deceased],
                 ob_stats->avg_arrivals[i][living], ob_stats->std_arrivals[i][living],
                 ob_stats->avg_outdatings[i],ob_stats->std_outdatings[i],
@@ -165,9 +167,11 @@ static void organBankResults(organ_bank_stats *ob_stats, char *path){
                 ob_stats->avg_interarrival_time[i], ob_stats->std_interarrival_time[i],
                 ob_stats->avg_in_queue[i], ob_stats->std_in_queue[i]);
     }
+
+    fclose(f_ob);
 }
 
-static void transplantResults(transplant_stats *trans_stats, char *path){
+void transplantResults(transplant_stats *trans_stats, char *path){
     FILE *f_tr;
     int i,j;
 
@@ -184,13 +188,16 @@ static void transplantResults(transplant_stats *trans_stats, char *path){
                     trans_stats->rejection_perc[i][j], trans_stats->avg_in_node, trans_stats->std_in_node);
         }
     }
+
+    fclose(f_tr);
 }
 
-static void activationResults(activation_stats *act_stats, char *path){
+void activationResults(activation_stats *act_stats, char *path){
     FILE *f_act;
 
     OPEN_FILE(f_act, path)
-    char *header = "(Avg) Patients arrived,CI arrivals,"
+    char *header = "Blood Type,"
+                   "(Avg) Patients arrived,CI arrivals,"
                    "(Avg) Patients activated,CI activations,"
                    "(Avg) Patients dead,CI deaths,"
                    "(Avg) Patients reneged,CI reneges,"
@@ -199,7 +206,7 @@ static void activationResults(activation_stats *act_stats, char *path){
     fprintf(f_act, "%s", header);
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        fprintf(f_act, "%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n",
+        fprintf(f_act, "%s, %f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
                 act_stats->avg_arrivals[i], act_stats->std_arrivals[i],
                 act_stats->avg_activated[i], act_stats->std_activated[i],
                 act_stats->avg_deaths[i], act_stats->std_deaths[i],
@@ -207,6 +214,8 @@ static void activationResults(activation_stats *act_stats, char *path){
                 act_stats->avg_delay[i], act_stats->std_delay[i],
                 act_stats->avg_in_node[i], act_stats->std_in_node[i]);
     }
+
+    fclose(f_act);
 }
 
 void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num) {
@@ -224,15 +233,15 @@ void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num) {
 #endif
 
     if (batch) {
-        snprintf(path_wl, MAX_LEN, "output/batch/activation/%s/activation_%s_%d.csv", policy, policy, batch_num);
-        snprintf(path_ob, MAX_LEN, "output/batch/transplant/%s/transplant_%s_%d.csv", policy, policy, batch_num);
-        snprintf(path_t, MAX_LEN, "output/batch/organs/%s/organs_%s_%d.csv", policy, policy, batch_num);
-        snprintf(path_a, MAX_LEN, "output/batch/waiting_list/%s/waiting_list_%s_%d.csv", policy, policy, batch_num);
+        snprintf(path_a, MAX_LEN, "output/batch/activation/%s/activation_%s_%d.csv", policy, policy, batch_num);
+        snprintf(path_t, MAX_LEN, "output/batch/transplant/%s/transplant_%s_%d.csv", policy, policy, batch_num);
+        snprintf(path_ob, MAX_LEN, "output/batch/organs/%s/organs_%s_%d.csv", policy, policy, batch_num);
+        snprintf(path_wl, MAX_LEN, "output/batch/waiting_list/%s/waiting_list_%s_%d.csv", policy, policy, batch_num);
     } else {
-        snprintf(path_wl, MAX_LEN, "output/%d_activation_%s.csv", iter, policy);
-        snprintf(path_ob, MAX_LEN, "output/%d_transplant_%s.csv", iter, policy);
-        snprintf(path_t, MAX_LEN, "output/%d_organs_%s.csv", iter, policy);
-        snprintf(path_a, MAX_LEN, "output/%d_waiting_list_%s.csv", iter, policy);
+        snprintf(path_a, MAX_LEN, "output/%d_activation_%s.csv", iter, policy);
+        snprintf(path_t, MAX_LEN, "output/%d_transplant_%s.csv", iter, policy);
+        snprintf(path_ob, MAX_LEN, "output/%d_organs_%s.csv", iter, policy);
+        snprintf(path_wl, MAX_LEN, "output/%d_waiting_list_%s.csv", iter, policy);
     }
 
     waitingListResults(statistics->wl_stats, path_wl);

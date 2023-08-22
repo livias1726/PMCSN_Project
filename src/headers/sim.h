@@ -17,6 +17,8 @@
 #define START 0.0                           /* initial sim_time                   */
 #define STOP (365 * OBSERVATION)
 
+#define INF_ITER ((STOP / BATCH_SIZE) + 1)
+
 #define CLOSE_THE_DOOR(events) \
     ((events)->patient_arrival.inter_arrival_time[O][critical] < STOP) || \
     ((events)->patient_arrival.inter_arrival_time[A][critical] < STOP) || \
