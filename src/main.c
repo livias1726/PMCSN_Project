@@ -61,12 +61,6 @@ int main(){
         e = clock();
         printf("Simulation %d - time: %lld\n", i, (e-s)/CLOCKS_PER_SEC);
 
-        /*
-        computeStatistics(mid_stats[i], 1);
-        saveResultsCsv(i, mid_stats[i], false, 0);
-        //saveResultsLean(mid_stats[i]);
-        */
-
         gatherResults(mid_stats[i], mid_stats[i-1], events, i);
         computeTimeAveragedStats(mid_stats[i], ti_stats, &sim_time);
         welford(i+1, final_stat, mid_stats[i]);
@@ -96,7 +90,7 @@ int main(){
     saveResultsCsv(0, final_stat, false, 0);
 #endif
 
-    //saveResultsLean(final_stat);
+    saveResultsLean(final_stat);
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 #ifndef FINITE

@@ -16,7 +16,6 @@ void saveResultsLean(stats *statistics) {
 #ifdef IMPROVEMENT
     policy = "incomp";
 #endif
-    stats st = {0};
 
     // waiting list
     format = "Results for WAITING_LIST:\n"
