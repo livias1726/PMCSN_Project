@@ -39,10 +39,10 @@ double getMinTime(event_list *events) {
     return min;
 }
 
-void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
-                 int *num_iterations) {
+#ifdef FINITE
+void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats *final_stat) {
 
-    int i, iteration = 0;
+    int i;
     t->current = 0;
 
     while (CLOSE_THE_DOOR(events)) {
@@ -120,10 +120,9 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
         }
     }
 
-    gatherResults(final_stat, batches[iteration], events, iteration); // to update the system state at the end of the simulation
-    *num_iterations = iteration;
+    gatherResults(final_stat, NULL, events, 0); // to update the system state at the end of the simulation
 }
-
+#else
 void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                  int *num_iterations) {
 
@@ -268,4 +267,4 @@ void auto_correlation(int b, int k, double x[]) {
         r[j] = c[j]/x_var;
     }
 }
-
+#endif

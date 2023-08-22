@@ -6,11 +6,12 @@
 
 #define SEED 123456789
 
-#define BATCH_SIZE 365                       // number of days
 #ifdef FINITE
-#define OBSERVATION 10                       // years of system observation after the initial phase
+    #define OBSERVATION 10                       // years of system observation after the initial phase
+    #define ITERATIONS 5
 #else
-#define OBSERVATION 128                       // years of system observation after the initial phase
+    #define BATCH_SIZE 365                       // number of days
+    #define OBSERVATION 64                       // years of system observation after the initial phase
 #endif
 
 #define START 0.0                           /* initial sim_time                   */
@@ -30,9 +31,8 @@
     ((events)->activation_arrival.total_number > 0) ||                    \
     ((events)->organ_arrival.total_number > 0)
 
-#define ITERATIONS 10
-
 void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                  int *num_iterations);
+void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats *final_stat);
 
 #endif //PMCSN_PROJECT_SIM_H

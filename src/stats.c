@@ -5,8 +5,7 @@
  * */
 
 void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim_time *t) {
-    double curr = t->current;
-    double population_bank, completion_bank, population_wl, completion;
+    double curr = t->current, population_bank, completion_bank, population_wl, completion;
     area * curr_area;
 
     waiting_list_stats* wl_stats = stats->wl_stats;
@@ -32,15 +31,15 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // Organ bank
         curr_area = ti_stats->area_bank[i];
-        population_bank = ob_stats->sum_organ_arrivals[i][0];
-        completion_bank = ob_stats->sum_organs_completions[i][0];
+        population_bank = ob_stats->sum_organ_arrivals[i][deceased];
+        completion_bank = ob_stats->sum_organs_completions[i][deceased];
 
         ob_stats->avg_interarrival_time[i] = (population_bank == 0) ? 0 : t->last[organ_arrival] / population_bank;
 
         if (completion_bank != 0) {
-            ob_stats->avg_wait[i][0] = curr_area->node / completion_bank;
-            ob_stats->avg_delay[i][0] = curr_area->queue / completion_bank;
-            ob_stats->avg_service[i][0] = curr_area->service / completion_bank;
+            ob_stats->avg_wait[i][deceased] = curr_area->node / completion_bank;
+            ob_stats->avg_delay[i][deceased] = curr_area->queue / completion_bank;
+            ob_stats->avg_service[i][deceased] = curr_area->service / completion_bank;
         }
 
         ob_stats->avg_in_queue[i] = curr_area->queue / curr;
@@ -67,9 +66,9 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
 
         // Activation
         curr_area = ti_stats->area_activation;
-        completion = act_stats->sum_activated[O]+
-                     act_stats->sum_activated[A]+
-                     act_stats->sum_activated[B]+
+        completion = act_stats->sum_activated[O] +
+                     act_stats->sum_activated[A] +
+                     act_stats->sum_activated[B] +
                      act_stats->sum_activated[AB];
 
         act_stats->avg_in_node[i] = curr_area->node / curr;
@@ -79,7 +78,6 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
             act_stats->avg_delay[i] = curr_area->queue / completion;
             act_stats->avg_service[i] = curr_area->service / completion;
         }
-
 
         // Transplant center
         completion = trans_stats->sum_transplanted[i][critical]+trans_stats->sum_transplanted[i][normal];
@@ -101,7 +99,7 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
 /**
  * Retrieves the data taken during the simulation
  * */
-void gatherResults(stats *statistics, stats *prev_statistics, event_list *events, int iter_num) {
+static void gatherFirstResults(stats *statistics, event_list *events) {
     patient_waiting_list waiting_list = events->patient_arrival;
     organ_bank bank = events->organ_arrival;
     transplant_center transplant_c = events->transplant_arrival;
@@ -109,81 +107,114 @@ void gatherResults(stats *statistics, stats *prev_statistics, event_list *events
     patients_lost p_lost = events->patients_loss;
     organs_expired o_exp = events->organs_loss;
 
+    waiting_list_stats* wl_stats = statistics->wl_stats;
+    organ_bank_stats* ob_stats = statistics->ob_stats;
+    transplant_stats* t_stats = statistics->trans_stats;
+    activation_stats* a_stats = statistics->act_stats;
+
     int i,j;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         // organ bank
-        statistics->ob_stats->num_organs_in_queue[i] = bank.queues[i]->number;
-        statistics->ob_stats->num_organ_outdatings[i] = (iter_num) ? o_exp.num_renege[i]-prev_statistics->ob_stats->sum_organ_outdatings[i] : o_exp.num_renege[i];
-
+        ob_stats->num_organs_in_queue[i] = bank.queues[i]->number;
+        ob_stats->num_organ_outdatings[i] = ob_stats->sum_organ_outdatings[i] = o_exp.num_renege[i];
         for (j = 0; j < NUM_DONOR_TYPES; ++j) {
-            if (iter_num) {
-                statistics->ob_stats->num_organ_arrivals[i][j] = bank.num_arrivals[i][j]-prev_statistics->ob_stats->sum_organ_arrivals[i][j];
-                statistics->ob_stats->num_organs_completions[i][j] = bank.num_completions[i][j]-prev_statistics->ob_stats->sum_organs_completions[i][j];
-            } else {
-                statistics->ob_stats->num_organ_arrivals[i][j] = bank.num_arrivals[i][j];
-                statistics->ob_stats->num_organs_completions[i][j] = bank.num_completions[i][j];
-            }
-
-            statistics->ob_stats->sum_organ_arrivals[i][j] = bank.num_arrivals[i][j];
-            statistics->ob_stats->sum_organs_completions[i][j] = bank.num_completions[i][j];
+            ob_stats->num_organ_arrivals[i][j] = ob_stats->sum_organ_arrivals[i][j] = bank.num_arrivals[i][j];
+            ob_stats->num_organs_completions[i][j] = ob_stats->sum_organs_completions[i][j] = bank.num_completions[i][j];
         }
 
         for (j = 0; j < NUM_PRIORITIES; ++j) {
             // waiting list
-            statistics->wl_stats->num_patients_in_queue[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
+            wl_stats->num_patients_in_queue[i][j] = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
+            wl_stats->num_patient_arrivals[i][j] = wl_stats->sum_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
+            wl_stats->num_patient_deaths[i][j] = wl_stats->sum_patient_deaths[i][j] = p_lost.number_dead[i][j];
+            wl_stats->num_patient_reneges[i][j] = wl_stats->sum_patient_reneges[i][j] = p_lost.number_renege[i][j];
+            wl_stats->num_patients_served[i][j] = wl_stats->sum_patient_served[i][j] = waiting_list.num_completions[i][j];
 
-            if (iter_num) {
-                statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j]-prev_statistics->wl_stats->sum_patient_arrivals[i][j];
-                statistics->wl_stats->num_patient_deaths[i][j] = p_lost.number_dead[i][j]-prev_statistics->wl_stats->sum_patient_deaths[i][j];
-                statistics->wl_stats->num_patient_reneges[i][j] = p_lost.number_renege[i][j]-prev_statistics->wl_stats->sum_patient_reneges[i][j];
-                statistics->wl_stats->num_patients_served[i][j] = waiting_list.num_completions[i][j]-prev_statistics->wl_stats->sum_patient_served[i][j];
-
-                statistics->trans_stats->num_arrivals[i][j] =
-                        transplant_c.num_arrivals[i][j] - prev_statistics->trans_stats->sum_arrivals[i][j];
-                statistics->trans_stats->num_rejected[i][j] =
-                        transplant_c.num_rejections[i][j] - prev_statistics->trans_stats->sum_rejected[i][j];
-                statistics->trans_stats->num_transplanted[i][j] =
-                        transplant_c.num_completions[i][j] - prev_statistics->trans_stats->sum_transplanted[i][j];
-            } else {
-                statistics->wl_stats->num_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
-                statistics->wl_stats->num_patient_deaths[i][j] = p_lost.number_dead[i][j];
-                statistics->wl_stats->num_patient_reneges[i][j] = p_lost.number_renege[i][j];
-                statistics->wl_stats->num_patients_served[i][j] = waiting_list.num_completions[i][j];
-
-                statistics->trans_stats->num_arrivals[i][j] = transplant_c.num_arrivals[i][j];
-                statistics->trans_stats->num_rejected[i][j] = transplant_c.num_rejections[i][j];
-                statistics->trans_stats->num_transplanted[i][j] = transplant_c.num_completions[i][j];
-            }
-
-            statistics->wl_stats->sum_patient_arrivals[i][j] = waiting_list.num_arrivals[i][j];
-            statistics->wl_stats->sum_patient_deaths[i][j] = p_lost.number_dead[i][j];
-            statistics->wl_stats->sum_patient_reneges[i][j] = p_lost.number_renege[i][j];
-            statistics->wl_stats->sum_patient_served[i][j] = waiting_list.num_completions[i][j];
-
-            statistics->trans_stats->sum_arrivals[i][j] = transplant_c.num_arrivals[i][j];
-            statistics->trans_stats->sum_rejected[i][j] = transplant_c.num_rejections[i][j];
-            statistics->trans_stats->sum_transplanted[i][j] = transplant_c.num_completions[i][j];
+            // Transplant center
+            t_stats->num_arrivals[i][j] = t_stats->sum_arrivals[i][j] = transplant_c.num_arrivals[i][j];
+            t_stats->num_rejected[i][j] = t_stats->sum_rejected[i][j] = transplant_c.num_rejections[i][j];
+            t_stats->num_transplanted[i][j] = t_stats->sum_transplanted[i][j] = transplant_c.num_completions[i][j];
         }
 
         // Activation center
-        if (iter_num) {
-            statistics->act_stats->num_arrivals[i] = activation.num_arrivals[i]-prev_statistics->act_stats->sum_arrivals[i];
-            statistics->act_stats->num_deaths[i] = p_lost.number_dead[i][none]-prev_statistics->act_stats->sum_deaths[i];
-            statistics->act_stats->num_reneges[i] = p_lost.number_renege[i][none]-prev_statistics->act_stats->sum_reneges[i];
-            statistics->act_stats->num_activated[i] = activation.num_completions[i]-prev_statistics->act_stats->sum_activated[i];
-        } else {
-            statistics->act_stats->num_arrivals[i] = activation.num_arrivals[i];
-            statistics->act_stats->num_deaths[i] = p_lost.number_dead[i][none];
-            statistics->act_stats->num_reneges[i] = p_lost.number_renege[i][none];
-            statistics->act_stats->num_activated[i] = activation.num_completions[i];
+        a_stats->num_arrivals[i] = a_stats->sum_arrivals[i] = activation.num_arrivals[i];
+        a_stats->num_deaths[i] = a_stats->sum_deaths[i] = p_lost.number_dead[i][none];
+        a_stats->num_reneges[i] = a_stats->sum_reneges[i] = p_lost.number_renege[i][none];
+        a_stats->num_activated[i] = a_stats->sum_activated[i] = activation.num_completions[i];
+    }
+}
+
+static void gatherMidResults(stats *statistics, stats *prev_statistics, event_list *events) {
+    patient_waiting_list waiting_list = events->patient_arrival;
+    organ_bank bank = events->organ_arrival;
+    transplant_center transplant_c = events->transplant_arrival;
+    activation_center activation = events->activation_arrival;
+    patients_lost p_lost = events->patients_loss;
+    organs_expired o_exp = events->organs_loss;
+
+    waiting_list_stats *wl_stats = statistics->wl_stats, *p_wl_stats = prev_statistics->wl_stats;
+    organ_bank_stats *ob_stats = statistics->ob_stats, *p_ob_stats = prev_statistics->ob_stats;
+    transplant_stats *t_stats = statistics->trans_stats, *p_t_stats = prev_statistics->trans_stats;
+    activation_stats *a_stats = statistics->act_stats, *p_a_stats = prev_statistics->act_stats;
+
+    int i,j;
+
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        // organ bank
+        ob_stats->num_organs_in_queue[i] = bank.queues[i]->number;
+        ob_stats->num_organ_outdatings[i] = o_exp.num_renege[i] - p_ob_stats->sum_organ_outdatings[i];
+        ob_stats->sum_organ_outdatings[i] = o_exp.num_renege[i];
+        for (j = 0; j < NUM_DONOR_TYPES; ++j) {
+            ob_stats->num_organ_arrivals[i][j]      = bank.num_arrivals[i][j] - p_ob_stats->sum_organ_arrivals[i][j];
+            ob_stats->num_organs_completions[i][j]  = bank.num_completions[i][j] - p_ob_stats->sum_organs_completions[i][j];
+            ob_stats->sum_organ_arrivals[i][j]      = bank.num_arrivals[i][j];
+            ob_stats->sum_organs_completions[i][j]  = bank.num_completions[i][j];
         }
 
-        statistics->act_stats->sum_arrivals[i] = activation.num_arrivals[i];
-        statistics->act_stats->sum_deaths[i] = p_lost.number_dead[i][none];
-        statistics->act_stats->sum_reneges[i] = p_lost.number_renege[i][none];
-        statistics->act_stats->sum_activated[i] = activation.num_completions[i];
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            // waiting list
+            wl_stats->num_patients_in_queue[i][j]   = waiting_list.blood_type_queues[i]->priority_queue[j]->number;
+            wl_stats->num_patient_arrivals[i][j]    = waiting_list.num_arrivals[i][j] - p_wl_stats->sum_patient_arrivals[i][j];
+            wl_stats->num_patient_deaths[i][j]      = p_lost.number_dead[i][j] - p_wl_stats->sum_patient_deaths[i][j];
+            wl_stats->num_patient_reneges[i][j]     = p_lost.number_renege[i][j] - p_wl_stats->sum_patient_reneges[i][j];
+            wl_stats->num_patients_served[i][j]     = waiting_list.num_completions[i][j] - p_wl_stats->sum_patient_served[i][j];
+            wl_stats->sum_patient_arrivals[i][j]    = waiting_list.num_arrivals[i][j];
+            wl_stats->sum_patient_deaths[i][j]      = p_lost.number_dead[i][j];
+            wl_stats->sum_patient_reneges[i][j]     = p_lost.number_renege[i][j];
+            wl_stats->sum_patient_served[i][j]      = waiting_list.num_completions[i][j];
+
+            // Transplant center
+            t_stats->num_arrivals[i][j]     = transplant_c.num_arrivals[i][j] - p_t_stats->sum_arrivals[i][j];
+            t_stats->num_rejected[i][j]     = transplant_c.num_rejections[i][j] - p_t_stats->sum_rejected[i][j];
+            t_stats->num_transplanted[i][j] = transplant_c.num_completions[i][j] - p_t_stats->sum_transplanted[i][j];
+            t_stats->sum_arrivals[i][j]     = transplant_c.num_arrivals[i][j];
+            t_stats->sum_rejected[i][j]     = transplant_c.num_rejections[i][j];
+            t_stats->sum_transplanted[i][j] = transplant_c.num_completions[i][j];
+        }
+
+        // Activation center
+        a_stats->num_arrivals[i]    = activation.num_arrivals[i] - p_a_stats->sum_arrivals[i];
+        a_stats->num_deaths[i]      = p_lost.number_dead[i][none] - p_a_stats->sum_deaths[i];
+        a_stats->num_reneges[i]     = p_lost.number_renege[i][none] - p_a_stats->sum_reneges[i];
+        a_stats->num_activated[i]   = activation.num_completions[i] - p_a_stats->sum_activated[i];
+        a_stats->sum_arrivals[i]    = activation.num_arrivals[i];
+        a_stats->sum_deaths[i]      = p_lost.number_dead[i][none];
+        a_stats->sum_reneges[i]     = p_lost.number_renege[i][none];
+        a_stats->sum_activated[i]   = activation.num_completions[i];
     }
+}
+
+void gatherResults(stats *statistics, stats *prev_statistics, event_list *events, int iter_num) {
+#ifdef FINITE
+    gatherFirstResults(statistics, events);
+#else
+    if (iter_num) {
+        gatherMidResults(statistics, prev_statistics, events);
+    } else {
+        gatherFirstResults(statistics, events);
+    }
+#endif
 }
 
 /**

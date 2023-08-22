@@ -11,8 +11,8 @@ int main(){
     event_list *events;
     sim_time sim_time;
     time_integrated_stats *ti_stats;
-    int i, num_iter;
-    stats **batches = NULL, *final_stat;
+    int i;
+    stats *final_stat;
     time_t s, e;
 
     // ---------------------------------------------- Intro --------------------------------------------------------
@@ -21,6 +21,8 @@ int main(){
     sim = "Finite";
     stats *mid_stats[ITERATIONS];
 #else
+    int num_iter;
+    stats **batches = NULL,
     sim = "Infinite";
 #endif
 
@@ -42,31 +44,32 @@ int main(){
 
     events = initializeEventList();
     initializeEventTime(events);
-
     sim_time = initializeTime();
     ti_stats = initializeTimeStatistics();
+    final_stat = initializeStatistics();
+
+    PlantSeeds(SEED);
 
 #ifdef FINITE
     // --------------------------------------------- Finite simulation -----------------------------------------------
-    PlantSeeds(SEED);
 
     for (i = 0; i < ITERATIONS; ++i) {
         mid_stats[i] = initializeStatistics();
 
         s = clock();
-        finiteSim(events, &sim_time, ti_stats, batches, mid_stats[i], &num_iter);
+        finiteSim(events, &sim_time, ti_stats, mid_stats[i]);
         e = clock();
         printf("Simulation %d - time: %lld\n", i, (e-s)/CLOCKS_PER_SEC);
 
-        computeStatistics(mid_stats[i], num_iter);
-        //saveResultsCsv(i, mid_stats[i], false, 0);
-        //saveResultsLean(mid_stats[i]);
+        gatherResults(mid_stats[i], mid_stats[i-1], events, i);
+        computeTimeAveragedStats(mid_stats[i], ti_stats, &sim_time);
+        welford(i+1, final_stat, mid_stats[i]);
 
         resetSimulation(events, &sim_time, ti_stats);
     }
 
-    final_stat = initializeStatistics();
     computeStatistics(final_stat, ITERATIONS);
+    saveResultsCsv(i, final_stat, false, 0);
 #else
     // --------------------------------------------- Infinite simulation ---------------------------------------------
 
@@ -77,30 +80,25 @@ int main(){
     for (i = 0; i < num_iter; ++i) {
         batches[i] = initializeStatistics();
     }
-    final_stat = initializeStatistics();
-
-    PlantSeeds(SEED);
 
     s = clock();
     infiniteSim(events, &sim_time, ti_stats, batches, final_stat, &num_iter);
     e = clock();
     printf("Simulation time: %lld seconds\n", (e-s)/CLOCKS_PER_SEC);
 
+    computeStatistics(final_stat, num_iter);
+    saveResultsCsv(0, final_stat, false, 0);
 #endif
 
-    // ----------------------------------------------------- Results --------------------------------------------------
-
-    computeStatistics(final_stat, ITERATIONS);
-
-    saveResultsCsv(0, final_stat, false, 0);
     saveResultsLean(final_stat);
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
-
-    //cleanUpEventList(events);
-    cleanUpTimeStatistics(ti_stats);
+#ifndef FINITE
     for (i = 0; i < num_iter; ++i) {
         cleanUpStatistics(batches[i]);
     }
+#endif
+    cleanUpEventList(events);
+    cleanUpTimeStatistics(ti_stats);
     cleanUpStatistics(final_stat);
 }
