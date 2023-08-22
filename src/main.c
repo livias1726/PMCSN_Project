@@ -93,7 +93,7 @@ int main(){
     computeStatistics(final_stat, ITERATIONS);
 
     saveResultsCsv(0, final_stat, false, 0);
-    //saveResultsLean(final_stat);
+    saveResultsLean(final_stat);
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 

@@ -10,7 +10,7 @@
 #ifdef FINITE
 #define OBSERVATION 10                       // years of system observation after the initial phase
 #else
-#define OBSERVATION 64                       // years of system observation after the initial phase
+#define OBSERVATION 128                       // years of system observation after the initial phase
 #endif
 
 #define START 0.0                           /* initial sim_time                   */
