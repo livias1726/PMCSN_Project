@@ -1,6 +1,6 @@
 #include "headers/cleanup.h"
 
-void resetWaitingList(patient_waiting_list *wl) {
+static void resetWaitingList(patient_waiting_list *wl) {
     patient *head, *node;
     int i,j;
 
@@ -20,7 +20,7 @@ void resetWaitingList(patient_waiting_list *wl) {
     }
 }
 
-void resetOrganBank(organ_bank *bank) {
+static void resetOrganBank(organ_bank *bank) {
     organ *head, *node;
     int i,j;
     bank->total_number = 0.0;
@@ -37,7 +37,7 @@ void resetOrganBank(organ_bank *bank) {
     }
 }
 
-void resetTransplantCenter(transplant_center *transplant) {
+static void resetTransplantCenter(transplant_center *transplant) {
     in_transplant *head, *node;
     int i,j;
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
@@ -56,7 +56,7 @@ void resetTransplantCenter(transplant_center *transplant) {
     RESET_QUEUE_2(head, node, matched)
 }
 
-void resetActivationCenter(activation_center *activation) {
+static void resetActivationCenter(activation_center *activation) {
     in_activation *head, *node;
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
@@ -75,14 +75,14 @@ void resetActivationCenter(activation_center *activation) {
     activation->min_activation = INFINITY;
 }
 
-void resetOrgansExpiredQueue(organs_expired *organs_loss) {
+static void resetOrgansExpiredQueue(organs_expired *organs_loss) {
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
         organs_loss->num_renege[i] = 0.0;
         organs_loss->reneging_time[i] = -1;
     }
 }
 
-void resetPatientLostQueue(patients_lost *patients_loss) {
+static void resetPatientLostQueue(patients_lost *patients_loss) {
     int i,j;
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (j = 0; j < NUM_PRIORITIES; ++j) {
@@ -94,7 +94,7 @@ void resetPatientLostQueue(patients_lost *patients_loss) {
     }
 }
 
-void resetTimeStatistics(time_integrated_stats *ti_stats){
+static void resetTimeStatistics(time_integrated_stats *ti_stats){
     int i,j;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
@@ -133,7 +133,7 @@ void resetSimulation(event_list *events, sim_time *sim_time, time_integrated_sta
     resetTimeStatistics(ti_stats);
 }
 
-void cleanUpOrganBank(organ_bank *bank) {
+static void cleanUpOrganBank(organ_bank *bank) {
     organ *current; // head
     organ *next; // first node
 
@@ -148,7 +148,7 @@ void cleanUpOrganBank(organ_bank *bank) {
     }
 }
 
-void cleanUpWaitingList(patient_waiting_list *wt_list) {
+static void cleanUpWaitingList(patient_waiting_list *wt_list) {
     patient *current; // head
     patient *next; // first node
     int i,j;
@@ -168,7 +168,7 @@ void cleanUpWaitingList(patient_waiting_list *wt_list) {
     }
 }
 
-void cleanUpActivationCenter(activation_center *act_center) {
+static void cleanUpActivationCenter(activation_center *act_center) {
     in_activation *current, *next; // first node
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
@@ -182,7 +182,7 @@ void cleanUpActivationCenter(activation_center *act_center) {
     }
 }
 
-void cleanUpTransplantCenter(transplant_center *trans_center) {
+static void cleanUpTransplantCenter(transplant_center *trans_center) {
     in_transplant *current = trans_center->transplanted_patients; // head
     in_transplant *next = current->next; // first node
 
