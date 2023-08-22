@@ -40,8 +40,8 @@ typedef struct waiting_list_stats{
     double num_patient_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];      // total number of patients arrived to the system
     double num_patient_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];        // number of death occurred in each waiting list
     double num_patient_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];       // number of reneges occurred in each waiting list
-    double num_patients_in_queue[NUM_BLOOD_TYPES][NUM_PRIORITIES];     // number of patients still in waiting list
     double num_patients_served[NUM_BLOOD_TYPES][NUM_PRIORITIES];       // number of patients matched
+    double num_patients_in_queue[NUM_BLOOD_TYPES][NUM_PRIORITIES];     // number of patients still in waiting list
     double sum_patient_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double sum_patient_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double sum_patient_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];
@@ -51,6 +51,7 @@ typedef struct waiting_list_stats{
     double avg_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double avg_served[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_interarrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_wait[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double avg_delay[NUM_BLOOD_TYPES][NUM_PRIORITIES];
@@ -63,6 +64,7 @@ typedef struct waiting_list_stats{
     double std_arrivals[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_deaths[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_reneges[NUM_BLOOD_TYPES][NUM_PRIORITIES];
+    double std_served[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_interarrival_time[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_wait[NUM_BLOOD_TYPES][NUM_PRIORITIES];
     double std_delay[NUM_BLOOD_TYPES][NUM_PRIORITIES];

@@ -31,9 +31,9 @@ void saveResultsLean(stats *statistics) {
             snprintf(path, MAX_LEN, "output/lean/waiting_list_%s_%u_%u.txt", policy, (PRIORITY)l, (BLOOD_TYPE)k);
             OPEN_FILE(f_wl, path)
             sprintf(text, format,
-                    statistics->wl_stats->sum_patient_arrivals[k][l],
-                    statistics->wl_stats->sum_patient_served[k][l],
-                    statistics->wl_stats->sum_patient_reneges[k][l]+statistics->wl_stats->sum_patient_deaths[k][l],
+                    statistics->wl_stats->avg_arrivals[k][l],
+                    statistics->wl_stats->avg_served[k][l],
+                    statistics->wl_stats->avg_reneges[k][l]+statistics->wl_stats->avg_deaths[k][l],
                     statistics->wl_stats->avg_wait[k][l],
                     statistics->wl_stats->avg_delay[k][l],
                     statistics->wl_stats->avg_service[k][l]);
@@ -54,9 +54,9 @@ void saveResultsLean(stats *statistics) {
         snprintf(path, MAX_LEN, "output/lean/organs_%s_%u.txt", policy, (BLOOD_TYPE)k);
         OPEN_FILE(f_ob, path)
         sprintf(text, format,
-                statistics->ob_stats->sum_organ_arrivals[k][0],
-                statistics->ob_stats->sum_organs_completions[k][0],
-                statistics->ob_stats->sum_organ_outdatings[k],
+                statistics->ob_stats->avg_arrivals[k][0],
+                statistics->ob_stats->avg_completions[k][0],
+                statistics->ob_stats->avg_outdatings[k],
                 statistics->ob_stats->avg_wait[k][0],
                 statistics->ob_stats->avg_delay[k][0],
                 statistics->ob_stats->avg_service[k][0]);
@@ -76,9 +76,9 @@ void saveResultsLean(stats *statistics) {
         snprintf(path, MAX_LEN, "output/lean/activation_%s_%u.txt", policy, (BLOOD_TYPE)k);
         OPEN_FILE(f_act, path)
         sprintf(text, format,
-                statistics->act_stats->sum_arrivals[k],
-                statistics->act_stats->sum_activated[k],
-                statistics->act_stats->sum_reneges[k]+statistics->act_stats->sum_deaths[k],
+                statistics->act_stats->avg_arrivals[k],
+                statistics->act_stats->avg_activated[k],
+                statistics->act_stats->avg_reneges[k]+statistics->act_stats->avg_deaths[k],
                 statistics->act_stats->avg_wait[k],
                 statistics->act_stats->avg_delay[k],
                 statistics->act_stats->avg_service[k]);
@@ -99,9 +99,9 @@ void saveResultsLean(stats *statistics) {
             snprintf(path, MAX_LEN, "output/lean/transplant_%s_%u.txt", policy, (BLOOD_TYPE)k);
             OPEN_FILE(f_tr, path)
             sprintf(text, format,
-                    statistics->trans_stats->sum_arrivals[k][l],
-                    statistics->trans_stats->sum_transplanted[k][l],
-                    statistics->trans_stats->sum_rejected[k][l],
+                    statistics->trans_stats->avg_arrivals[k][l],
+                    statistics->trans_stats->avg_transplanted[k][l],
+                    statistics->trans_stats->avg_rejected[k][l],
                     statistics->trans_stats->avg_wait[k][l],
                     statistics->trans_stats->avg_delay[k][l],
                     statistics->trans_stats->avg_service[k][l]);

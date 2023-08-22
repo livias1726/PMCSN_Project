@@ -8,7 +8,7 @@
 
 #ifdef FINITE
     #define OBSERVATION 10                       // years of system observation after the initial phase
-    #define ITERATIONS 5
+    #define ITERATIONS 128
 #else
     #define BATCH_SIZE 365                       // number of days
     #define OBSERVATION 64                       // years of system observation after the initial phase

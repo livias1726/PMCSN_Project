@@ -65,6 +65,8 @@ int main(){
         computeTimeAveragedStats(mid_stats[i], ti_stats, &sim_time);
         welford(i+1, final_stat, mid_stats[i]);
 
+        printf("Arrivals O - crit: %f\n", final_stat->wl_stats->avg_arrivals[O][critical]);
+        printf("Arrivals O - norm: %f\n\n", final_stat->wl_stats->avg_arrivals[O][normal]);
         resetSimulation(events, &sim_time, ti_stats);
     }
 

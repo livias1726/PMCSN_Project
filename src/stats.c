@@ -420,6 +420,7 @@ void welford(int iter, stats *stat, stats *batch){
             WELFORD(diff, wl_batch->num_patient_arrivals[i][j], wl_stat->avg_arrivals[i][j], wl_stat->std_arrivals[i][j], iter)
             WELFORD(diff, wl_batch->num_patient_deaths[i][j], wl_stat->avg_deaths[i][j], wl_stat->std_deaths[i][j], iter)
             WELFORD(diff, wl_batch->num_patient_reneges[i][j], wl_stat->avg_reneges[i][j], wl_stat->std_reneges[i][j], iter)
+            WELFORD(diff, wl_batch->num_patients_served[i][j], wl_stat->avg_served[i][j], wl_stat->std_served[i][j], iter)
             WELFORD(diff, wl_batch->avg_interarrival_time[i][j], wl_stat->avg_interarrival_time[i][j],wl_stat->std_interarrival_time[i][j], iter)
             WELFORD(diff, wl_batch->avg_wait[i][j],wl_stat->avg_wait[i][j],wl_stat->std_wait[i][j],iter)
             WELFORD(diff, wl_batch->avg_delay[i][j],wl_stat->avg_delay[i][j],wl_stat->std_delay[i][j],iter)
