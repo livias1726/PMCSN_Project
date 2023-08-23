@@ -85,7 +85,7 @@ static void resetOrgansExpiredQueue(organs_expired *organs_loss) {
 static void resetPatientLostQueue(patients_lost *patients_loss) {
     int i,j;
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (j = 0; j < NUM_PRIORITIES; ++j) {
+        for (j = 0; j < NUM_PRIORITIES+1; ++j) {
             patients_loss->number_dead[i][j] = 0.0;
             patients_loss->death_time[i][j] = -1;
             patients_loss->number_renege[i][j] = 0.0;
