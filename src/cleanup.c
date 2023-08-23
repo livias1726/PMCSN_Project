@@ -149,17 +149,16 @@ static void cleanUpOrganBank(organ_bank *bank) {
 }
 
 static void cleanUpWaitingList(patient_waiting_list *wt_list) {
-    patient *current; // head
-    patient *next; // first node
+    patient *current, *next;
     int i,j;
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (j = 0; j < NUM_PRIORITIES; ++j) {
 
-            current = wt_list->blood_type_queues[i]->priority_queue[j]->queue;
-            next = current->next;
+            current = wt_list->blood_type_queues[i]->priority_queue[j]->queue;  // head
+            next = current->next;   // first
 
-            RESET_QUEUE(current, next)
+            //RESET_QUEUE(current, next)
 
             free(wt_list->blood_type_queues[i]->priority_queue[j]->queue);
             free(wt_list->blood_type_queues[i]->priority_queue[j]);

@@ -108,7 +108,7 @@ patient *getPatientFromPatient(patient* arrived, patient_waiting_list *wl) {
     }
 #else
         // if no patient already in queue was suitable for transplant, test the complete compatibility of the new one
-        if(getTransplantProb(patient_bt) < TRANSPLANT_PROB[patient_bt]){
+        if(getTransplantProb(patient_bt) >= TRANSPLANT_PROB[patient_bt]){
             curr = NULL;
         } else {
             curr = arrived;

@@ -126,7 +126,7 @@ void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats,
 void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
                  int *num_iterations) {
 
-    double points[BATCH_SIZE*(*num_iterations)*2][NUM_BLOOD_TYPES][NUM_PRIORITIES] ;        // to calculate batch auto-correlation
+    double points[BATCH_SIZE * INF_ITER][NUM_BLOOD_TYPES][NUM_PRIORITIES];        // to calculate batch auto-correlation
     double batch_cp = t->current + BATCH_SIZE;           // set first batch;
     double iter_cp = t->current + 1;
     bool new_batch, new_iter;
@@ -155,7 +155,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
             gatherResults(batches[iteration], batches[iteration-1], events, iteration);
             computeTimeAveragedStats(batches[iteration], ti_stats, t);
             welford(iteration+1, final_stat, batches[iteration]);
-            saveResultsCsv(iteration, final_stat, true, iteration);
+            //saveResultsCsv(iteration, final_stat, true, iteration);
 
             iteration++;
             batch_cp = t->current + BATCH_SIZE;

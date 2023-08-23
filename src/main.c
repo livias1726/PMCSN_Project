@@ -76,7 +76,7 @@ int main(){
     // --------------------------------------------- Infinite simulation ---------------------------------------------
 
     // batches for each observation year
-    num_iter = (STOP / BATCH_SIZE) + 1;
+    num_iter = INF_ITER;
     batches = malloc(num_iter * sizeof(stats*));
     MALLOC_HANDLER(batches)
     for (i = 0; i < num_iter; ++i) {

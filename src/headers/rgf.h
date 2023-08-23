@@ -53,13 +53,7 @@
                             2.777260, 1.334795,    \
                             0.803562, 0.206849     }
 
-/* Patient arrival rate [blood type][priority]
-#define LAMBDA_P (double[]){0.049041, 35.581918, 13.096438  \
-                            0.027397, 23.624658, 9.125205   \
-                            0.013699, 10.791781, 4.013973   \
-                            0.004110, 2.722192, 1.094521       }
-*/
-
+// Patient arrival rate [blood type][priority]
 #define LAMBDA_P (double[]){0.040548, 31.715890, 11.494247, \
                             0.021370, 20.740822, 7.908219,  \
                             0.012329, 9.636164, 3.526849,   \
@@ -72,18 +66,10 @@
                               0.000274, 0.117534, 0.236986  }
 
 // Patient renege rate [blood type][priority]
-#define MU_RENEGE_P (double[]){0.002466, 1.335616, 5.750959,  \
-                               0.000548, 0.724932, 3.437260,  \
-                               0.000274, 0.393151, 1.793151,   \
-                               0.000274, 0.067671, 0.338082   }
-
-// Patient renege rate [blood type][priority]
-
-/*#define MU_RENEGE_P (double[]){0.002, 2.677, 11.036, \
-                               0.001, 1.387, 6.310,  \
-                               0.001, 0.805, 3.441,  \
-                               0.001, 0.129, 0.612   }*/
-
+#define MU_RENEGE_P (double[]){0.006849, 3.943836, 11.293425, \
+                                0.003288, 2.243014, 6.688493,  \
+                                0.001096, 1.180000, 3.483562,  \
+                                0.000822, 0.208493, 0.662740   }
 #endif
 
 
@@ -123,10 +109,10 @@
 #endif
 
 // Transplant probability : P(Bt AND Pr)
-#define TRANSPLANT_PROB (double[]){0.25, /* O */ \
-                                   0.25, /* A */ \
-                                   0.25, /* B */ \
-                                   0.25 /* AB */ }
+#define TRANSPLANT_PROB (double[]){0.25, \
+                                    0.25,\
+                                    0.25,\
+                                    0.25 }
 
 // Critical probability:
 #define CRIT_INACT_P 0.0
