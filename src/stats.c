@@ -441,6 +441,11 @@ void welford(int iter, stats *stat, stats *batch){
             WELFORD(diff, t_batch->avg_wait[i][j], t_stat->avg_wait[i][j], t_stat->std_wait[i][j],iter)
             WELFORD(diff, t_batch->avg_service[i][j], t_stat->avg_service[i][j], t_stat->std_service[i][j],iter)
             WELFORD(diff, t_batch->avg_delay[i][j], t_stat->avg_delay[i][j], t_stat->std_delay[i][j],iter)
+
+            t_stat->rejection_perc[i][j] =
+                    (t_batch->sum_rejected[i][j] == 0) ? 0 :
+                    100 * (t_batch->sum_rejected[i][j] /
+                           (t_batch->sum_transplanted[i][j] + t_batch->sum_rejected[i][j]));
         }
 
         // Activation center

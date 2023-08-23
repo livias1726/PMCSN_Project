@@ -72,6 +72,7 @@ int main(){
 
     computeStatistics(final_stat, ITERATIONS);
     saveResultsCsv(i, final_stat, false, 0);
+    saveResultsLean(final_stat);
 #else
     // --------------------------------------------- Infinite simulation ---------------------------------------------
 
@@ -91,8 +92,6 @@ int main(){
     computeStatistics(final_stat, num_iter);
     saveResultsCsv(0, final_stat, false, 0);
 #endif
-
-    saveResultsLean(final_stat);
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 #ifndef FINITE

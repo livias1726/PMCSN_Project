@@ -1,5 +1,6 @@
 import os
 
+from scipy.interpolate import make_interp_spline
 import matplotlib.pyplot as plt
 from enum import Enum
 import pandas as pd
@@ -42,10 +43,13 @@ def plot_delay(policy, center, idx, key, value):
             for m in range(0, len(c)):
                 means.append((c[m] + n[m]) / 2)
 
-            axs[i, j].plot(idx, means)
+            spline = make_interp_spline(idx, means)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+
+            axs[i, j].plot(x, y)
             axs[i, j].set_xlabel("batch")
             axs[i, j].set_ylabel("delay")
-            axs[i, j].autoscale()
             axs[i, j].set_title("blood type {}".format(bt))
 
             if i == 0 and j == 0:
@@ -64,18 +68,19 @@ def plot_delay(policy, center, idx, key, value):
         fig.suptitle("Avg. delay in activation center")
 
         for bt, v in value.items():
-            # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("delay")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -95,31 +100,34 @@ def plot_arrivals(policy, center, idx, key, value):
             # create a plot for each blood type
             c = v.get("c")
             n = v.get("n")
-            s_c = [v.get("steady")[0] for _ in c]
-            s_n = [v.get("steady")[1] for _ in n]
+            spline_c = make_interp_spline(idx, c)
+            spline_n = make_interp_spline(idx, n)
+            x = np.linspace(min(idx), max(idx), 500)
+            s_c = [v.get("steady")[0] for _ in x]
+            s_n = [v.get("steady")[1] for _ in x]
+            y_c = spline_c(x)
+            y_n = spline_n(x)
 
             # critical
-            axs[0, j].plot(idx, c)
-            l, = axs[0, j].plot(idx, s_c, color="black")
+            axs[0, j].plot(x, y_c)
+            l, = axs[0, j].plot(x, s_c, color="black")
             l.set_linestyle(":")
             ticks = axs[0, j].get_yticks()
             new_ticks = np.append(ticks, s_c[0])
             axs[0, j].set_yticks(new_ticks)
             axs[0, j].set_xlabel("batch")
             axs[0, j].set_ylabel("arrivals (critical)")
-            axs[0, j].autoscale()
             axs[0, j].set_title("blood type {}".format(bt))
 
             # normal
-            axs[1, j].plot(idx, n)
-            l, = axs[1, j].plot(idx, s_n, color="black")
+            axs[1, j].plot(x, y_n)
+            l, = axs[1, j].plot(x, s_n, color="black")
             l.set_linestyle(":")
             ticks = axs[1, j].get_yticks()
             new_ticks = np.append(ticks, s_n[0])
             axs[1, j].set_yticks(new_ticks)
             axs[1, j].set_xlabel("batch")
             axs[1, j].set_ylabel("arrivals (normal)")
-            axs[1, j].autoscale()
             axs[1, j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -131,18 +139,19 @@ def plot_arrivals(policy, center, idx, key, value):
         fig.suptitle("Avg. arrivals in activation center")
 
         for bt, v in value.items():
-            # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("arrivals")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -157,31 +166,34 @@ def plot_arrivals(policy, center, idx, key, value):
             # create a plot for each blood type
             d = v.get("d")
             lv = v.get("l")
-            s_d = [v.get("steady")[0] for _ in d]
-            s_l = [v.get("steady")[1] for _ in lv]
+            spline_d = make_interp_spline(idx, d)
+            spline_l = make_interp_spline(idx, lv)
+            x = np.linspace(min(idx), max(idx), 500)
+            s_d = [v.get("steady")[0] for _ in x]
+            s_l = [v.get("steady")[1] for _ in x]
+            y_d = spline_d(x)
+            y_l = spline_l(x)
 
             # deceased
-            axs[0, j].plot(idx, d)
-            l, = axs[0, j].plot(idx, s_d, color="black")
+            axs[0, j].plot(x, y_d)
+            l, = axs[0, j].plot(x, s_d, color="black")
             l.set_linestyle(":")
             ticks = axs[0, j].get_yticks()
             new_ticks = np.append(ticks, s_d[0])
             axs[0, j].set_yticks(new_ticks)
             axs[0, j].set_xlabel("batch")
             axs[0, j].set_ylabel("arrivals (critical)")
-            axs[0, j].autoscale()
             axs[0, j].set_title("blood type {}".format(bt))
 
             # living
-            axs[1, j].plot(idx, lv)
-            l, = axs[1, j].plot(idx, s_l, color="black")
+            axs[1, j].plot(x, y_l)
+            l, = axs[1, j].plot(x, s_l, color="black")
             l.set_linestyle(":")
             ticks = axs[1, j].get_yticks()
             new_ticks = np.append(ticks, s_l[0])
             axs[1, j].set_yticks(new_ticks)
             axs[1, j].set_xlabel("batch")
             axs[1, j].set_ylabel("arrivals (normal)")
-            axs[1, j].autoscale()
             axs[1, j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -200,31 +212,34 @@ def plot_prob_loss(policy, center, idx, key, value):
             # create a plot for each blood type
             c = v.get("c")
             n = v.get("n")
-            s_c = [v.get("steady")[0] for _ in c]
-            s_n = [v.get("steady")[1] for _ in n]
+            spline_c = make_interp_spline(idx, c)
+            spline_n = make_interp_spline(idx, n)
+            x = np.linspace(min(idx), max(idx), 500)
+            s_c = [v.get("steady")[0] for _ in x]
+            s_n = [v.get("steady")[1] for _ in x]
+            y_c = spline_c(x)
+            y_n = spline_n(x)
 
             # critical
-            axs[0, j].plot(idx, c)
-            l, = axs[0, j].plot(idx, s_c, color="black")
+            axs[0, j].plot(x, y_c)
+            l, = axs[0, j].plot(x, s_c, color="black")
             l.set_linestyle(":")
             ticks = axs[0, j].get_yticks()
             new_ticks = np.append(ticks, s_c[0])
             axs[0, j].set_yticks(new_ticks)
             axs[0, j].set_xlabel("batch")
             axs[0, j].set_ylabel("prob. loss (critical)")
-            axs[0, j].autoscale()
             axs[0, j].set_title("blood type {}".format(bt))
 
             # normal
-            axs[1, j].plot(idx, n)
-            l, = axs[1, j].plot(idx, s_n, color="black")
+            axs[1, j].plot(x, y_n)
+            l, = axs[1, j].plot(x, s_n, color="black")
             l.set_linestyle(":")
             ticks = axs[1, j].get_yticks()
             new_ticks = np.append(ticks, s_n[0])
             axs[1, j].set_yticks(new_ticks)
             axs[1, j].set_xlabel("batch")
             axs[1, j].set_ylabel("prob. loss (normal)")
-            axs[1, j].autoscale()
             axs[1, j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -236,18 +251,19 @@ def plot_prob_loss(policy, center, idx, key, value):
         fig.suptitle("Avg. prob. loss in activation center")
 
         for bt, v in value.items():
-            # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("prob. loss")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -259,18 +275,19 @@ def plot_prob_loss(policy, center, idx, key, value):
         fig.suptitle("Avg. prob. loss in organ bank")
 
         for bt, v in value.items():
-            # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("prob. loss")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -289,31 +306,34 @@ def plot_inter_arr(policy, center, idx, key, value):
             # create a plot for each blood type
             c = v.get("c")
             n = v.get("n")
-            s_c = [v.get("steady")[0] for _ in c]
-            s_n = [v.get("steady")[1] for _ in n]
+            spline_c = make_interp_spline(idx, c)
+            spline_n = make_interp_spline(idx, n)
+            x = np.linspace(min(idx), max(idx), 500)
+            s_c = [v.get("steady")[0] for _ in x]
+            s_n = [v.get("steady")[1] for _ in x]
+            y_c = spline_c(x)
+            y_n = spline_n(x)
 
             # critical
-            axs[0, j].plot(idx, c)
-            l, = axs[0, j].plot(idx, s_c, color="black")
+            axs[0, j].plot(x, y_c)
+            l, = axs[0, j].plot(x, s_c, color="black")
             l.set_linestyle(":")
             ticks = axs[0, j].get_yticks()
             new_ticks = np.append(ticks, s_c[0])
             axs[0, j].set_yticks(new_ticks)
             axs[0, j].set_xlabel("batch")
             axs[0, j].set_ylabel("int. arrival time (critical)")
-            axs[0, j].autoscale()
             axs[0, j].set_title("blood type {}".format(bt))
 
             # normal
-            axs[1, j].plot(idx, n)
-            l, = axs[1, j].plot(idx, s_n, color="black")
+            axs[1, j].plot(x, y_n)
+            l, = axs[1, j].plot(x, s_n, color="black")
             l.set_linestyle(":")
             ticks = axs[1, j].get_yticks()
             new_ticks = np.append(ticks, s_n[0])
             axs[1, j].set_yticks(new_ticks)
             axs[1, j].set_xlabel("batch")
             axs[1, j].set_ylabel("int. arrival time (normal)")
-            axs[1, j].autoscale()
             axs[1, j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -327,16 +347,18 @@ def plot_inter_arr(policy, center, idx, key, value):
         for bt, v in value.items():
             # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("inter-arrival times")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -350,16 +372,18 @@ def plot_inter_arr(policy, center, idx, key, value):
         for bt, v in value.items():
             # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("inter-arrival times")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -377,16 +401,18 @@ def plot_node(policy, center, idx, key, value):
         for bt, v in value.items():
             # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("avg. num of jobs")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -400,16 +426,18 @@ def plot_node(policy, center, idx, key, value):
         for bt, v in value.items():
             # create a plot for each blood type
             vals = v.get("v")
-            s_vals = [v.get("steady")[0] for _ in vals]
-            axs[j].plot(idx, vals)
-            l, = axs[j].plot(idx, s_vals, color="black")
+            spline = make_interp_spline(idx, vals)
+            x = np.linspace(min(idx), max(idx), 500)
+            y = spline(x)
+            s_vals = [v.get("steady")[0] for _ in x]
+            axs[j].plot(x, y)
+            l, = axs[j].plot(x, s_vals, color="black")
             l.set_linestyle(":")
             ticks = axs[j].get_yticks()
             new_ticks = np.append(ticks, s_vals[0])
             axs[j].set_yticks(new_ticks)
             axs[j].set_xlabel("batch")
             axs[j].set_ylabel("avg. num of jobs")
-            axs[j].autoscale()
             axs[j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -424,31 +452,34 @@ def plot_node(policy, center, idx, key, value):
             # create a plot for each blood type
             c = v.get("c")
             n = v.get("n")
-            s_c = [v.get("steady")[0] for _ in c]
-            s_n = [v.get("steady")[1] for _ in n]
+            spline_c = make_interp_spline(idx, c)
+            spline_n = make_interp_spline(idx, n)
+            x = np.linspace(min(idx), max(idx), 500)
+            s_c = [v.get("steady")[0] for _ in x]
+            s_n = [v.get("steady")[1] for _ in x]
+            y_c = spline_c(x)
+            y_n = spline_n(x)
 
             # critical
-            axs[0, j].plot(idx, c)
-            l, = axs[0, j].plot(idx, s_c, color="black")
+            axs[0, j].plot(x, y_c)
+            l, = axs[0, j].plot(x, s_c, color="black")
             l.set_linestyle(":")
             ticks = axs[0, j].get_yticks()
             new_ticks = np.append(ticks, s_c[0])
             axs[0, j].set_yticks(new_ticks)
             axs[0, j].set_xlabel("batch")
             axs[0, j].set_ylabel("avg. num of jobs (critical)")
-            axs[0, j].autoscale()
             axs[0, j].set_title("blood type {}".format(bt))
 
             # normal
-            axs[1, j].plot(idx, n)
-            l, = axs[1, j].plot(idx, s_n, color="black")
+            axs[1, j].plot(x, y_n)
+            l, = axs[1, j].plot(x, s_n, color="black")
             l.set_linestyle(":")
             ticks = axs[1, j].get_yticks()
             new_ticks = np.append(ticks, s_n[0])
             axs[1, j].set_yticks(new_ticks)
             axs[1, j].set_xlabel("batch")
             axs[1, j].set_ylabel("avg. num. of jobs (normal)")
-            axs[1, j].autoscale()
             axs[1, j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -467,31 +498,34 @@ def plot_reject(policy, center, idx, key, value):
             # create a plot for each blood type
             c = v.get("c")
             n = v.get("n")
-            s_c = [v.get("steady")[0] for _ in c]
-            s_n = [v.get("steady")[1] for _ in n]
+            spline_c = make_interp_spline(idx, c)
+            spline_n = make_interp_spline(idx, n)
+            x = np.linspace(min(idx), max(idx), 500)
+            s_c = [v.get("steady")[0] for _ in x]
+            s_n = [v.get("steady")[1] for _ in x]
+            y_c = spline_c(x)
+            y_n = spline_n(x)
 
             # critical
-            axs[0, j].plot(idx, c)
-            l, = axs[0, j].plot(idx, s_c, color="black")
+            axs[0, j].plot(x, y_c)
+            l, = axs[0, j].plot(x, s_c, color="black")
             l.set_linestyle(":")
             ticks = axs[0, j].get_yticks()
             new_ticks = np.append(ticks, s_c[0])
             axs[0, j].set_yticks(new_ticks)
             axs[0, j].set_xlabel("batch")
             axs[0, j].set_ylabel("int. arrival time (critical)")
-            axs[0, j].autoscale()
             axs[0, j].set_title("blood type {}".format(bt))
 
             # normal
-            axs[1, j].plot(idx, n)
-            l, = axs[1, j].plot(idx, s_n, color="black")
+            axs[1, j].plot(x, y_n)
+            l, = axs[1, j].plot(x, s_n, color="black")
             l.set_linestyle(":")
             ticks = axs[1, j].get_yticks()
             new_ticks = np.append(ticks, s_n[0])
             axs[1, j].set_yticks(new_ticks)
             axs[1, j].set_xlabel("batch")
             axs[1, j].set_ylabel("int. arrival time (normal)")
-            axs[1, j].autoscale()
             axs[1, j].set_title("blood type {}".format(bt))
 
             j += 1
@@ -501,18 +535,18 @@ def plot_reject(policy, center, idx, key, value):
 
 
 def handle_wl_plot(num_batches, base, policy):
-    arrivals = {"O": {"c": [], "n": [], "steady": [17.90, 12975.9]},
-                "A": {"c": [], "n": [], "steady": [10, 8612.8]},
-                "B": {"c": [], "n": [], "steady": [5, 3934.4]},
-                "AB": {"c": [], "n": [], "steady": [1.5, 992]}}
+    arrivals = {"O": {"c": [], "n": [], "steady": [17.90, 12987.4]},
+                "A": {"c": [], "n": [], "steady": [10, 8623]},
+                "B": {"c": [], "n": [], "steady": [5, 3939]},
+                "AB": {"c": [], "n": [], "steady": [1.5, 993.6]}}
     delay = {"O": {"c": [], "n": [], "steady": [913.13, 913.13]},
              "A": {"c": [], "n": [], "steady": [913.13, 913.13]},
              "B": {"c": [], "n": [], "steady": [913.13, 913.13]},
              "AB": {"c": [], "n": [], "steady": [913.13, 913.13]}}
-    loss_prob = {"O": {"c": [], "n": [], "steady": [0, 0]},
-                 "A": {"c": [], "n": [], "steady": [0, 0]},
-                 "B": {"c": [], "n": [], "steady": [0, 0]},
-                 "AB": {"c": [], "n": [], "steady": [0, 0]}}
+    loss_prob = {"O": {"c": [], "n": [], "steady": [0.223464, 0.183085]},
+                 "A": {"c": [], "n": [], "steady": [0.220000, 0.149391]},
+                 "B": {"c": [], "n": [], "steady": [0.180000, 0.181848]},
+                 "AB": {"c": [], "n": [], "steady": [0.266667, 0.119767]}}
     int_arr = {"O": {"c": [], "n": [], "steady": [20.391061, 0.028129]},
                "A": {"c": [], "n": [], "steady": [36.500000, 0.042379]},
                "B": {"c": [], "n": [], "steady": [73.000000, 0.092771]},
@@ -555,10 +589,14 @@ def handle_wl_plot(num_batches, base, policy):
 
 
 def handle_activ_plot(num_batches, base, policy):
-    arrivals = {"O": {"v": [], "steady": [0]},
-                "A": {"v": [], "steady": [0]},
-                "B": {"v": [], "steady": [0]},
-                "AB": {"v": [], "steady": [0]}}
+    arrivals = {"O": {"v": [], "steady": [4195.4]},
+                "A": {"v": [], "steady": [2886.5]},
+                "B": {"v": [], "steady": [1287.3]},
+                "AB": {"v": [], "steady": [344.2]}}
+    prob_loss = {"O": {"v": [], "steady": [0]},
+                 "A": {"v": [], "steady": [0]},
+                 "B": {"v": [], "steady": [0]},
+                 "AB": {"v": [], "steady": [0]}}
     activations = {"O": {"v": [], "steady": [0]},
                    "A": {"v": [], "steady": [0]},
                    "B": {"v": [], "steady": [0]},
@@ -571,10 +609,6 @@ def handle_activ_plot(num_batches, base, policy):
              "A": {"v": [], "steady": [0]},
              "B": {"v": [], "steady": [0]},
              "AB": {"v": [], "steady": [0]}}
-    prob_loss = {"O": {"v": [], "steady": [0]},
-                 "A": {"v": [], "steady": [0]},
-                 "B": {"v": [], "steady": [0]},
-                 "AB": {"v": [], "steady": [0]}}
     bt_keys = ["O", "A", "B", "AB"]
     pr_keys = ["v", "steady"]
 
@@ -587,7 +621,9 @@ def handle_activ_plot(num_batches, base, policy):
                     continue
                 arrivals.get(b).get(p).append(df.at[0, "(Avg) Patients arrived"])
                 activations.get(b).get(p).append(df.at[0, "(Avg) Patients activated"])
-                (prob_loss.get(b).get(p).append((df.at[0, "(Avg) Patients dead"] + df.at[0, "(Avg) Patients reneged"]) / df.at[0, "(Avg) Patients arrived"]))
+                (prob_loss.get(b).get(p).append(
+                    (df.at[0, "(Avg) Patients dead"] + df.at[0, "(Avg) Patients reneged"]) / df.at[
+                        0, "(Avg) Patients arrived"]))
                 num_center.get(b).get(p).append(df.at[0, "Avg # in the node"])
                 delay.get(b).get(p).append(df.at[0, "Avg delay"])
     stats = {"ARRIVALS": arrivals, "ACTIVATIONS": activations, "AVG. IN NODE": num_center, "DELAY": delay,
@@ -610,10 +646,10 @@ def handle_activ_plot(num_batches, base, policy):
 
 
 def handle_trans_plot(num_batches, base, policy):
-    rejection_perc = {"O": {"c": [], "n": [], "steady": [0.13, 0.13]},
-                      "A": {"c": [], "n": [], "steady": [0.13, 0.13]},
-                      "B": {"c": [], "n": [], "steady": [0.13, 0.13]},
-                      "AB": {"c": [], "n": [], "steady": [0.13, 0.13]}}
+    rejection_perc = {"O": {"c": [], "n": [], "steady": [13, 13]},
+                      "A": {"c": [], "n": [], "steady": [13, 13]},
+                      "B": {"c": [], "n": [], "steady": [13, 13]},
+                      "AB": {"c": [], "n": [], "steady": [13, 13]}}
     num_center = {"O": {"c": [], "n": [], "steady": [0, 0]},
                   "A": {"c": [], "n": [], "steady": [0, 0]},
                   "B": {"c": [], "n": [], "steady": [0, 0]},
@@ -644,10 +680,10 @@ def handle_trans_plot(num_batches, base, policy):
 
 
 def handle_organs_plot(num_batches, base, policy):
-    arrivals = {"O": {"d": [], "l": [], "steady": [0, 0]},
-                "A": {"d": [], "l": [], "steady": [0, 0]},
-                "B": {"d": [], "l": [], "steady": [0, 0]},
-                "AB": {"d": [], "l": [], "steady": [0, 0]}}
+    arrivals = {"O": {"d": [], "l": [], "steady": [4060.6, 3742.6]},
+                "A": {"d": [], "l": [], "steady": [3151.7, 1626.7]},
+                "B": {"d": [], "l": [], "steady": [1013.7, 487.2]},
+                "AB": {"d": [], "l": [], "steady": [293.3, 75.5]}}
     int_arrival = {"O": {"v": [], "steady": [0.089888]},
                    "A": {"v": [], "steady": [0.115811]},
                    "B": {"v": [], "steady": [0.360067]},
@@ -678,10 +714,14 @@ def handle_organs_plot(num_batches, base, policy):
         num_center.get("B").get("v").append(df.at[2, "Avg # in the queue"])
         num_center.get("AB").get("v").append(df.at[3, "Avg # in the queue"])
 
-        loss_prob.get("O").get("v").append(df.at[0, "(Avg) Organs outdated"] / df.at[0, "(Avg) Deceased donor organs arrived"])
-        loss_prob.get("A").get("v").append(df.at[1, "(Avg) Organs outdated"] / df.at[1, "(Avg) Deceased donor organs arrived"])
-        loss_prob.get("B").get("v").append(df.at[2, "(Avg) Organs outdated"] / df.at[2, "(Avg) Deceased donor organs arrived"])
-        loss_prob.get("AB").get("v").append(df.at[3, "(Avg) Organs outdated"] / df.at[3, "(Avg) Deceased donor organs arrived"])
+        loss_prob.get("O").get("v").append(
+            df.at[0, "(Avg) Organs outdated"] / df.at[0, "(Avg) Deceased donor organs arrived"])
+        loss_prob.get("A").get("v").append(
+            df.at[1, "(Avg) Organs outdated"] / df.at[1, "(Avg) Deceased donor organs arrived"])
+        loss_prob.get("B").get("v").append(
+            df.at[2, "(Avg) Organs outdated"] / df.at[2, "(Avg) Deceased donor organs arrived"])
+        loss_prob.get("AB").get("v").append(
+            df.at[3, "(Avg) Organs outdated"] / df.at[3, "(Avg) Deceased donor organs arrived"])
 
         int_arrival.get("O").get("v").append(df.at[0, "Avg inter-arrival times"])
         int_arrival.get("A").get("v").append(df.at[1, "Avg inter-arrival times"])
