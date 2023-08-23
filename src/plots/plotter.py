@@ -1,21 +1,19 @@
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 from enum import Enum
 import pandas as pd
 from scipy.interpolate import make_interp_spline
 import numpy as np
 import fnmatch
 
+
 # centers:
 #   - 1: waiting list
 #   - 2: transplant
 #   - 3: activation
 #   - 4: organs
-
-FONT_LABEL = {'color': 'black', 'size': 14}
-FONT_TITLE = {'color': 'black', 'size': 26}
-FONT_NUM = 14
 
 
 class Policy(Enum):
@@ -29,6 +27,93 @@ class Center(Enum):
     TRANSPLANT = 2
     ACTIVATION = 3
     ORGANS = 4
+
+
+def plot_delay(policy, idx, key, value):
+    i = 0
+    j = 0
+    fig, axs = plt.subplots(ncols=2, nrows=2, layout="constrained")
+    fig.suptitle("Avg. delay in waiting list")
+
+    for bt, v in value.items():
+        # create a plot for each blood type
+        c = v.get("c")
+        n = v.get("n")
+        means = []
+        for m in range(0, len(c)):
+            means.append((c[m] + n[m]) / 2)
+
+        axs[i, j].plot(idx, means)
+        axs[i, j].set_xlabel("batch")
+        axs[i, j].set_ylabel("delay")
+        axs[i, j].autoscale()
+        axs[i, j].set_title("blood type {}".format(bt))
+
+        if i == 0 and j == 0:
+            j += 1
+        elif i == 0 and j == 1:
+            i += 1
+            j = 0
+        else:
+            i = 1
+            j = 1
+
+    plt.savefig("output/plot/{}/waiting_list_{}.png".format(policy.name.lower(), key.lower()))
+    plt.clf()
+
+
+def plot_arrivals(policy, idx, key, value):
+    j = 0
+    fig, axs = plt.subplots(ncols=4, nrows=2, layout="constrained", figsize=(25, 10), dpi=100)
+    fig.suptitle("Avg. arrivals in waiting list")
+
+    for bt, v in value.items():
+        # create a plot for each blood type
+        c = v.get("c")
+        n = v.get("n")
+        s_c = [v.get("steady")[0] for _ in c]
+        s_n = [v.get("steady")[1] for _ in n]
+
+        # critical
+        axs[0, j].plot(idx, c)
+        l, = axs[0, j].plot(idx, s_c, color="black")
+        l.set_linestyle(":")
+        ticks = axs[0, j].get_yticks()
+        new_ticks = np.append(ticks, s_c[0])
+        axs[0, j].set_yticks(new_ticks)
+        axs[0, j].set_xlabel("batch")
+        axs[0, j].set_ylabel("arrivals (critical)")
+        axs[0, j].autoscale()
+        axs[0, j].set_title("blood type {}".format(bt))
+
+        # normal
+        axs[1, j].plot(idx, n)
+        l, = axs[1, j].plot(idx, s_n, color="black")
+        l.set_linestyle(":")
+        ticks = axs[1, j].get_yticks()
+        new_ticks = np.append(ticks, s_n[0])
+        axs[1, j].set_yticks(new_ticks)
+        axs[1, j].set_xlabel("batch")
+        axs[1, j].set_ylabel("arrivals (normal)")
+        axs[1, j].autoscale()
+        axs[1, j].set_title("blood type {}".format(bt))
+
+        j += 1
+
+    plt.savefig("output/plot/{}/waiting_list_{}.png".format(policy.name.lower(), key.lower()))
+    plt.clf()
+
+
+def plot_probloss(idx, key, value):
+    i = 0
+    j = 0
+    fig, axs = plt.subplots(ncols=2, nrows=2, layout="constrained")
+    fig.suptitle("Avg. delay in waiting list")
+    pass
+
+
+def plot_interarr(idx, key, value):
+    pass
 
 
 def handle_wl_plot(num_batches, base, policy):
@@ -72,48 +157,39 @@ def handle_wl_plot(num_batches, base, policy):
                 idx += 1
     stats = {"ARRIVALS": arrivals, "DELAY": delay, "PROB. LOSS": loss_prob, "AVG. INTERARRIVALS": int_arr}
 
-    # todo: modificare grafico non mi piace come sono rappresentate le linee (sono troppe!)
+    idx = range(num_batches)
     for key, value in stats.items():
-        idx = range(num_batches)
         if key.lower() == "delay":
-            for bt, v in value.items():
-                # create a plot for each blood tyoe
-                c = v.get("c")
-                n = v.get("n")
-                print(len(c))
-                print(len(n))
-                means = []
-                for i in range(0, len(c)):
-                    means.append((c[i]+n[i])/2)
-                x_new = np.linspace(min(idx), max(idx), 300)
-                spl = make_interp_spline(idx, means, k=3)
-                y = spl(x_new)
-                plt.plot(x_new, y, label=bt)
-                plt.ylabel(key.lower(), fontdict=FONT_LABEL)
-                plt.xlabel("Batch", fontdict=FONT_LABEL)
-                plt.axhline(y=v.get("steady")[0], color='black', linestyle='-')
-                plt.title(key, fontdict=FONT_TITLE)
-                plt.legend()
-                plt.savefig("output/plot/{}/waiting_list_{}_{}.png".format(policy.name.lower(), key.lower(), bt.lower()))
-                plt.clf()
+            plot_delay(policy, idx, key, value)
+        elif key.lower() == "arrivals":
+            plot_arrivals(policy, idx, key, value)
+        elif key.lower() == "prob. loss":
+            plot_probloss(idx, key, value)
         else:
-            for bt, v in value.items():
-                # create a plot for each blood tyoe
-                for pr, v_pr in v.items():
-                    if pr == "steady":
-                        continue
-                    x_new = np.linspace(min(idx), max(idx), 300)
-                    spl = make_interp_spline(idx, v_pr, k=3)
-                    y = spl(x_new)
-                    plt.plot(x_new, y, label=bt + "-" + pr)
-                plt.ylabel(key.lower(), fontdict=FONT_LABEL)
-                plt.xlabel("Batch", fontdict=FONT_LABEL)
-                plt.axhline(y=v.get("steady")[0], color='black', linestyle='-')
-                plt.axhline(y=v.get("steady")[1], color='black', linestyle='-')
-                plt.title(key, fontdict=FONT_TITLE)
-                plt.legend()
-                plt.savefig("output/plot/{}/waiting_list_{}_{}.png".format(policy.name.lower(), key.lower(), bt.lower()))
-                plt.clf()
+            plot_interarr(idx, key, value)
+
+
+"""
+for key, value in stats.items():
+        idx = range(num_batches)
+        for bt, v in value.items():
+            # create a plot for each blood tyoe
+            for pr, v_pr in v.items():
+                if pr == "steady":
+                    continue
+                x_new = np.linspace(min(idx), max(idx), 300)
+                spl = make_interp_spline(idx, v_pr, k=3)
+                y = spl(x_new)
+                plt.plot(x_new, y, label=bt + "-" + pr)
+            plt.ylabel(key.lower())
+            plt.xlabel("Batch")
+            plt.axhline(y=v.get("steady")[0], color='black', linestyle='-')
+            plt.axhline(y=v.get("steady")[1], color='black', linestyle='-')
+            plt.title(key)
+            plt.legend()
+            plt.savefig("output/plot/{}/waiting_list_{}_{}.png".format(policy.name.lower(), key.lower(), bt.lower()))
+            plt.clf()
+"""
 
 
 def handle_trans_plot(num_batches, base, policy):

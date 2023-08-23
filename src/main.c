@@ -22,7 +22,7 @@ int main(){
     stats *mid_stats[ITERATIONS];
 #else
     int num_iter;
-    stats **batches = NULL,
+    stats **batches = NULL;
     sim = "Infinite";
 #endif
 
@@ -96,11 +96,11 @@ int main(){
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 #ifndef FINITE
-    for (i = 0; i < num_iter; ++i) {
+    /*for (i = 0; i < num_iter; ++i) {
         cleanUpStatistics(batches[i]);
-    }
+    }*/
 #endif
-    cleanUpEventList(events);
-    cleanUpTimeStatistics(ti_stats);
-    cleanUpStatistics(final_stat);
+    //cleanUpEventList(events);
+    //cleanUpTimeStatistics(ti_stats);
+    //cleanUpStatistics(final_stat);
 }

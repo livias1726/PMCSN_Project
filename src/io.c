@@ -224,15 +224,15 @@ void saveResultsCsv(int iter, stats *statistics, bool batch, int batch_num) {
 #endif
 
     if (batch) {
-        snprintf(path_wl, MAX_LEN, "output/batch/activation/%s/activation_%s_%d.csv", policy, policy, batch_num);
+        snprintf(path_a, MAX_LEN, "output/batch/activation/%s/activation_%s_%d.csv", policy, policy, batch_num);
         snprintf(path_ob, MAX_LEN, "output/batch/transplant/%s/transplant_%s_%d.csv", policy, policy, batch_num);
         snprintf(path_t, MAX_LEN, "output/batch/organs/%s/organs_%s_%d.csv", policy, policy, batch_num);
-        snprintf(path_a, MAX_LEN, "output/batch/waiting_list/%s/waiting_list_%s_%d.csv", policy, policy, batch_num);
+        snprintf(path_wl, MAX_LEN, "output/batch/waiting_list/%s/waiting_list_%s_%d.csv", policy, policy, batch_num);
     } else {
-        snprintf(path_wl, MAX_LEN, "output/%d_activation_%s.csv", iter, policy);
+        snprintf(path_a, MAX_LEN, "output/%d_activation_%s.csv", iter, policy);
         snprintf(path_ob, MAX_LEN, "output/%d_transplant_%s.csv", iter, policy);
         snprintf(path_t, MAX_LEN, "output/%d_organs_%s.csv", iter, policy);
-        snprintf(path_a, MAX_LEN, "output/%d_waiting_list_%s.csv", iter, policy);
+        snprintf(path_wl, MAX_LEN, "output/%d_waiting_list_%s.csv", iter, policy);
     }
 
     waitingListResults(statistics->wl_stats, path_wl);
