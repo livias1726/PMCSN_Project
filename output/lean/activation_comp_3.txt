@@ -1,7 +1,7 @@
 Results for ACTIVATION_CENTER:
-Arrivals ............... = 345.698413
-Completions ............ = 12.730159
-Reneged ............. = 325.507937
-Average wait ........... = 10957.295711
+Arrivals ............... = 3445.338462
+Completions ............ = 0.215385
+Reneged ............. = 225624.607692
+Average wait ........... = 10543.154302
 Average delay .......... = 0.000000
-Average service time ... = 10957.295711
+Average service time ... = 10543.154302
