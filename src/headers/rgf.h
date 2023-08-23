@@ -109,10 +109,10 @@
 #endif
 
 // Transplant probability : P(Bt AND Pr)
-#define TRANSPLANT_PROB (double[]){0.25, \
-                                    0.25,\
-                                    0.25,\
-                                    0.25 }
+#define TRANSPLANT_PROB (double[]){0.5, \
+                                    0.5,\
+                                    0.5,\
+                                    0.5 }
 
 // Critical probability:
 #define CRIT_INACT_P 0.0
