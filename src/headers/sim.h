@@ -11,7 +11,7 @@
     #define ITERATIONS 130
 #else
     #define BATCH_SIZE 365                       // number of days
-    #define OBSERVATION 64                       // years of system observation after the initial phase
+    #define OBSERVATION 37                       // years of system observation after the initial phase
 #endif
 
 #define START 0.0                           /* initial sim_time                   */
