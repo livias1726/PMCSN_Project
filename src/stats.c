@@ -135,6 +135,11 @@ static void gatherFirstResults(stats *statistics, event_list *events) {
             t_stats->num_arrivals[i][j] = t_stats->sum_arrivals[i][j] = transplant_c.num_arrivals[i][j];
             t_stats->num_rejected[i][j] = t_stats->sum_rejected[i][j] = transplant_c.num_rejections[i][j];
             t_stats->num_transplanted[i][j] = t_stats->sum_transplanted[i][j] = transplant_c.num_completions[i][j];
+
+            t_stats->rejection_perc[i][j] =
+                    (t_stats->num_rejected[i][j] == 0) ? 0 :
+                    100 * (t_stats->num_rejected[i][j] /
+                           (t_stats->num_transplanted[i][j] + t_stats->num_rejected[i][j]));
         }
 
         // Activation center
@@ -191,6 +196,11 @@ static void gatherMidResults(stats *statistics, stats *prev_statistics, event_li
             t_stats->sum_arrivals[i][j]     = transplant_c.num_arrivals[i][j];
             t_stats->sum_rejected[i][j]     = transplant_c.num_rejections[i][j];
             t_stats->sum_transplanted[i][j] = transplant_c.num_completions[i][j];
+
+            t_stats->rejection_perc[i][j] =
+                    (t_stats->num_rejected[i][j] == 0) ? 0 :
+                    100 * (t_stats->num_rejected[i][j] /
+                           (t_stats->num_transplanted[i][j] + t_stats->num_rejected[i][j]));
         }
 
         // Activation center
@@ -312,11 +322,6 @@ void computeStatistics(stats *statistics, int num_stats) {
 
             STDEV(sum, t_stats->std_in_node, num_stats) // fixme
             CONFIDENCE(u, t, w, t_stats->std_in_node, num_stats) // fixme
-
-            t_stats->rejection_perc[i][j] =
-                    (t_stats->num_rejected[i][j] == 0) ? 0 :
-                    100 * (t_stats->num_rejected[i][j] /
-                           (t_stats->num_transplanted[i][j] + t_stats->num_transplanted[i][j]));
         }
 
         // Activation center

@@ -177,15 +177,21 @@ void transplantResults(transplant_stats *trans_stats, char *path){
 
     OPEN_FILE(f_tr, path)
     char *header = "Blood type,Priority,"
-                   "Successful transplant,Rejected transplant,Rejection percentage,"
+                   "Number of transplants,CI # transplants,"
+                   "Successful transplants,CI successful,"
+                   "Rejected transplants,CI rejected,"
+                   "Rejection percentage,"
                    "Avg # in the node,CI # in the node\n";
     fprintf(f_tr, "%s", header);
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (j = 0; j < NUM_PRIORITIES; ++j) {
-            fprintf(f_tr, "%s,%s,%f,%f,%f,%f,+/-%f\n", bt_to_str[i], pr_to_str[j],
-                    trans_stats->num_transplanted[i][j], trans_stats->num_rejected[i][j],
-                    trans_stats->rejection_perc[i][j], trans_stats->avg_in_node, trans_stats->std_in_node);
+            fprintf(f_tr, "%s,%s,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,%f,+/-%f\n", bt_to_str[i], pr_to_str[j],
+                    trans_stats->avg_arrivals[i][j],trans_stats->std_arrivals[i][j],
+                    trans_stats->avg_transplanted[i][j], trans_stats->std_transplanted[i][j],
+                    trans_stats->avg_rejected[i][j], trans_stats->std_rejected[i][j],
+                    trans_stats->rejection_perc[i][j],
+                    trans_stats->avg_in_node, trans_stats->std_in_node);
         }
     }
 
@@ -206,7 +212,7 @@ void activationResults(activation_stats *act_stats, char *path){
     fprintf(f_act, "%s", header);
 
     for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        fprintf(f_act, "%s, %f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
+        fprintf(f_act, "%s,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f,%f,+/-%f\n", bt_to_str[i],
                 act_stats->avg_arrivals[i], act_stats->std_arrivals[i],
                 act_stats->avg_activated[i], act_stats->std_activated[i],
                 act_stats->avg_deaths[i], act_stats->std_deaths[i],
