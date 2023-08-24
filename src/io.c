@@ -53,7 +53,7 @@ static void transplantLean(transplant_stats *t_stats, char *policy){
 
     for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
         for (j = 0; j < NUM_PRIORITIES; ++j) {
-            snprintf(path, MAX_LEN, "output/lean/transplant_%s_%u.txt", policy, (BLOOD_TYPE)i);
+            snprintf(path, MAX_LEN, "output/lean/transplant_%s_%u_%u.txt", policy, (PRIORITY)j, (BLOOD_TYPE)i);
             OPEN_FILE(f_tr, path)
             fprintf(f_tr, format,
                     t_stats->avg_arrivals[i][j],
