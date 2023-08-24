@@ -70,6 +70,7 @@
                                 0.003288, 2.243014, 6.688493,  \
                                 0.001096, 1.180000, 3.483562,  \
                                 0.000822, 0.208493, 0.662740   }
+
 #endif
 
 
@@ -77,28 +78,18 @@
 #define MU_ORG 1.0
 
 #ifdef IMPROVEMENT
-#define REJECT_P (double [4][2]) {(0.13 + 0.0637), (0.13 + 0.0637),\
-                                (0.13 + 0.0637), (0.13 + 0.0637), \
-                                (0.13 + 0.0637), (0.13 + 0.0637),\
-                                (0.13 + 0.0637), (0.13 + 0.0637)}
-
+#define REJECT_P (double []) {0.13, 0.1937}
 #else
     #ifdef ABO_ID
-        #define REJECT_P (double []) {0.0, /* O */ \
-                                      0.0, /* A */\
-                                      0.0, /* B */\
-                                      0.0  /* AB */}
+        #define REJECT_P 0.0
     #else
-        #define REJECT_P (double [4][2]) {{0.13,  0.13}, \
-                                          {0.13,  0.13}, \
-                                          {0.13,  0.13}, \
-                                          {0.13,  0.13}}
+        #define REJECT_P 0.13
     #endif
 #endif
 
 // 2/3 anni di attesa
-#define MIN_ACTIVATION 730.0
-#define MAX_ACTIVATION 1095.0
+#define MIN_ACTIVATION 0
+#define MAX_ACTIVATION (6 * 365)
 
 #ifdef IMPROVEMENT
 #define MIN_TRANSPLANT 46.0
@@ -109,10 +100,10 @@
 #endif
 
 // Transplant probability : P(Bt AND Pr)
-#define TRANSPLANT_PROB (double[]){0.25, \
-                                    0.25,\
-                                    0.25,\
-                                    0.25 }
+#define TRANSPLANT_PROB (double[]){0.54, /* O */ \
+                                   0.62, /* A */ \
+                                   0.63, /* B */ \
+                                   0.67 /* AB */ }
 
 // Critical probability:
 #define CRIT_INACT_P 0.0

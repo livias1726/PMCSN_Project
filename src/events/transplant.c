@@ -40,8 +40,14 @@ void handleTransplantCompletion(event_list *events, sim_time *t) {
     BLOOD_TYPE bt = p->bt;
     PRIORITY pr = p->priority;
     double prob = getRejectionProb();
+    double rej;
+#ifdef IMPROVEMENT
+    rej = (COMPATIBLE(bt, to_transplant->matched->organ.bt)) ? REJECT_P[0] : REJECT_P[1];
+#else
+    rej = REJECT_P;
+#endif
 
-    if (prob < REJECT_P[bt][pr]) {
+    if (prob < rej) {
         // FIXME MAYBE p->repeated_transplant = true;
         events->transplant_arrival.num_rejections[bt][pr]++;
         addToWaitingList(events, t, p);
