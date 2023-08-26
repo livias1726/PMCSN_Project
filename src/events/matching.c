@@ -161,7 +161,7 @@ patient *getPatientFromOrgan(BLOOD_TYPE organ_bt, patient_waiting_list *wl) {
                 no_trans = (getTransplantProb(b) >= TRANSPLANT_PROB[b]); // check for complete compatibility
                 tot_in_queue--;
             } while (tot_in_queue > 0 && no_trans);
-            if (no_trans) break; // no patient with complete compatibility was found for this blood type
+            if (no_trans) break; // no patient with complete compatibility was found for this blood type;
 #endif
             // Check if the retrieved patient is the oldest one yet in the given priority
             curr_val = curr->start_time;
