@@ -108,6 +108,7 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
     patient_waiting_list *wl = &events->patient_arrival;
     BLOOD_TYPE bt = p->bt;
     PRIORITY priority = p->priority;
+    bool match;
 
     t->last[patient_arrival] = t->current;
 
@@ -128,7 +129,7 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
     // FIXME MAYBE if (!p->repeated_transplant) wl->num_arrivals[bt][priority]++;
     wl->num_arrivals[bt][priority]++;
 
-    bool match = handleMatchingFromPatient(events, t, p);
+    match = handleMatchingFromPatient(events, t, p);
 
     if (!match) {
         patient_queue_blood_type *pbt_queue = wl->blood_type_queues[bt];

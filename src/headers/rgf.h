@@ -55,12 +55,6 @@
 #define MAX_TRANSPLANT 24.0  // 12-24 giorni di trapianto + monitoraggio
 #endif
 
-// Transplant probability : P(Bt AND Pr)
-#define TRANSPLANT_PROB (double[]){0.54, /* O */ \
-                                   0.62, /* A */ \
-                                   0.63, /* B */ \
-                                   0.67 /* AB */ }
-
 // Critical probability:
 #define CRIT_INACT_P 0.0
 

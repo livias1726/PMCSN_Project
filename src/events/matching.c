@@ -57,7 +57,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
 patient *getPatientFromPatient(patient* arrived, patient_waiting_list *wl) {
     PRIORITY pr = arrived->priority;
     BLOOD_TYPE patient_bt = arrived->bt;
-    int tot_in_queue, j, to_transplant, idx;
+    int j;
     patient_queue_priority *pp_queue;
     patient_queue_blood_type *pbt_queue;
     patient *curr;
@@ -66,55 +66,18 @@ patient *getPatientFromPatient(patient* arrived, patient_waiting_list *wl) {
     for (j = 0; j <= pr; ++j) {          // for each priority higher or equal than the new patient's
         // if a patient is available
         pp_queue = wl->blood_type_queues[patient_bt]->priority_queue[j];
-        tot_in_queue = (int) pp_queue->number;
-        idx = -1;
-        if (tot_in_queue == 0) {
-            continue; // test next blood type
-        }
-#ifdef IMPROVEMENT
-        // No need to check for complete compatibility
-        else {
-            found = true;   // at this point a patient has been found
-            to_transplant = ++idx;
-            break;
-        }
-#else
-        // Get the oldest in this queue (scan from head to tail) that can go to transplant
-        bool no_trans = true;
-        curr = pp_queue->queue; // get the head of the queue
-        do {
-            curr = curr->next;
-            idx++;
-            no_trans = (getTransplantProb(patient_bt) >= TRANSPLANT_PROB[patient_bt]); // check for complete compatibility
-            tot_in_queue--;
-        } while (tot_in_queue > 0 && no_trans);
-
-        if (!no_trans) { // a patient with complete compatibility was found for this blood type
-            found = true;   // at this point a patient has been found
-            to_transplant = idx;
-            break;
-        }
-#endif
+        if (pp_queue->number == 0) continue;
+        found = true;   // at this point a patient has been found0
+        break;
     }
 
     if (found) {
         pbt_queue = wl->blood_type_queues[patient_bt];
         pp_queue = pbt_queue->priority_queue[j];
-        curr = removePatient(to_transplant, pp_queue,pbt_queue, wl);
+        curr = removePatient(0, pp_queue,pbt_queue, wl);
     } else {
-#ifdef IMPROVEMENT
-        // if no patient already in queue was suitable for transplant, use the new one
         curr = arrived;
     }
-#else
-        // if no patient already in queue was suitable for transplant, test the complete compatibility of the new one
-        if(getTransplantProb(patient_bt) >= TRANSPLANT_PROB[patient_bt]){
-            curr = NULL;
-        } else {
-            curr = arrived;
-        }
-    }
-#endif
 
     return curr;
 }
@@ -128,7 +91,7 @@ patient *getPatientFromOrgan(BLOOD_TYPE organ_bt, patient_waiting_list *wl) {
     PRIORITY pr;
     BLOOD_TYPE b, bt;
     double oldest_st = INFINITY, curr_val;
-    int tot_in_queue, i, j, to_transplant, idx;
+    int i, j;
     patient_queue_priority *pp_queue;
     patient_queue_blood_type *pbt_queue;
     patient *curr;
@@ -141,33 +104,13 @@ patient *getPatientFromOrgan(BLOOD_TYPE organ_bt, patient_waiting_list *wl) {
         for (i = 0; i < size; ++i) {       // for each compatible blood type
             b = comp[i];
             pp_queue = wl->blood_type_queues[b]->priority_queue[j];
-            tot_in_queue = (int)pp_queue->number;
-            idx = -1;
-
             // Check if there are available patients in this specific queue
-            if (tot_in_queue == 0) continue; // test next blood type
-            curr = pp_queue->queue; // get the head of the queue
+            if (!pp_queue->number) continue; // test next blood type
 
-            // Get the oldest in this queue (scan from head to tail) that can go to transplant
-#ifdef IMPROVEMENT
-            // No need to check for complete compatibility
-            curr = curr->next;
-            idx++;
-#else
-            bool no_trans = false;
-            do{
-                curr = curr->next;
-                idx++;
-                no_trans = (getTransplantProb(b) >= TRANSPLANT_PROB[b]); // check for complete compatibility
-                tot_in_queue--;
-            } while (tot_in_queue > 0 && no_trans);
-            if (no_trans) break; // no patient with complete compatibility was found for this blood type;
-#endif
             // Check if the retrieved patient is the oldest one yet in the given priority
-            curr_val = curr->start_time;
+            curr_val = ((pp_queue->queue)->next)->start_time;
             if (curr_val < oldest_st) {
                 oldest_st = curr_val;
-                to_transplant = idx;
                 pr = j;
                 bt = b;
                 found = true;
@@ -180,12 +123,32 @@ patient *getPatientFromOrgan(BLOOD_TYPE organ_bt, patient_waiting_list *wl) {
     if (found) {
         pbt_queue = wl->blood_type_queues[bt];
         pp_queue = pbt_queue->priority_queue[pr];
-        curr = removePatient(to_transplant, pp_queue,pbt_queue, wl);
+        curr = removePatient(0, pp_queue,pbt_queue, wl);
     } else {
         curr = NULL;
     }
 
     return curr;
+}
+
+void checkOtherMatching(event_list *events, sim_time *t){
+    double organ_num;
+    patient *p;
+    organ *o;
+    patient_waiting_list *wl = &events->patient_arrival;
+    organ_bank *bank = &events->organ_arrival;
+
+    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        organ_num = events->organ_arrival.queues[i]->number;
+        while (organ_num) {
+            p = getPatientFromOrgan(i, wl);
+            if (p != NULL) {
+                o = removeOrgan(bank->queues[i], bank);
+                addMatchedToTransplant(events, t, o, p);
+            }
+            organ_num--;
+        }
+    }
 }
 
 bool handleMatchingFromOrgan(event_list *events, sim_time *t, organ *organ) {
@@ -214,7 +177,7 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, organ *organ) {
     patient_queue_priority *pp_queue = pbt_queue->priority_queue[pr];
 
     /* get first patient */
-    p = removePatient(0, pp_queue,pbt_queue, wl);
+    p = removePatient(0, pp_queue, pbt_queue, wl);
 #else
     p = getPatientFromOrgan(organ_bt, wl);
     if (p == NULL) return false;
@@ -230,6 +193,8 @@ bool handleMatchingFromOrgan(event_list *events, sim_time *t, organ *organ) {
     }
 
     addMatchedToTransplant(events, t, organ, p);
+
+    checkOtherMatching(events, t);
 
     return true;
 }
@@ -292,6 +257,8 @@ bool handleMatchingFromPatient(event_list *events, sim_time *t, patient *p) {
     // get oldest organ
     organ *o = removeOrgan(o_queues[organ_bt], bank);
     addMatchedToTransplant(events, t, o, p);
+
+    checkOtherMatching(events, t);
 
     return true;
 }
