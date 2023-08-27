@@ -34,7 +34,7 @@
 #define MU_ORG 1.0
 
 #ifdef IMPROVEMENT
-#define REJECT_P (double []) {0.13, 0.1937}
+#define REJECT_P (double []) {0.13, 0.49}
 #else
     #ifdef ABO_ID
         #define REJECT_P 0.0
