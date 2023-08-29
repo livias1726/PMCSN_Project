@@ -1,7 +1,0 @@
-Results for ORGAN_BANK:
-Arrivals ............... = 31529.376923
-Completions ............ = 31529.369231
-Reneged ............. = 0.007692
-Average wait ........... = 0.000001
-Average delay .......... = 0.000000
-Average service time ... = 0.000001
