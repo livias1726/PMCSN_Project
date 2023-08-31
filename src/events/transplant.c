@@ -42,7 +42,7 @@ void handleTransplantCompletion(event_list *events, sim_time *t) {
     double prob = getRejectionProb();
     double rej;
 #ifdef IMPROVEMENT
-    rej = (COMPATIBLE(bt, to_transplant->matched->organ.bt)) ? REJECT_P[0] : REJECT_P[1];
+    rej = (COMPATIBLE(to_transplant->matched->organ.bt, bt)) ? REJECT_P[0] : REJECT_P[1];
 #else
     rej = REJECT_P;
 #endif
