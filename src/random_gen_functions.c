@@ -15,7 +15,7 @@ double TruncatedNormal(double a, double b) {
 
     /* calculate pdf and cdf of a standard normal from alpha and beta */
     double pdf = pdfNormal(0,1, beta) - pdfNormal(0, 1, alpha);
-    double cdf = cdfNormal(0,1,beta)-cdfNormal(0,1,alpha);
+    double cdf = cdfNormal(0,1,beta) - cdfNormal(0,1,alpha);
 
     double t_mean = mu - s*(pdf)/(cdf);
     double t_var = pow(s, 2) * (1 - (beta* pdfNormal(0,1,beta)-alpha* pdfNormal(0,1,alpha))/(cdf) - (pow(pdf/cdf, 2)));
