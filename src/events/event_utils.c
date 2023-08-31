@@ -118,14 +118,12 @@ void addToWaitingList(event_list *events, sim_time* t, patient *p) {
         priority = p->priority;
     } else {
         if (t->current < STOP) {
-            //t->last[patient_arrival] = t->current; //TODO: see what happens if this is outside
             events->patient_arrival.inter_arrival_time[bt][priority] =
                     getPatientArrival(bt, priority, active,t->current);
         }
     }
 
     // increment arrivals to waiting list only if not counted before
-    // FIXME MAYBE if (!p->repeated_transplant) wl->num_arrivals[bt][priority]++;
     wl->num_arrivals[bt][priority]++;
 
     bool match = handleMatchingFromPatient(events, t, p);
