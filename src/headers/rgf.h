@@ -61,9 +61,6 @@
                                    0.63, /* B */ \
                                    0.67 /* AB */ }
 
-// Critical probability:
-#define CRIT_INACT_P 0.0
-
 //--------------------------------------------------------------------------------------------------------------------
 double getOrganArrival(BLOOD_TYPE bt, DONOR_TYPE dt, double arrival);
 double getPatientArrival(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arrival);
