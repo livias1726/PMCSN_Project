@@ -1,59 +1,30 @@
 #include "headers/utils.h"
+#include "headers/stats.h"
 
-void compute_output_stats(int i, stats* mean, stats* variance, stats* out_stats, stats* conf_mean){
-    double aux = (i-1)/(double)i;
-/* TODO: separate computations if the improvement affects params
-#ifndef IMPROVEMENT
-    ...
-#else
-    ...
-#endif
- */
-
-/*
-    // compute the mean for each param and each node considered
-    mean->param_node += GET_MEAN(out_stats->param_node, mean->param_node, i);
-
-    // compute the variance for each param and each node considered
-    variance->param_node += GET_VAR(out_stats->param_node, mean->param_node, aux);
-
-    // compute the confidence interval for each param and each node considered
-    double criticalValue = idfStudent(i-1,1-0.025); //alpha = 0.05
-    conf_mean->param_node = GET_CONF(variance->param_node, i, criticalValue);
-*/
-}
-
-void save_output_stats(int i, stats *mean, stats* conf_mean, FILE *stats_file){
-/* TODO: separate computations if the improvement affects params
-#ifndef IMPROVEMENT
-    ...
-#else
-    ...
-#endif
- */
-
-/*
-    if (i == 1){
-        fprintf(stats_file, "%d,%f,%f\n", i, mean->param_node, 0.0);
-    } else {
-        fprintf(stats_file, "%d,%f,%f\n", i, mean->param_node, conf_mean->param_node);
+void shuffle(BLOOD_TYPE *array, size_t n)
+{
+    if (n > 1)
+    {
+        size_t i;
+        for (i = 0; i < n - 1; i++)
+        {
+            size_t j = i + new_rand(RAND_MAX) / (RAND_MAX / (n - i) + 1);
+            BLOOD_TYPE t = array[j];
+            array[j] = array[i];
+            array[i] = t;
+        }
     }
-*/
 }
 
-void print_output_stats(stats* mean, stats* variance, stats* out_stats){
+/**
+ * custom pseudo-random number generator to use instead of rand()
+ * using a linear congruential generator (x_n = ax_{n-1} + b mod m)
+ * */
+void new_srand(long long seed){
+    random_seed = seed;
+}
 
-  //  double criticalValue = idfStudent(NUM_ITER-1,1-0.025); //alpha = 0.05
-
-    printf("OUTPUT:\n");
-
-/* TODO: separate printing if the improvement affects params
-#ifndef IMPROVEMENT
-    ...
-#else
-    ...
-#endif
- */
-
-  //  printf("\t<Param> <Node>: %lf +_ %lf \n", mean->param_node, GET_CONF(variance->param_node, NUM_ITER, criticalValue));
+int new_rand(int module) {
+    random_seed = (int) ((1664525UL * random_seed + 1013904223UL) % module);
+    return (int)random_seed;
 }

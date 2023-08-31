@@ -1,190 +1,270 @@
+#include "headers/sim.h"
+#include "headers/stats.h"
 #include "headers/utils.h"
+#include "headers/io.h"
 
-// TODO: can be a utils macro
-/*
-double getSmallest(double *values, int len) {
+void auto_correlation(int b, int k, double x[]);
 
-    double smallest = (double) INFINITY;
-
-    for(int i=0; i<len; i++) {
-        if(values[i] < smallest)
-            smallest = values[i];
-    }
-
-    return smallest;
-}
- */
-
+void updatePoints(event_list *events, BLOOD_TYPE bt, PRIORITY priority, double points[2], sim_time *t,
+                  time_integrated_stats *ti_stats, int iteration);
 
 double getMinTime(event_list *events) {
-    int len = 46;
+    int len = 50, idx = 0;
+    double values[len];
 
-    double timesToCompare[len];
-    timesToCompare[0] = events->organArrival.interArrivalTime[O];
-    timesToCompare[1] = events->organArrival.interArrivalTime[A];
-    timesToCompare[2] = events->organArrival.interArrivalTime[B];
-    timesToCompare[3] = events->organArrival.interArrivalTime[AB];
-    timesToCompare[4] = events->patientArrival.interArrivalTime[O][critical];
-    timesToCompare[5] = events->patientArrival.interArrivalTime[O][normal];
-    timesToCompare[6] = events->patientArrival.interArrivalTime[O][low];
-    timesToCompare[7] = events->patientArrival.interArrivalTime[A][critical];
-    timesToCompare[8] = events->patientArrival.interArrivalTime[A][normal];
-    timesToCompare[9] = events->patientArrival.interArrivalTime[A][low];
-    timesToCompare[10] = events->patientArrival.interArrivalTime[B][critical];
-    timesToCompare[11] = events->patientArrival.interArrivalTime[B][normal];
-    timesToCompare[12] = events->patientArrival.interArrivalTime[B][low];
-    timesToCompare[13] = events->patientArrival.interArrivalTime[AB][critical];
-    timesToCompare[14] = events->patientArrival.interArrivalTime[AB][normal];
-    timesToCompare[15] = events->patientArrival.interArrivalTime[AB][low];
-    timesToCompare[16] = events->organsLoss.renegingTime[O];
-    timesToCompare[17] = events->organsLoss.renegingTime[A];
-    timesToCompare[18] = events->organsLoss.renegingTime[B];
-    timesToCompare[19] = events->organsLoss.renegingTime[AB];
-    timesToCompare[20] = events->patientsLoss.renegingTime[O][critical];
-    timesToCompare[21] = events->patientsLoss.renegingTime[O][normal];
-    timesToCompare[22] = events->patientsLoss.renegingTime[O][low];
-    timesToCompare[23] = events->patientsLoss.renegingTime[A][critical];
-    timesToCompare[24] = events->patientsLoss.renegingTime[A][normal];
-    timesToCompare[25] = events->patientsLoss.renegingTime[A][low];
-    timesToCompare[26] = events->patientsLoss.renegingTime[B][critical];
-    timesToCompare[27] = events->patientsLoss.renegingTime[B][normal];
-    timesToCompare[28] = events->patientsLoss.renegingTime[B][low];
-    timesToCompare[29] = events->patientsLoss.renegingTime[AB][critical];
-    timesToCompare[30] = events->patientsLoss.renegingTime[AB][normal];
-    timesToCompare[31] = events->patientsLoss.renegingTime[AB][low];
-    timesToCompare[32] = events->patientsLoss.deathTime[O][critical];
-    timesToCompare[33] = events->patientsLoss.deathTime[O][normal];
-    timesToCompare[34] = events->patientsLoss.deathTime[O][low];
-    timesToCompare[35] = events->patientsLoss.deathTime[A][critical];
-    timesToCompare[36] = events->patientsLoss.deathTime[A][normal];
-    timesToCompare[37] = events->patientsLoss.deathTime[A][low];
-    timesToCompare[38] = events->patientsLoss.deathTime[B][critical];
-    timesToCompare[39] = events->patientsLoss.deathTime[B][normal];
-    timesToCompare[40] = events->patientsLoss.deathTime[B][low];
-    timesToCompare[41] = events->patientsLoss.deathTime[AB][critical];
-    timesToCompare[42] = events->patientsLoss.deathTime[AB][normal];
-    timesToCompare[43] = events->patientsLoss.deathTime[AB][low];
-    timesToCompare[44] = getMinActivation(events->activationArrival.inactive_patients);
-    timesToCompare[45] = getMinTransplant(events->transplantArrival.transplanted_patients);
+    int i,j;
+    for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+        values[idx++] = events->organ_arrival.inter_arrival_time[i];
+        values[idx++] = events->organs_loss.reneging_time[i];
+        values[idx++] = events->living_donor_completion[i];
 
-    //return getSmallest(timesToCompare, len);
+        for (j = 0; j < NUM_PRIORITIES; ++j) {
+            values[idx++] = events->patient_arrival.inter_arrival_time[i][j];
+            values[idx++] = events->patients_loss.reneging_time[i][j];
+            values[idx++] = events->patients_loss.death_time[i][j];
+        }
+
+        values[idx++] = events->activation_arrival.inter_arrival_time[i];
+        values[idx++] = events->patients_loss.reneging_time[i][j];
+        values[idx++] = events->patients_loss.death_time[i][j];
+
+    }
+
+    values[idx++] = events->activation_arrival.min_activation;
+    values[idx++] = events->transplant_arrival.min_transplant;
 
     double min;
-    GET_SMALLEST(timesToCompare, len, min);
+    GET_MIN(values, idx, min)
 
     return min;
 }
 
-double getMinTransplant(in_transplant *transplanted) {
-    double min, tmp;
+#ifdef FINITE
+void finiteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats *final_stat) {
 
-    if (transplanted->next == NULL) {
-        return INFINITY;
-    }
-    min = transplanted->next->completionTime;
-    while (transplanted->next != NULL) {
-        transplanted = transplanted->next;
-        tmp = transplanted->completionTime;
-        if (tmp < min)
-            min = transplanted->completionTime;
-    }
-    return min;
-}
-
-double getMinActivation(in_activation *inactive) {
-    double min, tmp;
-
-    if (inactive->next == NULL) {
-        return INFINITY;
-    }
-    min = inactive->next->completionTime;
-    while (inactive->next != NULL) {
-        inactive = inactive->next;
-        tmp = inactive->completionTime;
-        if (tmp < min)
-            min = inactive->completionTime;
-    }
-    return min;
-}
-
-void initializeEventTime(event_list* events) {
-    events->organArrival.interArrivalTime[O] = getOrganArrival(O, START);
-    events->organArrival.interArrivalTime[A] = getOrganArrival(A, START);
-    events->organArrival.interArrivalTime[B] = getOrganArrival(B, START);
-    events->organArrival.interArrivalTime[AB] = getOrganArrival(AB, START);
-
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patientArrival.interArrivalTime[i][j] = getPatientArrival(i, j, START);
-        }
-    }
-
-    events->organsLoss.renegingTime[O] = INFINITY;
-    events->organsLoss.renegingTime[A] = INFINITY;
-    events->organsLoss.renegingTime[B] = INFINITY;
-    events->organsLoss.renegingTime[AB] = INFINITY;
-
-    for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-        for (int j = 0; j < NUM_PRIORITIES; ++j) {
-            events->patientsLoss.renegingTime[i][j] = INFINITY;
-            events->patientsLoss.deathTime[i][j] = INFINITY;
-        }
-    }
-}
-
-void sim(event_list *events, sim_time *t, int *organ_arrived, int *patients_arrived_c, int *patients_arrived_n,
-         int *patients_arrived_low) {
-    /* Choose next event selecting minimum time */
+    int i;
     t->current = 0;
-    while (t->current < STOP) {
-        t->next = getMinTime(events);		                //Next event time
-        t->current = t->next;                             //Clock update
 
-        for (int i = 0; i < NUM_BLOOD_TYPES; ++i) {
-            if (t->current == events->organArrival.interArrivalTime[i]) {
-                handleOrganArrival(events, t, i);
-                (*organ_arrived)++;
+    while (CLOSE_THE_DOOR(events)) {
+        t->next = getMinTime(events);		            // Choose next event selecting minimum time
+        updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
+
+        t->current = t->next;                           // Clock update
+
+        if (t->current == events->activation_arrival.min_activation) {
+            handlePatientActivation(events, t);
+            continue;
+        } else if (t->current == events->transplant_arrival.min_transplant) {
+            handleTransplantCompletion(events, t);
+            continue;
+        }
+
+        for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+            if (t->current == events->organ_arrival.inter_arrival_time[i]) {
+                handleOrganArrival(events, t, i, deceased);
+                if (events->organ_arrival.inter_arrival_time[i] > STOP) {
+                    t->last[organ_arrival] = t->current;
+                    events->organ_arrival.inter_arrival_time[i] = INFINITY;
+                }
                 break;
-            } else if (t->current == events->organsLoss.renegingTime[i]) {
+            } else if (t->current == events->living_donor_completion[i]) {
+                handleOrganArrival(events, t, i, living);
+                if (events->organ_arrival.inter_arrival_time[i] > STOP) {
+                    t->last[organ_arrival] = t->current;
+                    events->organ_arrival.inter_arrival_time[i] = INFINITY;
+                }
+                break;
+            } else if (t->current == events->organs_loss.reneging_time[i]) {
                 handleOrganRenege(events, t, i);
                 break;
-            } else if (t->current == events->patientArrival.interArrivalTime[i][critical]) {
-                handlePatientArrival(events, t, i, critical);
-                (*patients_arrived_c)++;
+            } else if (t->current == events->patient_arrival.inter_arrival_time[i][critical]) {
+                handlePatientArrival(events, t, i, critical, active);
+                if (events->patient_arrival.inter_arrival_time[i][critical] > STOP) {
+                    t->last[patient_arrival] = t->current;
+                    events->patient_arrival.inter_arrival_time[i][critical] = INFINITY;
+                }
                 break;
-            } else if (t->current == events->patientArrival.interArrivalTime[i][normal]) {
-                handlePatientArrival(events, t, i, normal);
-                (*patients_arrived_n)++;
+            } else if (t->current == events->patient_arrival.inter_arrival_time[i][normal]) {
+                handlePatientArrival(events, t, i, normal, active);
+                if (events->patient_arrival.inter_arrival_time[i][normal] > STOP) {
+                    t->last[patient_arrival] = t->current;
+                    events->patient_arrival.inter_arrival_time[i][normal] = INFINITY;
+                }
                 break;
-            } else if (t->current == events->patientArrival.interArrivalTime[i][low]) {
-                handlePatientArrival(events, t, i, low);
-                (*patients_arrived_low)++;
+            } else if (t->current == events->activation_arrival.inter_arrival_time[i]) {
+                handlePatientArrival(events, t, i, none, inactive);
+                if (events->activation_arrival.inter_arrival_time[i] > STOP) {
+                    t->last[patient_arrival] = t->current;
+                    events->activation_arrival.inter_arrival_time[i] = INFINITY;
+                }
                 break;
-            } else if (t->current == events->patientsLoss.renegingTime[i][critical]) {
-                handlePatientLoss(events, t, renege, i, critical);
+            } else if (t->current == events->patients_loss.reneging_time[i][critical]) {
+                handlePatientLoss(events, t, renege, i, critical, active);
                 break;
-            } else if (t->current == events->patientsLoss.renegingTime[i][normal]) {
-                handlePatientLoss(events, t, renege, i, normal);
+            } else if (t->current == events->patients_loss.reneging_time[i][normal]) {
+                handlePatientLoss(events, t, renege, i, normal, active);
                 break;
-            } else if (t->current == events->patientsLoss.renegingTime[i][low]) {
-                handlePatientLoss(events, t, renege, i, low);
+            } else if (t->current == events->patients_loss.death_time[i][critical]) {
+                handlePatientLoss(events, t, death, i, critical, active);
                 break;
-            } else if (t->current == events->patientsLoss.deathTime[i][critical]) {
-                handlePatientLoss(events, t, death, i, critical);
+            } else if (t->current == events->patients_loss.death_time[i][normal]) {
+                handlePatientLoss(events, t, death, i, normal, active);
                 break;
-            } else if (t->current == events->patientsLoss.deathTime[i][normal]) {
-                handlePatientLoss(events, t, death, i, normal);
+            } else if (t->current == events->patients_loss.reneging_time[i][2]) {
+                handlePatientLoss(events, t, renege, i, none, inactive);
                 break;
-            } else if (t->current == events->patientsLoss.deathTime[i][low]) {
-                handlePatientLoss(events, t, death, i, low);
-                break;
-            } else if (t->current == getMinActivation(events->activationArrival.inactive_patients)) {
-                handlePatientActivation(events, t);
-                break;
-            } else if (t->current == getMinTransplant(events->transplantArrival.transplanted_patients)) {
-                handleTransplantCompletion(events, t);
+            } else if (t->current == events->patients_loss.death_time[i][2]) {
+                handlePatientLoss(events, t, death, i, none, inactive);
                 break;
             }
         }
     }
+
+    gatherResults(final_stat, NULL, events, 0); // to update the system state at the end of the simulation
 }
+#else
+void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stats, stats **batches, stats *final_stat,
+                 int *num_iterations) {
+
+    double points[BATCH_SIZE * INF_ITER][NUM_BLOOD_TYPES][NUM_PRIORITIES];        // to calculate batch auto-correlation
+    double batch_cp = t->current + BATCH_SIZE;           // set first batch;
+    double iter_cp = t->current + 1;
+    bool new_batch, new_iter;
+    int i, iteration = 0;
+    int iter = 0;
+    t->current = 0;
+
+    while (t->current < STOP) {
+        t->next = getMinTime(events);		            // Choose next event selecting minimum time
+        updateIntegralsStats(events, t, ti_stats);      // Update integrals stats
+        new_batch = (t->current > batch_cp);
+        new_iter = (t->current > iter_cp);
+
+        if (new_iter) {
+            // Update average wait points
+            for (int j = 0; j < NUM_BLOOD_TYPES; ++j) {
+                for (int k = 0; k < NUM_PRIORITIES; ++k) {
+                    updatePoints(events, j, k, points[j][k], t, ti_stats, iter);
+                }
+            }
+            iter++;
+            iter_cp = t->current + 1;
+        }
+
+        if (new_batch){
+            gatherResults(batches[iteration], batches[iteration-1], events, iteration);
+            computeTimeAveragedStats(batches[iteration], ti_stats, t);
+            welford(iteration+1, final_stat, batches[iteration]);
+            //saveResultsCsv(iteration, final_stat, true, iteration);
+
+            iteration++;
+            batch_cp = t->current + BATCH_SIZE;
+        }
+
+        t->current = t->next;                           // Clock update
+
+        if (t->current == events->activation_arrival.min_activation) {
+            handlePatientActivation(events, t);
+            continue;
+        } else if (t->current == events->transplant_arrival.min_transplant) {
+            handleTransplantCompletion(events, t);
+            continue;
+        }
+
+        for (i = 0; i < NUM_BLOOD_TYPES; ++i) {
+            if (t->current == events->organ_arrival.inter_arrival_time[i]) {
+                handleOrganArrival(events, t, i, deceased);
+                break;
+            } else if (t->current == events->living_donor_completion[i]) {
+                handleOrganArrival(events, t, i, living);
+                break;
+            } else if (t->current == events->organs_loss.reneging_time[i]) {
+                handleOrganRenege(events, t, i);
+                break;
+            } else if (t->current == events->patient_arrival.inter_arrival_time[i][critical]) {
+                handlePatientArrival(events, t, i, critical, active);
+                break;
+            } else if (t->current == events->patient_arrival.inter_arrival_time[i][normal]) {
+                handlePatientArrival(events, t, i, normal, active);
+                break;
+            } else if (t->current == events->activation_arrival.inter_arrival_time[i]) {
+                handlePatientArrival(events, t, i, none, inactive);
+                break;
+            } else if (t->current == events->patients_loss.reneging_time[i][critical]) {
+                handlePatientLoss(events, t, renege, i, critical, active);
+                break;
+            } else if (t->current == events->patients_loss.reneging_time[i][normal]) {
+                handlePatientLoss(events, t, renege, i, normal, active);
+                break;
+            } else if (t->current == events->patients_loss.death_time[i][critical]) {
+                handlePatientLoss(events, t, death, i, critical, active);
+                break;
+            } else if (t->current == events->patients_loss.death_time[i][normal]) {
+                handlePatientLoss(events, t, death, i, normal, active);
+                break;
+            } else if (t->current == events->patients_loss.reneging_time[i][2]) {
+                handlePatientLoss(events, t, renege, i, none, inactive);
+                break;
+            } else if (t->current == events->patients_loss.death_time[i][2]) {
+                handlePatientLoss(events, t, death, i, none, inactive);
+                break;
+            }
+        }
+    }
+
+    // AUTOCORRELATION CALCULATION
+    for (int j = 0; j < NUM_BLOOD_TYPES; ++j) {
+        for (int k = 0; k < NUM_PRIORITIES; ++k) {
+            auto_correlation(BATCH_SIZE, *num_iterations, points[j][k]);
+        }
+    }
+
+    gatherResults(final_stat, batches[iteration], events, iteration); // to update the system state at the end of the simulation
+    *num_iterations = iteration;
+}
+
+void updatePoints(event_list *events, BLOOD_TYPE bt, PRIORITY priority, double points[2], sim_time *t,
+                  time_integrated_stats *ti_stats, int iteration) {
+    double avg_inter = 0;
+    double population = events->patient_arrival.num_arrivals[bt][priority];
+
+    if (population != 0) avg_inter = t->last[patient_arrival] / population;
+    points[iteration] = avg_inter;
+}
+
+
+void auto_correlation(int b, int k, double x[]) {
+    double x_avg;            // media campionaria
+    double x_var;            // varianza campionaria
+    double x_sum = 0.0;      // somma dei valori x
+    double var_sum = 0.0;    // somma dei valori di varianza
+    double cov_sum = 0.0;    // somma dei valori cov
+    double c[k];             // covarianza
+    double r[k];             // auto-correlazione
+    // calcolo la statistica media campionaria
+    for (int i = 0; i < b; ++i) {
+        x_sum += x[i];
+    }
+    x_avg = x_sum/b;
+
+    // calcolo il valore di cj
+    for (int j = 0; j < k; ++j) {
+        for (int i = 0; i < b - j; ++i) {
+            cov_sum += (x[i]-x_avg)*(x[i+j]-x_avg);
+        }
+        c[j] = 1.0/(b-j)*cov_sum;
+        cov_sum = 0;
+    }
+
+    // calcolo la statistica varianza campionaria
+    for (int i = 0; i < b; ++i) {
+        var_sum += pow((x[i] - x_avg), 2);
+    }
+    x_var = var_sum/b;
+
+    // calcolo il valore di autocorrelazione del campione
+    for (int j = 0; j < k; ++j) {
+        r[j] = c[j]/x_var;
+    }
+}
+#endif

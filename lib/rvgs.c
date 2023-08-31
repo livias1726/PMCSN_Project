@@ -150,10 +150,10 @@
 
    double Normal(double m, double s)
 /* ========================================================================
- * Returns a normal (Gaussian) distributed real number.
+ * Returns a active (Gaussian) distributed real number.
  * NOTE: use s > 0.0
  *
- * Uses a very accurate approximation of the normal idf due to Odeh & Evans, 
+ * Uses a very accurate approximation of the active idf due to Odeh & Evans,
  * J. Applied Statistics, 1974, vol 23, pp 96-97.
  * ========================================================================
  */

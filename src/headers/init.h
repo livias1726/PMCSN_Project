@@ -1,16 +1,25 @@
 #ifndef PMCSN_PROJECT_INIT_H
 #define PMCSN_PROJECT_INIT_H
 
-patient_waiting_list initialize_waiting_list();
-organ_bank initialize_organ_bank();
-transplant initialize_transplant_center();
-activation initialize_activation_center();
-patients_lost initialize_patient_lost_queue();
-organs_expired initialize_organs_expired_queue();
-patient *new_patient(BLOOD_TYPE bt, PRIORITY pr);
-organ *new_organ(BLOOD_TYPE bt);
+#include "events.h"
+#include "stats.h"
 
-event_list initialize_event_list();
-sim_time initialize_time();
+// -------------------------------------------------- Prototypes -----------------------------------------------------
+patient_waiting_list initializeWaitingList();
+organ_bank initializeOrganBank();
+transplant_center initializeTransplantCenter();
+activation_center initializeActivationCenter();
+patients_lost initializePatientLostQueue();
+organs_expired initializeOrgansExpiredQueue();
+patient *newPatient(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt);
+organ *newOrgan(BLOOD_TYPE bt, DONOR_TYPE dt);
+in_activation * newInactive(patient* patient);
+in_transplant * newTransplant(matched* matched);
+matched * newMatched(patient p, organ o);
+event_list *initializeEventList();
+sim_time initializeTime();
+stats * initializeStatistics();
+time_integrated_stats * initializeTimeStatistics();
+void initializeEventTime(event_list* events);
 
 #endif //PMCSN_PROJECT_INIT_H

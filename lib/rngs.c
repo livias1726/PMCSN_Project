@@ -47,7 +47,7 @@
 
 static long seed[STREAMS] = {DEFAULT};  /* current state of each stream   */
 static int  stream        = 0;          /* stream index, 0 is the default */
-static int  initialized   = 0;          /* test for stream initialization */
+static int  initialized   = 0;          /* draft for stream initialization */
 
 
    double Random(void)
@@ -154,7 +154,7 @@ static int  initialized   = 0;          /* test for stream initialization */
 
    void TestRandom(void)
 /* ------------------------------------------------------------------
- * Use this (optional) function to test for a correct implementation.
+ * Use this (optional) function to draft for a correct implementation.
  * ------------------------------------------------------------------
  */
 {
