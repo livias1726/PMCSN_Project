@@ -48,8 +48,8 @@
 #define MAX_ACTIVATION (6 * 365)
 
 #ifdef IMPROVEMENT
-#define MIN_TRANSPLANT 46.0
-#define MAX_TRANSPLANT 58.0             // 12-24 giorni di trapianto + monitoraggio
+#define MIN_TRANSPLANT (double []) {12.0, 46.0}
+#define MAX_TRANSPLANT (double []) {24.0, 58.0}             // 12-24 giorni di trapianto + monitoraggio
 #else
 #define MIN_TRANSPLANT 12.0
 #define MAX_TRANSPLANT 24.0  // 12-24 giorni di trapianto + monitoraggio
@@ -68,7 +68,7 @@ double getOrganRenege(double arrival);
 double getPatientRenege(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arrival);
 double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arrival);
 double getActivationCompletion(double arrival);
-double getTransplantCompletion(double arrival);
+double getTransplantCompletion(double arrival, double min, double max);
 double getRejectionProb();
 double getCriticalProb();
 double getTransplantProb(BLOOD_TYPE bt);

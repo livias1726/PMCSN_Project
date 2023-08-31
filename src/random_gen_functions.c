@@ -101,9 +101,9 @@ double getActivationCompletion(double arrival) {
     return arrival;
 }
 
-double getTransplantCompletion(double arrival) {
+double getTransplantCompletion(double arrival, double min, double max) {
     SelectStream(47);
-    arrival += TruncatedNormal(MIN_TRANSPLANT, MAX_TRANSPLANT);
+    arrival += TruncatedNormal(min, max);
     return arrival;
 }
 
