@@ -212,15 +212,15 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
         }
     }
 
-    gatherResults(final_stat, batches[iteration], events, iteration); // to update the system state at the end of the simulation
-    *num_iterations = iteration;
-
     // AUTOCORRELATION CALCULATION
     for (int j = 0; j < NUM_BLOOD_TYPES; ++j) {
         for (int k = 0; k < NUM_PRIORITIES; ++k) {
             auto_correlation(BATCH_SIZE, *num_iterations, points[j][k]);
         }
     }
+
+    gatherResults(final_stat, batches[iteration], events, iteration); // to update the system state at the end of the simulation
+    *num_iterations = iteration;
 }
 
 void updatePoints(event_list *events, BLOOD_TYPE bt, PRIORITY priority, double points[2], sim_time *t,
