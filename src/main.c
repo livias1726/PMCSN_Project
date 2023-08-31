@@ -59,7 +59,7 @@ int main(){
         s = clock();
         finiteSim(events, &sim_time, ti_stats, mid_stats[i]);
         e = clock();
-        printf("Simulation %d - time: %lld\n", i, (e-s)/CLOCKS_PER_SEC);
+        printf("Simulation %d - time: %ld\n", i, (e-s)/CLOCKS_PER_SEC);
 
         gatherResults(mid_stats[i], mid_stats[i-1], events, i);
         computeTimeAveragedStats(mid_stats[i], ti_stats, &sim_time);
@@ -87,7 +87,7 @@ int main(){
     s = clock();
     infiniteSim(events, &sim_time, ti_stats, batches, final_stat, &num_iter);
     e = clock();
-    printf("Simulation time: %lld seconds\n", (e-s)/CLOCKS_PER_SEC);
+    printf("Simulation time: %ld seconds\n", (e-s)/CLOCKS_PER_SEC);
 
     computeStatistics(final_stat, num_iter);
     saveResultsCsv(0, final_stat, false, 0);
