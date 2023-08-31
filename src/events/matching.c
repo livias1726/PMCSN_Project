@@ -30,7 +30,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
 
     in_tr->completion_time = getTransplantCompletion(t->current, min, max);
 #else
-    in_tr->completion_time = getTransplantCompletion(t->current, MIN_TRANSPLANT[0], MAX_TRANSPLANT[0]);
+    in_tr->completion_time = getTransplantCompletion(t->current, MIN_TRANSPLANT, MAX_TRANSPLANT);
 #endif
     if (in_tr->completion_time < tc->min_transplant) tc->min_transplant = in_tr->completion_time;
 
