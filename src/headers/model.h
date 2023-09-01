@@ -66,7 +66,6 @@ typedef struct patient {
     BLOOD_TYPE bt;              /* patient blood type */
     PATIENT_TYPE type;          /* inactive or active patient */
     PRIORITY priority;          /* needed to order patients in list based on the priority */
-    bool repeated_transplant;   /* needed in order to correctly count transplant completions */
     double start_time;          /* time of waiting list addition */
     struct patient *next;       /* pointer to the next patient in queue */
 } patient;

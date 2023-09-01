@@ -22,8 +22,6 @@ void computeTimeAveragedStats(stats *stats, time_integrated_stats *ti_stats, sim
 
     printf("curr area - node - O crit: %f\n", ti_stats->area_waiting_list[O][critical]->node);
     printf("curr area - node - O norm: %f\n", ti_stats->area_waiting_list[O][normal]->node);
-    /* FIXME: dato che i tassi del numero di pazienti serviti sono diversi per ogni coda in realtà è necessario
-     * considerare in numero totale per gruppo sanguigno e non per priorità!*/
     printf("waiting - node - O crit: %f\n", ti_stats->area_waiting_list[O][critical]->node/wl_stats->num_patients_served[O][critical]);
     printf("waiting - node - O norm: %f\n\n", ti_stats->area_waiting_list[O][normal]->node/wl_stats->num_patients_served[O][normal]);
 #endif
@@ -320,8 +318,8 @@ void computeStatistics(stats *statistics, int num_stats) {
             STDEV(sum, t_stats->std_service[i][j], num_stats)
             CONFIDENCE(u, t, w, t_stats->std_service[i][j], num_stats)
 
-            STDEV(sum, t_stats->std_in_node, num_stats) // fixme
-            CONFIDENCE(u, t, w, t_stats->std_in_node, num_stats) // fixme
+            STDEV(sum, t_stats->std_in_node, num_stats)
+            CONFIDENCE(u, t, w, t_stats->std_in_node, num_stats)
         }
 
         // Activation center

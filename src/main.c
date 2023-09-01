@@ -64,9 +64,10 @@ int main(){
         gatherResults(mid_stats[i], mid_stats[i-1], events, i);
         computeTimeAveragedStats(mid_stats[i], ti_stats, &sim_time);
         welford(i+1, final_stat, mid_stats[i]);
-
+#ifdef AUDIT
         printf("Arrivals O - crit: %f\n", final_stat->wl_stats->avg_arrivals[O][critical]);
         printf("Arrivals O - norm: %f\n\n", final_stat->wl_stats->avg_arrivals[O][normal]);
+#endif
         resetSimulation(events, &sim_time, ti_stats);
     }
 
@@ -95,11 +96,11 @@ int main(){
 
     // ----------------------------------------------- Clean up -----------------------------------------------------
 #ifndef FINITE
-    /*for (i = 0; i < num_iter; ++i) {
+    for (i = 0; i < num_iter; ++i) {
         cleanUpStatistics(batches[i]);
-    }*/
+    }
 #endif
-    //cleanUpEventList(events);
-    //cleanUpTimeStatistics(ti_stats);
-    //cleanUpStatistics(final_stat);
+    cleanUpEventList(events);
+    cleanUpTimeStatistics(ti_stats);
+    cleanUpStatistics(final_stat);
 }
