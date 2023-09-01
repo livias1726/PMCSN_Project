@@ -1,6 +1,5 @@
 #include "headers/utils.h"
 #include "headers/rgf.h"
-#include "headers/stats.h"
 
 /***
 * ------------------------------------------- RANDOM GENERATOR FUNCTIONS -----------------------------------------------
@@ -112,10 +111,5 @@ double getTransplantProb(BLOOD_TYPE bt) {
 
     SelectStream(stream + x);
 
-    return Random();
-}
-
-double getCriticalProb() {
-    SelectStream(52);
     return Random();
 }

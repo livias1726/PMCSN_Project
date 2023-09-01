@@ -70,7 +70,6 @@ double getPatientDeath(BLOOD_TYPE bt, PRIORITY pr, PATIENT_TYPE pt, double arriv
 double getActivationCompletion(double arrival);
 double getTransplantCompletion(double arrival, double min, double max);
 double getRejectionProb();
-double getCriticalProb();
 double getTransplantProb(BLOOD_TYPE bt);
 
 #endif //PMCSN_PROJECT_RGF_H

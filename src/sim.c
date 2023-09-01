@@ -1,12 +1,10 @@
 #include "headers/sim.h"
 #include "headers/stats.h"
 #include "headers/utils.h"
-#include "headers/io.h"
 
 void auto_correlation(int b, int k, double x[]);
 
-void updatePoints(event_list *events, BLOOD_TYPE bt, PRIORITY priority, double points[2], sim_time *t,
-                  time_integrated_stats *ti_stats, int iteration);
+void updatePoints(event_list *events, BLOOD_TYPE bt, PRIORITY priority, double points[2], sim_time *t, int iteration);
 
 double getMinTime(event_list *events) {
     int len = 50, idx = 0;
@@ -144,7 +142,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
             // Update average wait points
             for (int j = 0; j < NUM_BLOOD_TYPES; ++j) {
                 for (int k = 0; k < NUM_PRIORITIES; ++k) {
-                    updatePoints(events, j, k, points[j][k], t, ti_stats, iter);
+                    updatePoints(events, j, k, points[j][k], t, iter);
                 }
             }
             iter++;
@@ -223,8 +221,7 @@ void infiniteSim(event_list *events, sim_time *t, time_integrated_stats *ti_stat
     *num_iterations = iteration;
 }
 
-void updatePoints(event_list *events, BLOOD_TYPE bt, PRIORITY priority, double points[2], sim_time *t,
-                  time_integrated_stats *ti_stats, int iteration) {
+void updatePoints(event_list *events, BLOOD_TYPE bt, PRIORITY priority, double points[2], sim_time *t, int iteration) {
     double avg_inter = 0;
     double population = events->patient_arrival.num_arrivals[bt][priority];
 

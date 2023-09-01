@@ -3,7 +3,6 @@
 #include "../headers/utils.h"
 
 void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patient *patient) {
-    double min, max;
     patient_waiting_list *wl = &events->patient_arrival;
     organ_bank *bank = &events->organ_arrival;
     transplant_center *tc = &events->transplant_arrival;
@@ -20,6 +19,7 @@ void addMatchedToTransplant(event_list *events, sim_time *t, organ *organ, patie
 
     /* generate and change transplant completion time */
 #ifdef IMPROVEMENT
+    double min, max;
     if (COMPATIBLE(o_bt, p_bt)) {
         min = MIN_TRANSPLANT[0];
         max = MAX_TRANSPLANT[0];

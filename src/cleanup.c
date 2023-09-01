@@ -157,9 +157,9 @@ static void cleanUpWaitingList(patient_waiting_list *wt_list) {
 
             current = wt_list->blood_type_queues[i]->priority_queue[j]->queue;  // head
             next = current->next;   // first
-
-            //RESET_QUEUE(current, next)
-
+#ifdef FINITE
+            RESET_QUEUE(current, next)
+#endif
             free(wt_list->blood_type_queues[i]->priority_queue[j]->queue);
             free(wt_list->blood_type_queues[i]->priority_queue[j]);
         }
