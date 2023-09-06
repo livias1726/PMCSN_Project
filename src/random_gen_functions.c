@@ -116,6 +116,7 @@ double getActivationCompletion(double arrival) {
     // arrival += TruncatedNormal(MIN_ACTIVATION, MAX_ACTIVATION);
     return arrival;*/
 
+    /*
     double d = AltNormal(MIN_ACTIVATION, MAX_ACTIVATION);
     while ((d < MIN_ACTIVATION) || (d > MAX_ACTIVATION))
         d = AltNormal(MIN_ACTIVATION, MAX_ACTIVATION);
@@ -124,6 +125,16 @@ double getActivationCompletion(double arrival) {
     } else if (d < MIN_ACTIVATION) {
         printf("NO!!!\n");
     }
+    arrival += d;
+    return arrival;*/
+
+    /* approximate mean and stdev from max and min */
+    double mu = (MIN_ACTIVATION+MAX_ACTIVATION)/2;
+    double s = (MAX_ACTIVATION-MIN_ACTIVATION)/4;
+    double alpha = cdfNormal(mu, s, MIN_ACTIVATION);
+    double beta = 1.0 - cdfNormal(mu, s, MAX_ACTIVATION);
+    double u = Uniform(alpha, 1.0-beta);
+    double d = idfNormal(mu, s, u);
     arrival += d;
     return arrival;
 }
@@ -141,6 +152,7 @@ double getTransplantCompletion(double arrival, double min, double max) {
     // arrival += TruncatedNormal(min, max);
     return arrival;*/
 
+    /*
     double d = AltNormal(min, max);
     while ((d < min) || (d > max))
         d = AltNormal(min, max);
@@ -150,6 +162,16 @@ double getTransplantCompletion(double arrival, double min, double max) {
     } else if (d < min) {
         printf("NO!!!\n");
     }
+    arrival += d;
+    return arrival;*/
+
+    /* approximate mean and stdev from max and min */
+    double mu = (min+max)/2;
+    double s = (max-min)/4;
+    double alpha = cdfNormal(mu, s, min);
+    double beta = 1.0 - cdfNormal(mu, s, max);
+    double u = Uniform(alpha, 1.0-beta);
+    double d = idfNormal(mu, s, u);
     arrival += d;
     return arrival;
 }
