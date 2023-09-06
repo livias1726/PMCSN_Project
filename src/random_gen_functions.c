@@ -116,9 +116,9 @@ double getActivationCompletion(double arrival) {
     // arrival += TruncatedNormal(MIN_ACTIVATION, MAX_ACTIVATION);
     return arrival;*/
 
-    double d = Normal(MIN_ACTIVATION, MAX_ACTIVATION);
+    double d = AltNormal(MIN_ACTIVATION, MAX_ACTIVATION);
     while ((d < MIN_ACTIVATION) || (d > MAX_ACTIVATION))
-        d = Normal(MIN_ACTIVATION, MAX_ACTIVATION);
+        d = AltNormal(MIN_ACTIVATION, MAX_ACTIVATION);
     if (d > MAX_ACTIVATION) {
         printf("NO!!!\n");
     } else if (d < MIN_ACTIVATION) {
@@ -141,9 +141,9 @@ double getTransplantCompletion(double arrival, double min, double max) {
     // arrival += TruncatedNormal(min, max);
     return arrival;*/
 
-    double d = Normal(min, max);
+    double d = AltNormal(min, max);
     while ((d < min) || (d > max))
-        d = Normal(min, max);
+        d = AltNormal(min, max);
 
     if (d > max) {
         printf("NO!!!\n");
