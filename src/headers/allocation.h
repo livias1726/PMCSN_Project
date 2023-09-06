@@ -5,7 +5,10 @@
 #define PMCSN_PROJECT_ALLOCATION_H
 
 #define IDENTICAL(o, p) (o == p)
-#define COMPATIBLE(o, p) IDENTICAL(o,p) || (o == O) || (p == AB && (o == A || o == B))
+#define COMPATIBLE(o, p) \
+        IDENTICAL(o,p) ||        \
+        (o == O) ||              \
+        (p == AB && (o == A || o == B))
 /**
  * Returns a constant array of compatible blood types with the one in input ordered by rarest first
  * */

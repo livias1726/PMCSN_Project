@@ -22,6 +22,14 @@ double TruncatedNormal(double a, double b) {
     return Normal(t_mean, sqrt(t_var));
 }
 
+double AltNormal(double a, double b) {
+    /* approximate mean and stdev from max and min */
+    double mu = (a+b)/2;
+    double s = (b-a)/4;
+
+    return Normal(mu, s);
+}
+
 double getOrganArrival(BLOOD_TYPE bt, DONOR_TYPE dt, double arrival) {
     int x = VALUE(bt, dt, 2), stream = 0;
 
@@ -97,13 +105,52 @@ double getRejectionProb() {
 
 double getActivationCompletion(double arrival) {
     SelectStream(46);
-    arrival += TruncatedNormal(MIN_ACTIVATION, MAX_ACTIVATION);
+    /*double activation_val = TruncatedNormal(MIN_ACTIVATION, MAX_ACTIVATION);
+    printf("activation val: %f", activation_val);
+    if (activation_val > MAX_ACTIVATION) {
+        printf("NO!!!");
+    } else if (activation_val < MAX_ACTIVATION) {
+        printf("NO!!!");
+    }
+    arrival += activation_val;
+    // arrival += TruncatedNormal(MIN_ACTIVATION, MAX_ACTIVATION);
+    return arrival;*/
+
+    double d = Normal(MIN_ACTIVATION, MAX_ACTIVATION);
+    while ((d < MIN_ACTIVATION) || (d > MAX_ACTIVATION))
+        d = Normal(MIN_ACTIVATION, MAX_ACTIVATION);
+    if (d > MAX_ACTIVATION) {
+        printf("NO!!!\n");
+    } else if (d < MIN_ACTIVATION) {
+        printf("NO!!!\n");
+    }
+    arrival += d;
     return arrival;
 }
 
 double getTransplantCompletion(double arrival, double min, double max) {
     SelectStream(47);
-    arrival += TruncatedNormal(min, max);
+    /*double transplant_val = TruncatedNormal(min, max);
+    printf("transplant val: %f", transplant_val);
+    if (transplant_val > max) {
+        printf("NO!!!");
+    } else if (transplant_val < min) {
+        printf("NO!!!");
+    }
+    arrival += transplant_val;
+    // arrival += TruncatedNormal(min, max);
+    return arrival;*/
+
+    double d = Normal(min, max);
+    while ((d < min) || (d > max))
+        d = Normal(min, max);
+
+    if (d > max) {
+        printf("NO!!!\n");
+    } else if (d < min) {
+        printf("NO!!!\n");
+    }
+    arrival += d;
     return arrival;
 }
 
